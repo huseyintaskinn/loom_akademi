@@ -1,0 +1,2048 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loom Akademi • Gökyüzü Mühendisliği - 1. Hafta: Tanışma, Havacılık Tarihi ve İlk Uçuş</title>
+  <style>
+    :root {
+      --primary: #38bdf8;
+      --primary-light: #7dd3fc;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --bg-dark: #090e1a;
+      --bg-card: rgba(22, 31, 54, 0.94);
+      --border-card: rgba(255, 255, 255, 0.18);
+      --sunny-yellow: #fbbf24;
+      --emerald-green: #34d399;
+      --candy-red: #fb7185;
+      --cute-purple: #c084fc;
+      --text-white: #ffffff;
+      --text-muted: #cbd5e1;
+      --font-main: 'Segoe UI', 'Trebuchet MS', Arial, -apple-system, sans-serif;
+      --slide-w: 1280px;
+      --slide-h: 720px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body {
+      background: radial-gradient(circle at top right, #1a2542 0%, #0c1322 60%, #060911 100%);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      overflow: hidden;
+      width: 100vw; height: 100vh;
+      display: flex; flex-direction: column;
+      user-select: none;
+    }
+
+    /* Top Progress Bar */
+    #progress-track {
+      position: fixed; top: 0; left: 0; width: 100%; height: 6px;
+      background: rgba(255, 255, 255, 0.08); z-index: 1000;
+    }
+    #progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #f43f5e, #fbbf24, #34d399, var(--primary), #c084fc);
+      box-shadow: 0 0 12px var(--primary-light);
+      transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Header */
+    header {
+      position: fixed; top: 6px; left: 0; width: 100%; height: 62px;
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(12, 19, 34, 0.96); backdrop-filter: blur(14px);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.14); z-index: 900;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .grade-badge {
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #042f2e; font-size: 15px; font-weight: 800;
+      padding: 6px 14px; border-radius: 12px; letter-spacing: 0.5px;
+    }
+    .brand-title {
+      font-size: 19px; font-weight: 800; letter-spacing: 0.5px;
+      color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .brand-title span { color: var(--sunny-yellow); font-weight: 700; font-size: 16px; }
+    .header-tools { display: flex; align-items: center; gap: 10px; }
+    .tool-btn {
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1; width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; font-size: 16px;
+    }
+    .tool-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; transform: scale(1.05); }
+    .tool-btn.active { background: var(--primary); color: #042f2e; border-color: var(--primary); }
+
+    /* Main Container */
+    main {
+      flex: 1; margin-top: 68px; margin-bottom: 68px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px 20px; overflow: hidden; position: relative;
+    }
+    #slide-viewport {
+      width: 100%; max-width: var(--slide-w); height: 100%; max-height: var(--slide-h);
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Slide Box */
+    .slide {
+      position: absolute; inset: 0;
+      opacity: 0; pointer-events: none; visibility: hidden;
+      display: flex; flex-direction: column;
+      padding: 20px 36px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transform: translateY(16px) scale(0.985);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    }
+    .slide.active {
+      opacity: 1; pointer-events: auto; visibility: visible;
+      transform: translateY(0) scale(1); z-index: 10;
+    }
+
+    /* Slide Titles */
+    .slide-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--primary); margin-bottom: 4px;
+    }
+    .slide-title {
+      font-size: 34px; font-weight: 800; line-height: 1.2;
+      color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      margin-bottom: 2px;
+    }
+    .slide-subtitle {
+      font-size: 17px; color: var(--text-muted); line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    /* Slide Layouts */
+    .slide-content { flex: 1; display: flex; gap: 24px; min-height: 0; overflow: hidden; }
+    .col-half { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .col-full { width: 100%; height: 100%; display: flex; flex-direction: column; }
+    .col-60 { flex: 1.35; display: flex; flex-direction: column; min-height: 0; }
+    .col-40 { flex: 0.95; display: flex; flex-direction: column; min-height: 0; }
+
+    /* Fun Box */
+    .fun-box {
+      background: rgba(30, 41, 65, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Speaker Wheel */
+    .speaker-box {
+      background: radial-gradient(circle at center, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%);
+      border: 2px dashed var(--primary);
+      border-radius: var(--radius-md);
+      padding: 16px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      height: 100%; gap: 12px;
+    }
+    .mic-btn {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, #f43f5e, #fb7185);
+      border: 4px solid rgba(255,255,255,0.8);
+      font-size: 44px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: 0 8px 25px rgba(244, 63, 94, 0.6);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .mic-btn:hover { transform: scale(1.1) rotate(5deg); }
+    .mic-btn:active { transform: scale(0.92); }
+
+    /* 5 New Rules */
+    .rule-item {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-md); padding: 8px 16px;
+      transition: all 0.2s ease;
+    }
+    .rule-item:hover {
+      background: rgba(56, 189, 248, 0.15); border-color: var(--primary);
+      transform: translateX(6px);
+    }
+    .rule-icon {
+      font-size: 26px; width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .rule-text h4 { font-size: 16.5px; font-weight: 800; color: #fff; line-height: 1.25; }
+    .rule-text p { font-size: 13.5px; color: #cbd5e1; margin-top: 2px; line-height: 1.35; }
+
+    /* Board Stamp Marks */
+    .board-stamp-mark {
+      position: absolute; width: 54px; height: 54px; pointer-events: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      animation: stampPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes stampPop {
+      0% { transform: scale(3.5); opacity: 0; }
+      70% { transform: scale(0.85); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Celebration Banner */
+    #celebration-banner {
+      position: absolute; inset: 0;
+      background: rgba(12, 19, 34, 0.95);
+      border-radius: var(--radius-lg);
+      z-index: 100;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; text-align: center; padding: 28px;
+    }
+    #celebration-banner.show { display: flex; }
+
+    /* ===================================================
+       SLIDE 5: HAVACILIK TARİHİ (TEKER TEKER SIRAYLA KEŞİF)
+       =================================================== */
+    .history-stepper-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 12px; padding: 6px 12px;
+      background: rgba(15, 23, 42, 0.85); border-radius: 14px;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+    }
+    .h-step-tabs {
+      display: flex; align-items: center; gap: 8px; flex: 1;
+    }
+    .h-step-btn {
+      display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+      border-radius: 10px; background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.15); color: #cbd5e1;
+      font-family: var(--font-main); font-size: 14px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .h-step-btn:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+    .h-step-btn.active {
+      background: rgba(56, 189, 248, 0.25); border-color: var(--primary);
+      color: #fff; box-shadow: 0 0 12px var(--primary-glow);
+    }
+    .h-step-btn.completed {
+      border-color: var(--emerald-green); color: #a7f3d0;
+    }
+    .h-step-num {
+      width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 12px;
+    }
+    .h-step-btn.active .h-step-num { background: var(--primary); color: #042f2e; font-weight: 800; }
+    .h-step-btn.completed .h-step-num { background: var(--emerald-green); color: #064e3b; font-weight: 800; }
+    .h-step-connector {
+      width: 14px; height: 2px; background: rgba(255, 255, 255, 0.2); border-radius: 1px;
+    }
+
+    .view-toggle-btn {
+      background: rgba(251, 191, 36, 0.15); border: 1.5px solid var(--sunny-yellow);
+      color: var(--sunny-yellow); font-family: var(--font-main); font-size: 13px; font-weight: 800;
+      padding: 6px 14px; border-radius: 10px; cursor: pointer; transition: all 0.2s;
+    }
+    .view-toggle-btn:hover { background: var(--sunny-yellow); color: #000; }
+
+    /* History Step Panels (Single Era Focus Mode) */
+    .history-stepper-viewport {
+      flex: 1; position: relative; width: 100%; height: 100%; display: flex;
+    }
+    .history-step-panel {
+      position: absolute; inset: 0; display: none; gap: 24px;
+      background: rgba(22, 31, 54, 0.94); border: 2px solid rgba(255, 255, 255, 0.18);
+      border-radius: 18px; padding: 18px 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      animation: fadeInScale 0.25s ease forwards;
+    }
+    .history-step-panel.active { display: flex; }
+
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .history-step-media {
+      flex: 1.1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 10px; min-height: 0;
+    }
+    .history-step-img {
+      width: 100%; max-height: 290px; height: auto; object-fit: cover;
+      border-radius: 14px; border: 2.5px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+    .history-step-caption {
+      font-size: 14px; font-weight: 700; color: var(--sunny-yellow); text-align: center;
+    }
+
+    .history-step-info {
+      flex: 1.25; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .history-step-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
+    }
+    .h-era-badge {
+      font-size: 13px; font-weight: 800; padding: 4px 14px; border-radius: 14px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .history-step-info h2 {
+      font-size: 27px; color: #fff; font-weight: 800; line-height: 1.25; margin-bottom: 8px;
+    }
+    .history-step-points {
+      display: flex; flex-direction: column; gap: 10px; font-size: 16px; color: #cbd5e1; line-height: 1.5;
+    }
+    .history-step-points li {
+      list-style: none; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .history-step-points li span.bullet {
+      color: var(--primary); font-size: 18px; font-weight: 800; line-height: 1;
+    }
+    .fun-fact-box {
+      background: rgba(255, 255, 255, 0.07); border-left: 4px solid var(--sunny-yellow);
+      padding: 10px 14px; border-radius: 0 12px 12px 0; font-size: 14.5px; color: #fef08a; line-height: 1.45;
+    }
+
+    .history-step-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1.5px solid rgba(255, 255, 255, 0.12); padding-top: 10px; margin-top: 10px;
+    }
+
+    /* Overview Grid Mode (Optional Toggle) */
+    .history-grid-container {
+      display: none; grid-template-columns: repeat(4, 1fr); gap: 14px; height: 100%; width: 100%;
+    }
+    .history-grid-container.show { display: grid; }
+    .h-mini-card {
+      background: rgba(30, 41, 65, 0.9); border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px; padding: 12px; display: flex; flex-direction: column;
+      justify-content: space-between; cursor: pointer; transition: all 0.2s;
+    }
+    .h-mini-card:hover {
+      transform: translateY(-4px); border-color: var(--sunny-yellow);
+      box-shadow: 0 8px 20px rgba(251, 191, 36, 0.2);
+    }
+    .h-mini-img {
+      width: 100%; height: 110px; object-fit: cover; border-radius: 10px; margin-bottom: 8px;
+    }
+
+    /* ===================================================
+       SLIDE 6: SÜRÜKLE-BIRAK TARİH OYUNU (KARIŞIK HEDEFLER)
+       =================================================== */
+    .drag-game-container {
+      display: flex; gap: 20px; height: 100%; width: 100%;
+    }
+    .drag-items-col {
+      flex: 1; display: flex; flex-direction: column; gap: 10px; justify-content: space-between;
+    }
+    .drop-targets-col {
+      flex: 1.45; display: flex; flex-direction: column; gap: 10px; justify-content: space-between;
+    }
+    .draggable-card {
+      background: linear-gradient(135deg, rgba(30, 41, 65, 0.95), rgba(15, 23, 42, 0.95));
+      border: 2.5px solid var(--primary); border-radius: 14px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 12px; cursor: grab;
+      font-size: 16px; font-weight: 800; color: #fff;
+      transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .draggable-card:hover {
+      transform: scale(1.03); background: rgba(56, 189, 248, 0.2); border-color: var(--sunny-yellow);
+    }
+    .draggable-card.dragging { opacity: 0.4; }
+    .draggable-card.selected {
+      border-color: var(--sunny-yellow); background: rgba(251, 191, 36, 0.25);
+      box-shadow: 0 0 16px var(--sunny-yellow); transform: scale(1.04);
+    }
+    .draggable-card.matched {
+      opacity: 0.22; pointer-events: none; border-color: #64748b;
+    }
+    .card-thumb {
+      width: 54px; height: 38px; object-fit: cover; border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.25); flex-shrink: 0;
+    }
+
+    .drop-target-box {
+      background: rgba(15, 23, 42, 0.82); border: 2.5px dashed rgba(255, 255, 255, 0.25);
+      border-radius: 14px; padding: 8px 16px; display: flex;
+      align-items: center; justify-content: space-between; gap: 12px;
+      transition: all 0.25s ease; min-height: 74px; cursor: pointer;
+    }
+    .drop-target-box:hover {
+      border-color: var(--primary); background: rgba(56, 189, 248, 0.1);
+    }
+    .drop-target-box.drag-over {
+      border-color: var(--sunny-yellow); background: rgba(251, 191, 36, 0.2);
+      transform: scale(1.02);
+    }
+    .drop-target-box.matched {
+      border-style: solid; border-color: var(--emerald-green);
+      background: rgba(52, 211, 153, 0.2);
+    }
+    .drop-target-text strong { font-size: 15.5px; color: #fff; display: block; }
+    .drop-target-text p { font-size: 13px; color: #cbd5e1; margin-top: 2px; }
+    .match-slot-badge {
+      background: rgba(255, 255, 255, 0.1); border-radius: 10px;
+      padding: 5px 12px; font-size: 13px; font-weight: 800; color: #cbd5e1;
+      white-space: nowrap; display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Paper Airplane Glider Box */
+    .glider-display-box {
+      flex: 1; height: 100%; max-height: 520px; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      background: #ffffff; border-radius: var(--radius-lg); padding: 8px;
+      border: 3px solid var(--primary); box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    }
+    .glider-display-box img {
+      max-height: 500px; max-width: 100%; width: auto; height: auto;
+      object-fit: contain; border-radius: 8px;
+    }
+
+    /* Video Frame */
+    .video-container {
+      width: 100%; height: 100%; border-radius: var(--radius-lg);
+      overflow: hidden; border: 3px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6); background: #000;
+      display: flex; flex-direction: column;
+    }
+    .video-container iframe { flex: 1; width: 100%; height: 100%; border: none; }
+
+    /* Footer */
+    footer {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 68px;
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(12, 19, 34, 0.96); backdrop-filter: blur(14px);
+      border-top: 2px solid rgba(255, 255, 255, 0.14); z-index: 900;
+    }
+    .footer-left { display: flex; align-items: center; gap: 18px; }
+    .slide-counter {
+      font-family: 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: 800;
+      color: #cbd5e1; cursor: pointer; padding: 8px 18px; border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+    }
+    .slide-counter span.current { color: var(--sunny-yellow); font-size: 20px; }
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2);
+      color: #fff; padding: 10px 24px; border-radius: 14px;
+      font-family: var(--font-main); font-size: 16px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;
+    }
+    .nav-btn:hover { background: rgba(255, 255, 255, 0.22); transform: scale(1.04); }
+    .nav-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #042f2e; border: none; font-weight: 800;
+    }
+
+    /* Notes Drawer & Overview Modal */
+    #notes-drawer {
+      position: fixed; right: 0; top: 62px; bottom: 68px; width: 420px;
+      background: rgba(12, 19, 34, 0.98); border-left: 2px solid var(--primary);
+      z-index: 1200; padding: 24px; display: flex; flex-direction: column; gap: 14px;
+      transform: translateX(100%); transition: transform 0.3s ease;
+    }
+    #notes-drawer.open { transform: translateX(0); }
+    .notes-body { font-size: 15.5px; line-height: 1.6; color: #cbd5e1; overflow-y: auto; flex: 1; }
+    .notes-body h4 { color: var(--sunny-yellow); margin: 12px 0 4px; font-size: 16px; }
+
+    #overview-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(10, 15, 28, 0.96); backdrop-filter: blur(20px);
+      z-index: 2000; display: flex; flex-direction: column; padding: 36px;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    #overview-modal.open { opacity: 1; visibility: visible; }
+    .overview-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px; overflow-y: auto; margin-top: 18px;
+    }
+    .overview-card {
+      background: rgba(30, 41, 65, 0.85); border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-md); padding: 16px; cursor: pointer; transition: all 0.2s;
+      font-size: 15.5px; font-weight: 700;
+    }
+    .overview-card:hover { border-color: var(--sunny-yellow); transform: translateY(-3px); }
+    .overview-card.active { border-color: var(--primary); background: rgba(56, 189, 248, 0.22); }
+
+    @media (max-width: 1280px) or (max-height: 720px) {
+      :root { --slide-w: 1024px; --slide-h: 576px; }
+      .slide { padding: 14px 24px; }
+      .slide-title { font-size: 28px; }
+      .slide-subtitle { font-size: 14px; margin-bottom: 6px; }
+      .rule-item { padding: 6px 12px; }
+      .rule-text h4 { font-size: 15px; }
+      .rule-text p { font-size: 13px; }
+      .history-step-img { max-height: 220px; }
+      .history-step-info h2 { font-size: 22px; }
+      .history-step-points { font-size: 14px; gap: 6px; }
+      .glider-display-box img { max-height: 380px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <header>
+    <div class="brand">
+      <div class="grade-badge">✈️ 1. HAFTA</div>
+      <div class="brand-title">LOOM AKADEMİ • GÖKYÜZÜ MÜHENDİSLERİ <span>• TANIŞMA, HAVACILIK TARİHİ & İLK UÇUŞ</span></div>
+    </div>
+    <div class="header-tools">
+      <button class="tool-btn" id="btn-sound" onclick="toggleSound()" title="Sesi Aç/Kapat">🔊</button>
+      <button class="tool-btn" id="btn-notes" onclick="toggleNotes()" title="Öğretmen Notları (N)">📋</button>
+      <button class="tool-btn" id="btn-overview" onclick="toggleOverview()" title="Tüm Slaytlar (O)">📑</button>
+      <button class="tool-btn" onclick="toggleFullscreen()" title="Tam Ekran (F)">⛶</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="slide-viewport">
+
+      <!-- SLIDE 1: Hoş Geldiniz & Kaptan Tanıtımı -->
+      <section class="slide active" data-slide="1">
+        <div class="slide-badge">🌟 GÖKYÜZÜ MÜHENDİSLİĞİ ATÖLYESİ</div>
+        <h1 class="slide-title">Gökyüzü Mühendisliği Kulübüne Hoş Geldiniz! 🚀</h1>
+        <p class="slide-subtitle">Yıl boyu sürecek harika bir havacılık ve mühendislik macerası bugün başlıyor!</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; background: linear-gradient(135deg, rgba(30,41,65,0.92), rgba(15,23,42,0.96)); border-color: var(--primary);">
+              <div style="display: flex; align-items: center; gap: 18px;">
+                <div style="font-size: 54px; background: rgba(255,255,255,0.1); width: 88px; height: 88px; border-radius: 22px; display: flex; align-items: center; justify-content: center;">👨‍✈️</div>
+                <div>
+                  <h3 style="font-size: 26px; color: var(--sunny-yellow); margin-bottom: 4px; font-weight: 800;">Ben Kaptan Öğretmeniniz!</h3>
+                  <p style="font-size: 17px; color: #cbd5e1;">Bu sene gökyüzünü hep beraber keşfedeceğiz.</p>
+                </div>
+              </div>
+              <p style="font-size: 17px; line-height: 1.6; color: #e2e8f0;">
+                Bu sınıfta sadece ders dinlemeyeceğiz; gerçek bir <strong>havacılık hangarı</strong> kuracağız! Uçakların nasıl uçtuğunu keşfedecek, 3D yazıcılarla kendi uçağımızı inşa edecek ve FPV yarış droneları uçuracağız!
+              </p>
+              <div style="display: flex; gap: 12px; margin-top: 6px;">
+                <span style="background: rgba(56,189,248,0.2); border: 1.5px solid var(--primary); padding: 6px 16px; border-radius: 20px; font-size: 15px; font-weight: 700;">🛠️ Tasarımcı</span>
+                <span style="background: rgba(251,191,36,0.2); border: 1.5px solid var(--sunny-yellow); padding: 6px 16px; border-radius: 20px; font-size: 15px; font-weight: 700;">🎮 Drone Pilotu</span>
+                <span style="background: rgba(52,211,153,0.2); border: 1.5px solid var(--emerald-green); padding: 6px 16px; border-radius: 20px; font-size: 15px; font-weight: 700;">🛩️ 3D Mucit</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 22px; color: #fff; margin-bottom: 8px; font-weight: 800;">🌟 Bugünkü Uçuş Planımız (80 Dakika)</h3>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 12px; font-size: 15.5px;">
+                  <span style="background: var(--candy-red); color: #fff; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;">1</span>
+                  <span><strong>Tanışma Çemberi:</strong> Sırayla mikrofon sende!</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 12px; font-size: 15.5px;">
+                  <span style="background: var(--sunny-yellow); color: #000; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;">2</span>
+                  <span><strong>Dönem Tanıtımı:</strong> Drone & 3D Uçak</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 12px; font-size: 15.5px;">
+                  <span style="background: var(--emerald-green); color: #000; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;">3</span>
+                  <span><strong>Sözleşme & İmza Duvarı:</strong> Akıllı tahtaya el basma ✋</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 12px; font-size: 15.5px;">
+                  <span style="background: var(--primary); color: #000; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;">4</span>
+                  <span><strong>Havacılık Tarihi (Adım Adım):</strong> Görsellerle Keşif & Oyun 🧩</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 12px; font-size: 15.5px;">
+                  <span style="background: var(--cute-purple); color: #fff; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;">5</span>
+                  <span><strong>Kimlik, Video & Kağıt Uçak Testi:</strong> Pistte ilk fırlatma! 🎯</span>
+                </div>
+              </div>
+              <div style="text-align: center; margin-top: 6px;">
+                <button class="nav-btn primary" style="width: 100%; justify-content: center; font-size: 17px;" onclick="nextSlide()">Kemerleri Bağlayın! Başlıyoruz ➔</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: Sırayla Mikrofon Sende! (Pozitif & Sıcak Sorular) -->
+      <section class="slide" data-slide="2">
+        <div class="slide-badge">🎙️ TANIŞMA ZAMANI</div>
+        <h1 class="slide-title">Sırayla Mikrofon Sende: Geleceğin Pilotları! 🎤</h1>
+        <p class="slide-subtitle">Sıran geldiğinde adını söyle ve bize en sevdiğin rengi fısılda!</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 18px;">
+              <h3 style="font-size: 22px; color: var(--sunny-yellow); font-weight: 800;">💬 Sıran Geldiğinde Bize Şunları Söyle:</h3>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="background: rgba(255,255,255,0.06); border-left: 5px solid var(--primary); padding: 12px 18px; border-radius: 0 14px 14px 0;">
+                  <strong style="font-size: 19px; color: #fff;">1. Adın ve Soyadın ne?</strong>
+                  <p style="font-size: 16px; color: #cbd5e1; margin-top: 2px;">Sana hangi isimle seslenmemizi istersin?</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); border-left: 5px solid var(--sunny-yellow); padding: 12px 18px; border-radius: 0 14px 14px 0;">
+                  <strong style="font-size: 19px; color: #fff;">2. En sevdiğin renk hangisi?</strong>
+                  <p style="font-size: 16px; color: #cbd5e1; margin-top: 2px;">2. dönem üreteceğimiz uçağı senin sevdiğin bu renge boyayabiliriz!</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); border-left: 5px solid var(--emerald-green); padding: 12px 18px; border-radius: 0 14px 14px 0;">
+                  <strong style="font-size: 19px; color: #fff;">3. Uçan bir kuş olsaydın hangi sevimli kuş olurdun?</strong>
+                  <p style="font-size: 16px; color: #cbd5e1; margin-top: 2px;">Rengarenk bir papağan mı, hızlı bir kırlangıç mı, yoksa akıllı bir baykuş mu?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="speaker-box">
+              <div style="font-size: 20px; font-weight: 800; color: var(--sunny-yellow);">🎲 ŞANS ÇARKI / SIRADAKİ EĞLENCELİ SORU</div>
+              <button class="mic-btn" id="mic-trigger-btn" onclick="spinPilotTask()" title="Tıkla ve Yeni Soruyu Aç!">🎙️</button>
+              <div id="random-task-display" style="min-height: 70px; font-size: 18px; color: #fff; font-weight: 700; padding: 14px 20px; background: rgba(0,0,0,0.4); border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.25); width: 100%; display: flex; align-items: center; justify-content: center;">
+                Mikrofona dokun ve neşeli bir tanışma sorusu aç! 🎯
+              </div>
+              <p style="font-size: 15px; color: var(--text-muted); line-height: 1.4;">
+                Öğretmen ipucu: Tahtadaki butona her basıldığında öğrenciye neşeli, kolay ve pozitif bir soru çıkar!
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: Bu Dönem Neler Yapacağız? -->
+      <section class="slide" data-slide="3">
+        <div class="slide-badge">🚀 YILLIK PLAN VE HEDEFLERİMİZ</div>
+        <h1 class="slide-title">Bu Dönem Hangarda Neler Üreteceğiz? 🛠️</h1>
+        <p class="slide-subtitle">1. Dönem FPV drone pilotluğu, 2. Dönem 3D yazıcı ile gerçek uçak montajı!</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; border-color: var(--primary);">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="background: #0284c7; color: #fff; font-size: 14px; font-weight: 800; padding: 4px 14px; border-radius: 20px;">1. DÖNEM (1-18. HAFTALAR)</span>
+                <span style="color: var(--primary-light); font-size: 24px;">🛸</span>
+              </div>
+              <h3 style="font-size: 24px; color: var(--primary); margin: 4px 0; font-weight: 800;">Meteor75 Pro II Drone Kulübü</h3>
+              
+              <div style="height: 230px; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <img src="images/drone.jpg" 
+                     alt="Meteor75 Pro II Drone" 
+                     style="max-height: 100%; max-width: 100%; object-fit: contain;">
+              </div>
+
+              <ul style="font-size: 16px; color: #cbd5e1; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                <li>✓ Drone anatomisi, 4 motor ve pervane fiziği</li>
+                <li>✓ Bilgisayar simülatöründe kaza yapmadan uçuş eğitimi</li>
+                <li>✓ FPV Gözlük ve Kumanda ile gerçek salon uçuşları</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; border-color: #34d399;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="background: #059669; color: #fff; font-size: 14px; font-weight: 800; padding: 4px 14px; border-radius: 20px;">2. DÖNEM (19-32. HAFTALAR)</span>
+                <span style="color: var(--sunny-yellow); font-size: 24px;">🛩️</span>
+              </div>
+              <h3 style="font-size: 24px; color: #34d399; margin: 4px 0; font-weight: 800;">Craycle Stick 3D Yazıcı Uçağımız</h3>
+              
+              <div style="height: 230px; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <img src="images/3d_ucak.webp" 
+                     alt="Craycle Stick Uçak" 
+                     style="max-height: 100%; max-width: 100%; object-fit: contain;">
+              </div>
+
+              <ul style="font-size: 16px; color: #cbd5e1; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                <li>✓ 3D yazıcı teknolojisi ve plastik parçaların montajı</li>
+                <li>✓ Motor, servo kollar ve uzaktan kumanda bağlantısı</li>
+                <li>🏆 <strong>Büyük Final:</strong> 32. Haftada Uçuş Pikniği & Şenliği!</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: Sınıf Sözleşmesi (5 Yeni Kural + Sağda Sınıf Ortak İmza Duvarı) -->
+      <section class="slide" data-slide="4">
+        <div class="slide-badge">🤝 OYUNLAŞTIRILMIŞ SINIF SÖZLEŞMESİ</div>
+        <h1 class="slide-title">Gökyüzü Mühendisleri Sözleşmesi: 5 Altın Kural 📜</h1>
+        <p class="slide-subtitle">Kuralları inceleyin; sırayla akıllı tahtaya gelip sağdaki panoya dokunarak el izinizi basın!</p>
+        
+        <div class="slide-content">
+          <!-- Sol Taraf: 5 Yeni Kural -->
+          <div class="col-half" style="flex: 0.95; display: flex; flex-direction: column; gap: 8px;">
+            <div class="rule-item">
+              <div class="rule-icon">✋</div>
+              <div class="rule-text">
+                <h4>1. Parmak Kaldırarak Söz Hakkı Alırız</h4>
+                <p>Kaptan telsizi açmadan konuşmaz! Parmak kaldırır, sıramızı bekler ve birbirimizi saygıyla dinleriz.</p>
+              </div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-icon">🛑</div>
+              <div class="rule-text">
+                <h4>2. İzin Almadan Malzemelere Dokunmayız</h4>
+                <p>Hangardaki dronelar ve parçalar hassastır! Öğretmenimiz 'Başlayın' demeden malzemelere dokunmayız.</p>
+              </div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-icon">🧃🚫</div>
+              <div class="rule-text">
+                <h4>3. Ders Esnasında Yiyecek ve İçecek Tüketmeyiz</h4>
+                <p>Elektroniklerin ve masalarımızın temizliği için ders boyunca bir şey yiyip içmeyiz (sadece kapaklı su).</p>
+              </div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-icon">🎧</div>
+              <div class="rule-text">
+                <h4>4. Kaptanı Dinler, Kendi Aramızda Konuşmayız</h4>
+                <p>Uçuş talimatları çok önemlidir! Ders anlatılırken dikkatimizi verir, fısıldaşmadan can kulağıyla dinleriz.</p>
+              </div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-icon">🚪</div>
+              <div class="rule-text">
+                <h4>5. Zil Çaldığında İzin Almadan Çıkmayız</h4>
+                <p>Uçak piste tam yanaşmadan kemerler açılmaz! Öğretmenimiz izin vermeden sınıftan ayrılmayız.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sağ Taraf: Tüm Sınıf Ortak İmza Panosu -->
+          <div class="col-half" style="flex: 1.05; display: flex; flex-direction: column;">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; padding: 14px; position: relative;">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(255,255,255,0.15); padding-bottom: 8px; margin-bottom: 8px;">
+                <div>
+                  <h3 style="font-size: 21px; color: var(--sunny-yellow); font-weight: 800;">✋ SINIF İMZA DUVARI</h3>
+                  <p style="font-size: 15px; color: #cbd5e1;">Sırayla tahtaya gelin ve boş alana dokunarak el izinizi basın!</p>
+                </div>
+                <div style="background: rgba(56,189,248,0.2); border: 1.5px solid var(--primary); padding: 6px 16px; border-radius: 20px; font-size: 15px; font-weight: 800; color: #fff;">
+                  İmzalayan: <span id="board-stamp-count" style="color: var(--sunny-yellow); font-size: 20px; font-weight: 800;">0</span> Pilot
+                </div>
+              </div>
+              
+              <!-- Interactive Handprint Stamping Canvas -->
+              <div id="handprint-stamp-canvas" onclick="handleBoardStamp(event)" style="flex: 1; border: 3px dashed rgba(251,191,36,0.55); border-radius: 16px; background: radial-gradient(circle at center, rgba(30, 41, 65, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%); position: relative; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <div id="canvas-placeholder" style="text-align: center; pointer-events: none; color: rgba(255,255,255,0.5);">
+                  <div style="font-size: 56px; margin-bottom: 6px;">✋</div>
+                  <div style="font-size: 22px; font-weight: 800; color: #fff;">Elini Basmak İçin Dokun!</div>
+                  <div style="font-size: 15px; color: #cbd5e1; margin-top: 4px;">Tüm öğrenciler sırayla bu panoya dokunarak kendi el izini bırakır</div>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <button class="nav-btn" style="padding: 6px 16px; font-size: 14px;" onclick="undoLastStamp()">↺ Son İmzayı Geri Al</button>
+                <button class="nav-btn primary" style="padding: 8px 20px; font-size: 15px;" onclick="triggerCelebration()">🎉 Sınıf Sözleşmesini Tamamla ➔</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Celebration Banner Overlay -->
+          <div id="celebration-banner">
+            <div style="font-size: 68px;">🎉👏✈️</div>
+            <h2 style="font-size: 32px; color: var(--sunny-yellow); text-shadow: 0 4px 12px rgba(0,0,0,0.6); font-weight: 800;">
+              TEBRİKLER! SINIF SÖZLEŞMEMİZ TAMAMLANDI!
+            </h2>
+            <p style="font-size: 18px; color: #e2e8f0; max-width: 720px; line-height: 1.6;">
+              Tüm pilotlarımız el izlerini panoya mühürledi! Artık hepimiz resmi bir havacılık ekibiyiz. Şimdi havacılığın efsanevi tarihini keşfedelim!
+            </p>
+            <button class="nav-btn primary" style="font-size: 17px; padding: 14px 32px;" onclick="nextSlide()">
+              Havacılık Tarihini Keşfet ➔
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SLIDE 5: HAVACILIK VE TAYYARENİN TARİHSEL GELİŞİMİ (TEKER TEKER SIRAYLA KEŞİF) -->
+      <section class="slide" data-slide="5">
+        <div class="slide-badge">📜 MÜFREDAT KAZANIMI</div>
+        <h1 class="slide-title">İnsanlığın Büyük Rüyası: Havacılığın Tarihi 🦅➔✈️</h1>
+        <p class="slide-subtitle">Dikkatin dağılmasın diye adımları teker teker keşfedelim! Kuşlardan Hezarfen'e, Wright Kardeşler'den günümüze!</p>
+        
+        <div class="slide-content" style="flex-direction: column;">
+          
+          <!-- Top Stepper Navigation -->
+          <div class="history-stepper-nav">
+            <div class="h-step-tabs">
+              <button class="h-step-btn active" id="h-tab-1" onclick="setHistoryStep(1)">
+                <span class="h-step-num">1</span>
+                <span>1632 • Hezarfen 🦅</span>
+              </button>
+              <div class="h-step-connector"></div>
+              <button class="h-step-btn" id="h-tab-2" onclick="setHistoryStep(2)">
+                <span class="h-step-num">2</span>
+                <span>1783 • Hava Balonu 🎈</span>
+              </button>
+              <div class="h-step-connector"></div>
+              <button class="h-step-btn" id="h-tab-3" onclick="setHistoryStep(3)">
+                <span class="h-step-num">3</span>
+                <span>1903 • Wright Kardeşler 🛩️</span>
+              </button>
+              <div class="h-step-connector"></div>
+              <button class="h-step-btn" id="h-tab-4" onclick="setHistoryStep(4)">
+                <span class="h-step-num">4</span>
+                <span>1924 • Vecihi Hürkuş & 3D 🇹🇷</span>
+              </button>
+            </div>
+            <button class="view-toggle-btn" id="btn-toggle-hview" onclick="toggleHistoryOverview()">
+              👁️ Tümünü Yan Yana Gör
+            </button>
+          </div>
+
+          <!-- Stepper Viewport: Single Era at a time -->
+          <div class="history-stepper-viewport" id="history-single-viewport">
+            
+            <!-- STEP 1: Hezarfen Ahmet Çelebi -->
+            <div class="history-step-panel active" id="h-panel-1">
+              <div class="history-step-media">
+                <img src="images/hezarfen.jpg" alt="Hezarfen Ahmet Çelebi" class="history-step-img">
+                <div class="history-step-caption">🦅 Galata Kulesi'nden Boğaz'ı Aşarak Üsküdar'a Süzülüş</div>
+              </div>
+              <div class="history-step-info">
+                <div>
+                  <div class="history-step-header">
+                    <span class="h-era-badge" style="background: rgba(56,189,248,0.25); color: #38bdf8; border: 1.5px solid #38bdf8;">
+                      ADIM 1 / 4 • 1632 İSTANBUL
+                    </span>
+                    <span style="font-size: 26px;">🦅</span>
+                  </div>
+                  <h2>Hezarfen Ahmet Çelebi</h2>
+                  <ul class="history-step-points">
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>Kuşların kanat yapısını, kemik hafifliğini ve rüzgar akımlarını yıllarca inceledi.</span>
+                    </li>
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>Kendi tasarladığı yapay kartal kanatlarıyla <strong>Galata Kulesi'nin</strong> tepesinden kendini rüzgara bıraktı.</span>
+                    </li>
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>İstanbul Boğazı'nı havada süzülerek aştı ve tam 3358 metre uçup <strong>Üsküdar Doğancılar Meydanı'na</strong> indi!</span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="fun-fact-box">
+                  💡 <strong>Biliyor musun?</strong> "Hezarfen" ismi "bin ilim / fen bilen" anlamına gelir. Tarihte yapay kanatlarla en uzun süzülen ilk insandır!
+                </div>
+                <div class="history-step-footer">
+                  <span style="font-size: 15px; color: var(--sunny-yellow); font-weight: 800;">★ Tarihte İlk Kanatlı İnsan Süzülüşü</span>
+                  <button class="nav-btn primary" style="font-size: 14.5px; padding: 8px 18px;" onclick="setHistoryStep(2)">
+                    Sıradaki Adım: Hava Balonu (2/4) ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 2: Sıcak Hava Balonu -->
+            <div class="history-step-panel" id="h-panel-2">
+              <div class="history-step-media">
+                <img src="images/balon.jpg" alt="Sıcak Hava Balonu" class="history-step-img">
+                <div class="history-step-caption">🎈 Montgolfier Kardeşler ve Gökyüzüne İlk İnsanlı Yükseliş</div>
+              </div>
+              <div class="history-step-info">
+                <div>
+                  <div class="history-step-header">
+                    <span class="h-era-badge" style="background: rgba(251,113,133,0.25); color: #fb7185; border: 1.5px solid #fb7185;">
+                      ADIM 2 / 4 • 1783 FRANSA
+                    </span>
+                    <span style="font-size: 26px;">🎈</span>
+                  </div>
+                  <h2>Sıcak Hava Balonu (Montgolfier)</h2>
+                  <ul class="history-step-points">
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>Ateşin dumanını izlerken ısınan havanın yukarı doğru yükselme kuvveti olduğunu fark ettiler.</span>
+                    </li>
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>Kumaş ve kağıttan devasa bir balon diktiler; altına sepet bağlayıp havayı ısıttılar.</span>
+                    </li>
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>İnsanlık tarihinde ilk kez yerçekimini yenerek bulutlara doğru <strong>havadan hafif araçla</strong> yükseldiler!</span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="fun-fact-box">
+                  💡 <strong>Biliyor musun?</strong> İnsanlar binmeden önce güvenliği test etmek için ilk balona bir koyun, bir ördek ve bir horoz bindirilmişti!
+                </div>
+                <div class="history-step-footer">
+                  <button class="nav-btn" style="font-size: 14.5px; padding: 8px 18px;" onclick="setHistoryStep(1)">
+                    ◀ Önceki Adım (Hezarfen)
+                  </button>
+                  <button class="nav-btn primary" style="font-size: 14.5px; padding: 8px 18px;" onclick="setHistoryStep(3)">
+                    Sıradaki Adım: Wright Kardeşler (3/4) ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 3: Wright Kardeşler -->
+            <div class="history-step-panel" id="h-panel-3">
+              <div class="history-step-media">
+                <img src="images/wright_ucak.jpg" alt="Wright Kardeşler Flyer" class="history-step-img">
+                <div class="history-step-caption">🛩️ İlk Motorlu ve Kontrollü Uçak: Flyer (1903)</div>
+              </div>
+              <div class="history-step-info">
+                <div>
+                  <div class="history-step-header">
+                    <span class="h-era-badge" style="background: rgba(251,191,36,0.25); color: #fbbf24; border: 1.5px solid #fbbf24;">
+                      ADIM 3 / 4 • 1903 ABD
+                    </span>
+                    <span style="font-size: 26px;">🛩️</span>
+                  </div>
+                  <h2>Wright Kardeşler (Orville & Wilbur)</h2>
+                  <ul class="history-step-points">
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>Aslında bisiklet tamircisi olan iki kardeş, rüzgar tüneli kurarak kanat kıvrımlarını bilimsel olarak hesapladı.</span>
+                    </li>
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>Kendi elleriyle 12 beygirlik benzin motoru ve çift pervane üreterek <strong>"Flyer"</strong> uçağını inşa ettiler.</span>
+                    </li>
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>17 Aralık 1903'te tarihin ilk <strong>motorlu, kanatlı ve pilotun kumanda ettiği</strong> uçuşunu gerçekleştirdiler!</span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="fun-fact-box">
+                  💡 <strong>Biliyor musun?</strong> Bu ilk uçuş sadece 12 saniye sürmüştü ama günümüzün binlerce kilometrelik yolcu jetlerinin temeli oldu!
+                </div>
+                <div class="history-step-footer">
+                  <button class="nav-btn" style="font-size: 14.5px; padding: 8px 18px;" onclick="setHistoryStep(2)">
+                    ◀ Önceki Adım (Balon)
+                  </button>
+                  <button class="nav-btn primary" style="font-size: 14.5px; padding: 8px 18px;" onclick="setHistoryStep(4)">
+                    Sıradaki Adım: Vecihi Hürkuş (4/4) ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 4: Vecihi Hürkuş & Gelecek -->
+            <div class="history-step-panel" id="h-panel-4">
+              <div class="history-step-media">
+                <img src="images/hurkus.jpg" alt="Vecihi Hürkuş ve Uçağı" class="history-step-img">
+                <div class="history-step-caption">🇹🇷 İlk Yerli Türk Uçağı: Vecihi K-VI (1924) & Geleceğin 3D Uçakları</div>
+              </div>
+              <div class="history-step-info">
+                <div>
+                  <div class="history-step-header">
+                    <span class="h-era-badge" style="background: rgba(52,211,153,0.25); color: #34d399; border: 1.5px solid #34d399;">
+                      ADIM 4 / 4 • 1924 & GÜNÜMÜZ
+                    </span>
+                    <span style="font-size: 26px;">🇹🇷</span>
+                  </div>
+                  <h2>Vecihi Hürkuş & 3D Uçaklar</h2>
+                  <ul class="history-step-points">
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>Kurtuluş Savaşı kahramanı Vecihi Hürkuş, ilk yerli Türk sivil uçağı <strong>Vecihi K-VI</strong>'yı kendi elleriyle çizdi ve üretti!</span>
+                    </li>
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>Yokluk döneminde uçak motorları topladı, gövdeyi ahşap ve kumaştan inşa etti ve bizzat kendisi uçurdu.</span>
+                    </li>
+                    <li>
+                      <span class="bullet">✓</span>
+                      <span>Bugün ise bizler <strong>3D yazıcılarla kendi uçağımızı inşa ediyor</strong> ve FPV yarış dronelarıyla gökleri fethediyoruz!</span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="fun-fact-box">
+                  💡 <strong>Bizim Görevimiz:</strong> 2. Dönem atölyemizde Vecihi Hürkuş'un izinden giderek 3D parçalarla kendi Craycle Stick uçağımızı monte edeceğiz!
+                </div>
+                <div class="history-step-footer">
+                  <button class="nav-btn" style="font-size: 14.5px; padding: 8px 18px;" onclick="setHistoryStep(3)">
+                    ◀ Önceki Adım (Wright)
+                  </button>
+                  <button class="nav-btn primary" style="font-size: 15px; padding: 8px 22px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000;" onclick="nextSlide()">
+                    🎮 Tarih Eşleştirme Oyununa Başla ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Overview Grid (Shown only when toggled) -->
+          <div class="history-grid-container" id="history-grid-overview">
+            
+            <div class="h-mini-card" onclick="openStepFromGrid(1)">
+              <img src="images/hezarfen.jpg" alt="Hezarfen" class="h-mini-img">
+              <span class="h-era-badge" style="background: rgba(56,189,248,0.25); color: #38bdf8;">1632 • İSTANBUL</span>
+              <h3 style="font-size: 17px; color: #fff; font-weight: 800; margin: 4px 0;">Hezarfen Ahmet Çelebi</h3>
+              <p style="font-size: 13px; color: #cbd5e1; line-height: 1.4;">Galata Kulesi'nden Boğaz'ı aşarak Üsküdar'a süzülen ilk insan.</p>
+              <div style="font-size: 12px; color: var(--sunny-yellow); font-weight: 700; margin-top: 6px;">★ İlk Kanatlı Süzülüş ➔</div>
+            </div>
+
+            <div class="h-mini-card" onclick="openStepFromGrid(2)">
+              <img src="images/balon.jpg" alt="Balon" class="h-mini-img">
+              <span class="h-era-badge" style="background: rgba(251,113,133,0.25); color: #fb7185;">1783 • FRANSA</span>
+              <h3 style="font-size: 17px; color: #fff; font-weight: 800; margin: 4px 0;">Sıcak Hava Balonu</h3>
+              <p style="font-size: 13px; color: #cbd5e1; line-height: 1.4;">Isınan havanın kaldırma gücüyle gökyüzüne ilk insanlı yükseliş.</p>
+              <div style="font-size: 12px; color: var(--sunny-yellow); font-weight: 700; margin-top: 6px;">★ İlk İnsanlı Uçuş ➔</div>
+            </div>
+
+            <div class="h-mini-card" onclick="openStepFromGrid(3)">
+              <img src="images/wright_ucak.jpg" alt="Wright Uçak" class="h-mini-img">
+              <span class="h-era-badge" style="background: rgba(251,191,36,0.25); color: #fbbf24;">1903 • ABD</span>
+              <h3 style="font-size: 17px; color: #fff; font-weight: 800; margin: 4px 0;">Wright Kardeşler</h3>
+              <p style="font-size: 13px; color: #cbd5e1; line-height: 1.4;">Benzin motoru ve pervaneyle ilk kontrollü motorlu uçak: Flyer.</p>
+              <div style="font-size: 12px; color: var(--sunny-yellow); font-weight: 700; margin-top: 6px;">★ İlk Motorlu Tayyare ➔</div>
+            </div>
+
+            <div class="h-mini-card" onclick="openStepFromGrid(4)">
+              <img src="images/hurkus.jpg" alt="Vecihi Hürkuş" class="h-mini-img">
+              <span class="h-era-badge" style="background: rgba(52,211,153,0.25); color: #34d399;">1924 & GÜNÜMÜZ</span>
+              <h3 style="font-size: 17px; color: #fff; font-weight: 800; margin: 4px 0;">Vecihi Hürkuş & 3D</h3>
+              <p style="font-size: 13px; color: #cbd5e1; line-height: 1.4;">İlk yerli Türk uçağı Vecihi K-VI'dan günümüzün 3D uçaklarına.</p>
+              <div style="font-size: 12px; color: var(--sunny-yellow); font-weight: 700; margin-top: 6px;">★ Türk Havacılık Öncüsü ➔</div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SLIDE 6: HAVACILIK TARİHİ SÜRÜKLE-BIRAK OYUNU (KARIŞTIRILMIŞ SIRALAMA) -->
+      <section class="slide" data-slide="6">
+        <div class="slide-badge">🧩 AKILLI TAHTA OYUNU</div>
+        <h1 class="slide-title">Havacılık Tarihini Eşleştir! (Sürükle-Bırak) 🎮</h1>
+        <p class="slide-subtitle">Sol taraftaki kartları tutup sağdaki doğru kutulara sürükleyin veya önce karta sonra kutuya dokunun! (Cevaplar tam karşıda değil, dikkatli oku!)</p>
+        
+        <div class="slide-content">
+          <div class="drag-game-container">
+            
+            <!-- Sol: Sürüklenebilir Kartlar (Küçük Resimli) -->
+            <div class="drag-items-col">
+              <div style="font-size: 16.5px; font-weight: 800; color: var(--sunny-yellow); margin-bottom: 2px;">
+                👇 Havacılık Kartları (Dokun veya Sürükle)
+              </div>
+
+              <!-- Kart 1: Hezarfen -->
+              <div class="draggable-card" id="card-hezarfen" draggable="true" data-id="hezarfen" onclick="selectCardForMatch('hezarfen')">
+                <img src="images/hezarfen.jpg" alt="Hezarfen" class="card-thumb">
+                <div>
+                  <div style="font-size: 16.5px; font-weight: 800; color: #fff;">Hezarfen Ahmet Çelebi</div>
+                  <div style="font-size: 13px; color: var(--primary-light);">1632 • İstanbul (Boğaz Uçuşu)</div>
+                </div>
+              </div>
+
+              <!-- Kart 2: Balon -->
+              <div class="draggable-card" id="card-balon" draggable="true" data-id="balon" onclick="selectCardForMatch('balon')">
+                <img src="images/balon.jpg" alt="Balon" class="card-thumb">
+                <div>
+                  <div style="font-size: 16.5px; font-weight: 800; color: #fff;">Sıcak Hava Balonu</div>
+                  <div style="font-size: 13px; color: var(--candy-red);">1783 • Montgolfier Kardeşler</div>
+                </div>
+              </div>
+
+              <!-- Kart 3: Wright -->
+              <div class="draggable-card" id="card-wright" draggable="true" data-id="wright" onclick="selectCardForMatch('wright')">
+                <img src="images/wright_ucak.jpg" alt="Wright" class="card-thumb">
+                <div>
+                  <div style="font-size: 16.5px; font-weight: 800; color: #fff;">Wright Kardeşler</div>
+                  <div style="font-size: 13px; color: var(--sunny-yellow);">1903 • Flyer İlk Motorlu Uçak</div>
+                </div>
+              </div>
+
+              <!-- Kart 4: Vecihi -->
+              <div class="draggable-card" id="card-vecihi" draggable="true" data-id="vecihi" onclick="selectCardForMatch('vecihi')">
+                <img src="images/hurkus.jpg" alt="Vecihi Hürkuş" class="card-thumb">
+                <div>
+                  <div style="font-size: 16.5px; font-weight: 800; color: #fff;">Vecihi Hürkuş</div>
+                  <div style="font-size: 13px; color: var(--emerald-green);">1924 • İlk Yerli Türk Uçağı</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sağ: Hedef Bırakma Kutuları (TAMAMEN KARIŞIK SIRALANMIŞ!) -->
+            <div class="drop-targets-col">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <span style="font-size: 16.5px; font-weight: 800; color: var(--emerald-green);">🎯 Tarih Şeridi Hedefleri</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <button onclick="shuffleAndResetGame()" class="nav-btn" style="padding: 4px 12px; font-size: 12.5px; border-radius: 8px;">🎲 Sıraları Karıştır</button>
+                  <span id="game-score-badge" style="background: rgba(52,211,153,0.2); border: 1px solid var(--emerald-green); padding: 3px 12px; border-radius: 14px; font-size: 13px; font-weight: 800; color: #fff;">
+                    Skor: <span id="game-matched-count">0</span> / 4 Eşleşti
+                  </span>
+                </div>
+              </div>
+
+              <div id="drop-targets-container" style="display: flex; flex-direction: column; gap: 10px; height: 100%; justify-content: space-between;">
+                
+                <!-- HEDEF 1: WRIGHT KARDEŞLER (Kart 1 Hezarfen'in tam karşısında Wright var!) -->
+                <div class="drop-target-box" id="target-wright" data-target="wright" onclick="dropCardToTarget('wright')">
+                  <div class="drop-target-text">
+                    <strong>1903: İlk Motorlu ve Kontrollü Uçak</strong>
+                    <p>Pervaneli ve benzin motorlu Flyer uçağıyla havacılık çağını başlatan kardeşler.</p>
+                  </div>
+                  <div class="match-slot-badge" id="badge-wright">Buraya Bırak ➔</div>
+                </div>
+
+                <!-- HEDEF 2: HEZARFEN (Kart 2 Balon'un karşısında Hezarfen var!) -->
+                <div class="drop-target-box" id="target-hezarfen" data-target="hezarfen" onclick="dropCardToTarget('hezarfen')">
+                  <div class="drop-target-text">
+                    <strong>1632: Galata Kulesi'nden Süzülüş</strong>
+                    <p>Kendi tasarladığı kanatlarla Boğaz'ı aşarak Üsküdar'a uçan Osmanlı bilgini.</p>
+                  </div>
+                  <div class="match-slot-badge" id="badge-hezarfen">Buraya Bırak ➔</div>
+                </div>
+
+                <!-- HEDEF 3: VECİHİ HÜRKUŞ (Kart 3 Wright'ın karşısında Vecihi var!) -->
+                <div class="drop-target-box" id="target-vecihi" data-target="vecihi" onclick="dropCardToTarget('vecihi')">
+                  <div class="drop-target-text">
+                    <strong>1924: İlk Yerli Türk Uçağı (Vecihi K-VI)</strong>
+                    <p>Kendi elleriyle ilk Türk sivil uçağını tasarlayıp üreten ve uçuran efsane pilot.</p>
+                  </div>
+                  <div class="match-slot-badge" id="badge-vecihi">Buraya Bırak ➔</div>
+                </div>
+
+                <!-- HEDEF 4: SICAK HAVA BALONU (Kart 4 Vecihi'nin karşısında Balon var!) -->
+                <div class="drop-target-box" id="target-balon" data-target="balon" onclick="dropCardToTarget('balon')">
+                  <div class="drop-target-text">
+                    <strong>1783: Gökyüzüne İlk İnsanlı Yükseliş</strong>
+                    <p>Isınan havanın kaldırma gücünü kullanarak insanları göğe taşıyan dev hava aracı.</p>
+                  </div>
+                  <div class="match-slot-badge" id="badge-balon">Buraya Bırak ➔</div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Game Celebration Popup -->
+          <div id="game-celebration" style="position: absolute; inset: 0; background: rgba(12, 19, 34, 0.96); border-radius: var(--radius-lg); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px;">
+            <div style="font-size: 64px;">🏆🎉✈️</div>
+            <h2 style="font-size: 32px; color: var(--sunny-yellow); font-weight: 800;">HARİKA! TARİH ŞERİDİ TAMAMLANDI!</h2>
+            <p style="font-size: 18px; color: #e2e8f0; max-width: 650px; line-height: 1.5;">
+              Tebrikler Gökyüzü Mühendisi! Havacılığın tüm dönüm noktalarını doğru eşleştirdin. Şimdi resmi kimlik kartlarımızı hazırlama zamanı!
+            </p>
+            <div style="display: flex; gap: 14px;">
+              <button class="nav-btn" onclick="shuffleAndResetGame()">↺ Yeniden Karıştır & Oyna</button>
+              <button class="nav-btn primary" onclick="nextSlide()">Kimlik Kartlarına Geç ➔</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SLIDE 7: Kimlik Kartı & Uçak Boyama A4 -->
+      <section class="slide" data-slide="7">
+        <div class="slide-badge">🎫 RESMİ MÜHENDİSLİK KİMLİĞİ</div>
+        <h1 class="slide-title">Gökyüzü Mühendisi Kimlik Kartı & Hayalimdeki Uçak 🎨</h1>
+        <p class="slide-subtitle">Öğretmeninizden aldığınız A4 kağıdını doldurarak ilk mühendislik belgenizi oluşturun!</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 22px; color: var(--sunny-yellow); margin-bottom: 6px; font-weight: 800;">📋 A4 Sayfasında Neler Yapacağız?</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: 14px; font-size: 16px;">
+                <div style="background: rgba(255,255,255,0.06); padding: 14px 18px; border-radius: 12px; border-left: 5px solid var(--primary);">
+                  <strong style="color: #fff; font-size: 18px;">1. Üst Kısım: Mühendis Kimlik Kartı</strong>
+                  <p style="color: #cbd5e1; margin-top: 4px; line-height: 1.45;">
+                    Adını, Soyadını, Okulunu ve Uzmanlık Alanını yaz. Boş kutucuğa kendi havalı pilot portreni çiz!
+                  </p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 14px 18px; border-radius: 12px; border-left: 5px solid var(--emerald-green);">
+                  <strong style="color: #fff; font-size: 18px;">2. Alt Kısım: Craycle Stick 3D Uçak Boyama</strong>
+                  <p style="color: #cbd5e1; margin-top: 4px; line-height: 1.45;">
+                    2. dönem gerçekten üreteceğimiz uçağın çizimi burada! Uçağını hayalindeki renklere boya ve uçağına harika bir isim ver.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Focus Timer Widget -->
+              <div style="background: rgba(15,23,42,0.8); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Çizim & Boyama Süresi</div>
+                  <div id="countdown-timer" style="font-size: 30px; font-weight: 800; color: var(--sunny-yellow); font-family: monospace;">10:00</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                  <button class="nav-btn" style="padding: 8px 16px; font-size: 14px;" onclick="startTimer()">▶ Başlat</button>
+                  <button class="nav-btn" style="padding: 8px 16px; font-size: 14px;" onclick="pauseTimer()">⏸ Duraklat</button>
+                  <button class="nav-btn" style="padding: 8px 16px; font-size: 14px;" onclick="resetTimer()">↺ Sıfırla</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; background: rgba(15,23,42,0.92);">
+              <div style="font-size: 18px; font-weight: 800; color: var(--text-muted);">📄 A4 ÇALIŞMA SAYFASI ÖNİZLEMESİ</div>
+              <div style="width: 280px; height: 340px; background: #fff; border-radius: 10px; border: 4px solid var(--primary); padding: 10px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transform: rotate(-2deg); transition: transform 0.3s;" onmouseenter="this.style.transform='rotate(0deg) scale(1.04)'" onmouseleave="this.style.transform='rotate(-2deg) scale(1)'">
+                <div style="border: 2px solid #0284c7; border-radius: 6px; padding: 6px; height: 110px; display: flex; flex-direction: column; justify-content: space-between; background: #f0f9ff;">
+                  <div style="font-size: 9px; font-weight: 800; color: #0369a1; text-align: center;">LOOM AKADEMİ • GÖKYÜZÜ MÜHENDİSİ KİMLİK KARTI</div>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="width: 40px; height: 50px; border: 1.5px dashed #0284c7; border-radius: 4px; background: #fff;"></div>
+                    <div style="flex: 1; font-size: 9px; color: #0f172a; font-weight: 700; display: flex; flex-direction: column; gap: 3px; text-align: left;">
+                      <div>Adı: .........................</div>
+                      <div>Soyadı: ..................</div>
+                      <div>Okulu: ....................</div>
+                      <div>Uzmanlık: .............</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 8px; font-weight: 800; color: #e11d48; border-top: 1px solid #cbd5e1; padding-top: 2px;">
+                    <span style="color: #475569;">GM-2026-001</span>
+                    <span>★ LOOM AKADEMİ ONAYLI</span>
+                  </div>
+                </div>
+                <div style="border-top: 1.5px dashed #94a3b8; margin: 2px 0;"></div>
+                <div style="flex: 1; border: 2px solid #f59e0b; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6px; background: #fff;">
+                  <div style="font-size: 8.5px; font-weight: 800; color: #d97706;">HAYALİMDEKİ CRAYCLE STICK UÇAK</div>
+                  <img src="images/ucak_boyama.jpg" alt="Craycle Uçak" style="max-height: 95px; max-width: 100%; object-fit: contain;">
+                  <div style="font-size: 8.5px; font-weight: 800; color: #b45309; width: 100%; text-align: left; border-top: 1px solid #fde68a; padding-top: 2px;">
+                    ✈️ Uçağın İsmi: .......................................
+                  </div>
+                </div>
+              </div>
+              <a href="./Gokyuzu_Muhendisi_Kimlik_ve_Boyama_A4.html" target="_blank" class="nav-btn primary" style="font-size: 15px; text-decoration: none;">
+                🖨️ A4 Belgesini Yeni Sekmede Aç / Yazdır
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 8: 3D Uçak Nasıl Doğuyor? (Video + Doğrudan Başlatıcı) -->
+      <section class="slide" data-slide="8">
+        <div class="slide-badge">🎬 VİDEO ZAMANI & İLHAM</div>
+        <h1 class="slide-title">3D Uçağımız Nasıl Üretiliyor ve Nasıl Uçuyor? 🛩️</h1>
+        <p class="slide-subtitle">2. Dönem Hangarda Kendi Ellerimizle Üreteceğimiz Craycle Stick Uçağının Gerçek Hikayesi!</p>
+        
+        <div class="slide-content">
+          <div class="col-60">
+            <div class="video-container">
+              <iframe 
+                src="https://www.youtube.com/embed/vR6z2s_7WjI?feature=oembed&enablejsapi=1" 
+                title="Craycle Stick 3D Airplane Build & Flight" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+              </iframe>
+              <div style="background: rgba(15,23,42,0.95); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.15);">
+                <span style="font-size: 14px; color: #cbd5e1;">Video yüklenmezse veya akıllı tahtada hata verirse:</span>
+                <a href="https://www.youtube.com/watch?v=vR6z2s_7WjI&t=4s" target="_blank" class="nav-btn" style="text-decoration: none; font-size: 13px; padding: 6px 16px; background: #e11d48; border-color: #f43f5e; color: #fff;">
+                  ▶ YouTube'da Doğrudan İzle
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-40">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 21px; color: var(--sunny-yellow); font-weight: 800;">👀 İzlerken Şunlara Dikkat Et:</h3>
+              <div style="display: flex; flex-direction: column; gap: 14px; font-size: 15.5px; color: #cbd5e1;">
+                <div style="background: rgba(255,255,255,0.06); padding: 12px 16px; border-radius: 12px;">
+                  <strong style="color: #fff; font-size: 17px;">1. 3D Yazıcı Parçaları:</strong>
+                  <p style="margin-top: 2px;">Parçaların içi tamamen dolu değil! Hafif olsun diye içi bal peteği gibi boşluklu basılıyor.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 12px 16px; border-radius: 12px;">
+                  <strong style="color: #fff; font-size: 17px;">2. Motor ve Pervane:</strong>
+                  <p style="margin-top: 2px;">Ön taraftaki elektrikli fırçasız motor uçağı saatte 60-70 km hızla ileri doğru çekiyor!</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 12px 16px; border-radius: 12px;">
+                  <strong style="color: #fff; font-size: 17px;">3. İniş Takımları:</strong>
+                  <p style="margin-top: 2px;">Tekerlekler sayesinde çimlere ve piste yumuşacık iniş yapabiliyor.</p>
+                </div>
+              </div>
+              <div style="margin-top: 8px;">
+                <a href="https://www.youtube.com/watch?v=vR6z2s_7WjI&list=WL&index=1&t=4s" target="_blank" class="nav-btn primary" style="text-decoration: none; font-size: 15px; justify-content: center;">
+                  🔗 Videoyu Tam Ekran Aç
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 9: Kağıttan Uçak Katlama (Ekrana Tam Sığan Glider #2 + Shorts) -->
+      <section class="slide" data-slide="9">
+        <div class="slide-badge">📐 İLK MÜHENDİSLİK GÖREVİ</div>
+        <h1 class="slide-title">Hangar Atölyesi: Süzülen Glider Kağıt Uçak ✈️</h1>
+        <p class="slide-subtitle">Katlaması çok kolay, havada süzülüşü muhteşem tek ve efsane modelimiz!</p>
+        
+        <div class="slide-content">
+          <!-- Sol Taraf: Tam Ekrana Sığdırılan Glider #2 Şeması -->
+          <div class="col-60" style="display: flex; flex-direction: column;">
+            <div class="glider-display-box">
+              <img src="images/kagit_ucak.jpg" alt="Glider #2 Kağıt Uçak Katlama Şeması">
+            </div>
+          </div>
+
+          <!-- Sağ Taraf: YouTube Shorts Videosu + İpuçları -->
+          <div class="col-40" style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">
+              <div>
+                <span style="background: var(--candy-red); color: #fff; font-size: 13px; font-weight: 800; padding: 4px 14px; border-radius: 20px;">📱 SHORTS VİDEOSU</span>
+                <h3 style="font-size: 21px; color: #fff; margin: 8px 0 4px; font-weight: 800;">Uçak Katlama Shorts Videosu</h3>
+                <p style="font-size: 15px; color: #cbd5e1; margin-bottom: 6px;">
+                  Aşağıdaki videoyu izleyerek adımları kolayca takip edebilirsiniz:
+                </p>
+              </div>
+
+              <!-- YouTube Shorts Iframe with fallback -->
+              <div style="flex: 1; min-height: 230px; border-radius: 14px; overflow: hidden; border: 2.5px solid rgba(255,255,255,0.2); background: #000; box-shadow: 0 8px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
+                <iframe 
+                  src="https://www.youtube.com/embed/O-dbUDMbK2c?feature=oembed&enablejsapi=1" 
+                  title="Kağıt Uçak Katlama Shorts" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen
+                  style="flex: 1; width: 100%; height: 100%; border: none;">
+                </iframe>
+                <div style="background: rgba(15,23,42,0.95); padding: 6px 12px; display: flex; align-items: center; justify-content: space-between;">
+                  <span style="font-size: 12.5px; color: #cbd5e1;">Hata alırsanız:</span>
+                  <a href="https://www.youtube.com/shorts/O-dbUDMbK2c" target="_blank" style="color: #38bdf8; font-size: 13px; font-weight: 800; text-decoration: underline;">
+                    ▶ YouTube'da İzle
+                  </a>
+                </div>
+              </div>
+
+              <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
+                <a href="https://www.youtube.com/shorts/O-dbUDMbK2c" target="_blank" class="nav-btn" style="text-decoration: none; font-size: 14px; justify-content: center; background: rgba(244,63,94,0.2); border-color: #f43f5e; color: #fff;">
+                  ▶ YouTube Shorts'u Yeni Sekmede Aç
+                </a>
+                <div style="font-size: 13.5px; color: var(--sunny-yellow); text-align: center; font-weight: 700; line-height: 1.35;">
+                  💡 İpucu: Kat izlerini tırnağınla iyice bastır ve burnundaki kilit üçgenini sıkıca yukarı kapat!
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 10: Test Uçuşları & Haftanın Kapanışı -->
+      <section class="slide" data-slide="10">
+        <div class="slide-badge">🏁 BÜYÜK UÇUŞ TESTİ & VEDA</div>
+        <h1 class="slide-title">Uçuş Test Pisti: 3, 2, 1... Fırlat! 🎯</h1>
+        <p class="slide-subtitle">Katladığınız uçakları sırayla fırlatma çizgisine getirin ve aerodinamik dengesini test edin!</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 22px; color: var(--sunny-yellow); font-weight: 800;">🚩 Uçuş Pisti Güvenlik Kuralları:</h3>
+              <div style="display: flex; flex-direction: column; gap: 14px; font-size: 16px;">
+                <div style="background: rgba(255,255,255,0.06); padding: 12px 18px; border-radius: 12px; border-left: 5px solid var(--primary);">
+                  <strong style="color: #fff; font-size: 18px;">1. Fırlatma Çizgisinde Bekle:</strong>
+                  <p style="color: #cbd5e1; margin-top: 2px;">Öğretmen izin vermeden uçağını fırlatma. Havada başka bir uçak olmamalı!</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 12px 18px; border-radius: 12px; border-left: 5px solid var(--emerald-green);">
+                  <strong style="color: #fff; font-size: 18px;">2. Uçaklar Yere İndikten Sonra Alınır:</strong>
+                  <p style="color: #cbd5e1; margin-top: 2px;">Uçağın yere konmasını bekle, sahaya koşup diğer uçakların önüne geçme.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 12px 18px; border-radius: 12px; border-left: 5px solid var(--candy-red);">
+                  <strong style="color: #fff; font-size: 18px;">3. Kimseye Doğru Fırlatma:</strong>
+                  <p style="color: #cbd5e1; margin-top: 2px;">Uçağın burnunu her zaman boş pist alanına doğru tut.</p>
+                </div>
+              </div>
+              <div style="text-align: center; font-size: 16px; font-weight: 800; color: var(--emerald-green); background: rgba(52,211,153,0.15); padding: 10px; border-radius: 12px;">
+                🎯 Hedef: En uzağa giden ve en uzun süre süzülen uçağı bulmak!
+              </div>
+            </div>
+          </div>
+
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(135deg, rgba(30,41,65,0.95), rgba(15,23,42,0.95)); border-color: var(--sunny-yellow);">
+              <div>
+                <span style="background: var(--sunny-yellow); color: #000; font-size: 14px; font-weight: 800; padding: 4px 14px; border-radius: 20px;">GELECEK HAFTANIN MÜJDESİ</span>
+                <h3 style="font-size: 26px; color: #fff; margin: 10px 0 6px; font-weight: 800;">2. Hafta: Meteor75 Pro II Drone ile Tanışma! 🛸</h3>
+                <p style="font-size: 16.5px; color: #cbd5e1; line-height: 1.6;">
+                  Önümüzdeki hafta kutuları açıyoruz! Meteor75 Pro II yarış dronelarını yakından inceleyecek, pervaneleri çevirecek ve kumandayı elimize alacağız!
+                </p>
+              </div>
+
+              <div style="background: rgba(255,255,255,0.08); padding: 14px; border-radius: 14px; text-align: center;">
+                <div style="font-size: 20px; font-weight: 800; color: var(--sunny-yellow); margin-bottom: 4px;">Bugünkü Görev Başarıyla Tamamlandı! 🎉</div>
+                <p style="font-size: 15px; color: #cbd5e1;">
+                  Kimlik kartlarınızı ve uçaklarınızı çantanıza özenle yerleştirin. Haftaya hangarda görüşmek üzere!
+                </p>
+              </div>
+
+              <button class="nav-btn primary" style="width: 100%; justify-content: center; font-size: 17px;" onclick="playApplauseSound()">
+                👏 Tüm Sınıfa Kocaman Bir Alkış!
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer Navigation -->
+  <footer>
+    <div class="footer-left">
+      <div class="slide-counter" onclick="toggleOverview()" title="Tüm Slaytları Gör">
+        SLAYT <span class="current" id="current-slide-num">1</span> / 10
+      </div>
+      <div style="font-size: 14px; color: var(--text-muted);">
+        İpucu: <strong>Boşluk / Sağ Ok</strong> ile ilerle, <strong>N</strong> ile öğretmen notlarını aç
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button class="nav-btn" onclick="prevSlide()">◀ Önceki</button>
+      <button class="nav-btn primary" onclick="nextSlide()">Sonraki ▶</button>
+    </div>
+  </footer>
+
+  <!-- Teacher Notes Drawer -->
+  <aside id="notes-drawer">
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 10px;">
+      <h3 style="font-size: 18px; color: var(--sunny-yellow); display: flex; align-items: center; gap: 6px; font-weight: 800;">📋 Öğretmen Ders Notu</h3>
+      <button class="tool-btn" style="width: 32px; height: 32px; font-size: 14px;" onclick="toggleNotes()">✕</button>
+    </div>
+    <div class="notes-body" id="slide-notes-content"></div>
+  </aside>
+
+  <!-- Overview Modal -->
+  <div id="overview-modal" onclick="if(event.target===this) toggleOverview()">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1200px; margin: 0 auto;">
+      <h2 style="font-size: 28px; color: var(--sunny-yellow); font-weight: 800;">📑 Slayt Gezgini (1. Hafta)</h2>
+      <button class="tool-btn" style="width: 40px; height: 40px;" onclick="toggleOverview()">✕</button>
+    </div>
+    <div class="overview-grid" style="max-width: 1200px; width: 100%; margin: 20px auto 0;">
+      <div class="overview-card" onclick="goToSlide(1)"><strong>1.</strong> Hoş Geldiniz & Kaptan Öğretmen</div>
+      <div class="overview-card" onclick="goToSlide(2)"><strong>2.</strong> Sırayla Mikrofon Sende (Tanışma)</div>
+      <div class="overview-card" onclick="goToSlide(3)"><strong>3.</strong> Dönem Tanıtımı (Drone & 3D Uçak)</div>
+      <div class="overview-card" onclick="goToSlide(4)"><strong>4.</strong> Sınıf Sözleşmesi (İmza Duvarı)</div>
+      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> Havacılığın Tarihsel Gelişimi (Adım Adım)</div>
+      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Sürükle-Bırak Tarih Oyunu</div>
+      <div class="overview-card" onclick="goToSlide(7)"><strong>7.</strong> Kimlik Kartı & Uçak Boyama A4</div>
+      <div class="overview-card" onclick="goToSlide(8)"><strong>8.</strong> 3D Uçak Nasıl Doğuyor? (Video)</div>
+      <div class="overview-card" onclick="goToSlide(9)"><strong>9.</strong> Glider Kağıt Uçak & Shorts</div>
+      <div class="overview-card" onclick="goToSlide(10)"><strong>10.</strong> Uçuş Test Pisti & Kapanış</div>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 10;
+    let stampCounter = 0;
+    const stampElements = [];
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    // Slide 5 History Stepper State
+    let currentHistoryStep = 1;
+    const totalHistorySteps = 4;
+    let isHistoryGridView = false;
+
+    const slideNotes = {"1": "<h4>1. Karşılama ve Vizyon (5 Dk)</h4><p>Çocukları 'Gökyüzü Hangarına Hoş Geldiniz' diyerek karşılayın. Bu atölyede birer üretici ve pilot olacaklarını hissettirin.</p>", "2": "<h4>2. Tanışma Çemberi (12 Dk)</h4><p>Öğrenciler sırayla isimlerini ve sevdikleri rengi söylesin. Tahtadaki mikrofona basarak rastgele neşeli sorular açın.</p>", "3": "<h4>3. Dönem Tanıtımı (8 Dk)</h4><p>1. Dönem Meteor75 Drone ile simülatör ve uçuşu, 2. Dönem Craycle Stick 3D uçağıyla uçuş şenliğini hedefe koyun.</p>", "4": "<h4>4. Sınıf Sözleşmesi (10 Dk)</h4><p>5 altın kuralı okuyun. Öğrenciler sırayla tahtaya gelip sağdaki panoya dokunarak el izi bıraksın. Sınıfça alkışlayın.</p>", "5": "<h4>5. Havacılığın Tarihi Gelişimi (8 Dk)</h4><p>Dikkatin dağılmaması için 4 adımı teker teker açın: Hezarfen (1632) ➔ Sıcak Hava Balonu (1783) ➔ Wright Kardeşler (1903) ➔ Vecihi Hürkuş (1924) & 3D Uçaklar. Her görseli ve hikayeyi ilgiyle anlatın.</p>", "6": "<h4>6. Akıllı Tahta Sürükle-Bırak Etkinliği (10 Dk)</h4><p>Öğrencileri tahtaya davet edin. Kartlar ve hedefler karışıktır. Önce karta sonra doğru kutuya dokunarak eşleştirmelerini sağlayın.</p>", "7": "<h4>7. Kimlik Kartı & Uçak Boyama (12 Dk)</h4><p>A4 kağıtlarını dağıtın. 10 dakikalık sayacı başlatın. Öğrenciler kimliklerini doldursun ve Craycle Stick uçağına isim versin.</p>", "8": "<h4>8. 3D Uçak Videosu (5 Dk)</h4><p>Craycle Stick uçuş videosunu izletin. Motor sesine ve gövdenin hafifliğine dikkat çekin.</p>", "9": "<h4>9. Glider Kağıt Uçak & Shorts (10 Dk)</h4><p>Glider #2 şeması ve Shorts videosu eşliğinde adım adım katlama yaptırın. Kilit üçgenini iyice bastırsınlar.</p>", "10": "<h4>10. Uçuş Test Pisti & Kapanış (5 Dk)</h4><p>Fırlatma çizgisine 3'erli filolarla geçip uçakları fırlatın. Gelecek hafta ilk drone kutularını açacağımızı duyurun!</p>"};
+    const funSpeakerTasks = ["En sevdiğin renk hangisi? Uçağımızı o renge boyayabiliriz! 🎨", "Göklerde süzülen bir kuş olsaydın hangi sevimli kuş olurdun? 🐦", "En sevdiğin çizgi film veya süper kahraman kim? 🦸", "Uçakla tatile gidecek olsan yanına en sevdiğin hangi oyuncağını alırdın? 🧸", "Bir uçağın olsa ilk kimi gezdirmek isterdin? (Anne, baba veya arkadaş) 👨‍👩‍👧", "Gökyüzünde bir buluta dokunsan sence neye benzerdi? (Pamuk şeker mi?) ☁️", "Uçağının gövdesine hangi resmi çizmek isterdin? (Yıldız, güneş veya kalp) ☀️", "En çok hangi mevsimde gökyüzüne bakmayı seversin? (Güneşli yaz mı, karlı kış mı?) 🌈", "Uçaklar sence gökyüzünde kuşlara el sallar mı? ✈️", "En sevdiğin meyve veya dondurma hangisi? 🍓"];
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playClickSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(650, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    function playSuccessChime() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      [659.25, 880.00, 1046.50].forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+        gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + idx * 0.1);
+        osc.stop(now + idx * 0.1 + 0.35);
+      });
+    }
+
+    function playErrorBeep() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(160, now + 0.15);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    }
+
+    function playApplauseSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      
+      for (let i = 0; i < 28; i++) {
+        const time = now + Math.random() * 1.4;
+        const dur = 0.04 + Math.random() * 0.03;
+        const bufSize = Math.floor(audioCtx.sampleRate * dur);
+        const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let j = 0; j < bufSize; j++) {
+          data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (bufSize * 0.35));
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buf;
+        const filt = audioCtx.createBiquadFilter();
+        filt.type = 'bandpass';
+        filt.frequency.setValueAtTime(900 + Math.random() * 1100, time);
+        filt.Q.setValueAtTime(3.0, time);
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(0.16 + Math.random() * 0.12, time);
+        g.gain.exponentialRampToValueAtTime(0.001, time + dur);
+        noise.connect(filt);
+        filt.connect(g);
+        g.connect(audioCtx.destination);
+        noise.start(time);
+        noise.stop(time + dur);
+      }
+
+      const freqs = [523.25, 659.25, 783.99, 1046.50];
+      freqs.forEach((f, idx) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, now + idx * 0.12);
+        g.gain.setValueAtTime(0.2, now + idx * 0.12);
+        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.45);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(now + idx * 0.12);
+        osc.stop(now + idx * 0.12 + 0.45);
+      });
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('btn-sound');
+      btn.textContent = soundEnabled ? '🔊' : '🔇';
+      btn.classList.toggle('active', !soundEnabled);
+    }
+
+    function updateSlide() {
+      document.querySelectorAll('.slide').forEach((s, idx) => {
+        s.classList.toggle('active', idx + 1 === currentSlide);
+      });
+      document.getElementById('current-slide-num').textContent = currentSlide;
+      document.getElementById('progress-fill').style.width = ((currentSlide - 1) / (totalSlides - 1) * 100) + '%';
+      
+      document.querySelectorAll('.overview-card').forEach((card, idx) => {
+        card.classList.toggle('active', idx + 1 === currentSlide);
+      });
+
+      document.getElementById('slide-notes-content').innerHTML = slideNotes[currentSlide] || '<p>Bu slayt için özel not bulunmuyor.</p>';
+
+      if (currentSlide === 6) {
+        shuffleDropTargets();
+      }
+    }
+
+    function nextSlide() {
+      // Special check for Slide 5: advance history steps first!
+      if (currentSlide === 5 && !isHistoryGridView && currentHistoryStep < totalHistorySteps) {
+        setHistoryStep(currentHistoryStep + 1);
+        return;
+      }
+
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        playClickSound();
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      // Special check for Slide 5: go back history steps first!
+      if (currentSlide === 5 && !isHistoryGridView && currentHistoryStep > 1) {
+        setHistoryStep(currentHistoryStep - 1);
+        return;
+      }
+
+      if (currentSlide > 1) {
+        currentSlide--;
+        playClickSound();
+        updateSlide();
+      }
+    }
+
+    function goToSlide(n) {
+      currentSlide = n;
+      playClickSound();
+      updateSlide();
+      toggleOverview(false);
+    }
+
+    // ===================================================
+    // SLIDE 5: STEPPER FUNCTIONS
+    // ===================================================
+    function setHistoryStep(stepNum) {
+      playClickSound();
+      currentHistoryStep = stepNum;
+
+      // Close overview grid if open
+      if (isHistoryGridView) {
+        toggleHistoryOverview(false);
+      }
+
+      // Update tabs
+      for (let i = 1; i <= totalHistorySteps; i++) {
+        const tab = document.getElementById('h-tab-' + i);
+        const panel = document.getElementById('h-panel-' + i);
+        if (tab) {
+          tab.classList.toggle('active', i === stepNum);
+          tab.classList.toggle('completed', i < stepNum);
+        }
+        if (panel) {
+          panel.classList.toggle('active', i === stepNum);
+        }
+      }
+    }
+
+    function toggleHistoryOverview(forceState) {
+      playClickSound();
+      const grid = document.getElementById('history-grid-overview');
+      const singleView = document.getElementById('history-single-viewport');
+      const btn = document.getElementById('btn-toggle-hview');
+
+      if (forceState !== undefined) {
+        isHistoryGridView = forceState;
+      } else {
+        isHistoryGridView = !isHistoryGridView;
+      }
+
+      if (isHistoryGridView) {
+        grid.classList.add('show');
+        singleView.style.display = 'none';
+        btn.textContent = '🔍 Teker Teker Odaklan';
+        btn.style.background = 'var(--primary)';
+        btn.style.color = '#042f2e';
+        btn.style.borderColor = 'var(--primary)';
+      } else {
+        grid.classList.remove('show');
+        singleView.style.display = 'flex';
+        btn.textContent = '👁️ Tümünü Yan Yana Gör';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }
+    }
+
+    function openStepFromGrid(stepNum) {
+      toggleHistoryOverview(false);
+      setHistoryStep(stepNum);
+    }
+
+    // ===================================================
+    // SLIDE 4: HANDPRINT BOARD STAMPING
+    // ===================================================
+    const stampColors = ['#34d399', '#38bdf8', '#fbbf24', '#f43f5e', '#a855f7', '#fb923c', '#4ade80', '#e879f9', '#22d3ee'];
+
+    function handleBoardStamp(event) {
+      const canvas = document.getElementById('handprint-stamp-canvas');
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      const placeholder = document.getElementById('canvas-placeholder');
+      if (placeholder) placeholder.style.display = 'none';
+
+      stampCounter++;
+      const color = stampColors[(stampCounter - 1) % stampColors.length];
+      const rot = (Math.random() * 32 - 16).toFixed(1);
+
+      const stampEl = document.createElement('div');
+      stampEl.className = 'board-stamp-mark';
+      stampEl.style.left = (x - 26) + 'px';
+      stampEl.style.top = (y - 32) + 'px';
+      stampEl.style.color = color;
+      stampEl.style.transform = `rotate(${rot}deg) scale(0)`;
+      stampEl.style.zIndex = stampCounter;
+
+      stampEl.innerHTML = `
+        <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor" style="filter: drop-shadow(0 3px 8px ${color}88);">
+          <path d="M18.5 7.5a1.5 1.5 0 0 0-1.5 1.5v3.5h-1V4.5a1.5 1.5 0 0 0-3 0v8h-1V3a1.5 1.5 0 0 0-3 0v9.5h-1V5.5a1.5 1.5 0 0 0-3 0v9.75c0 4.28 3.47 7.75 7.75 7.75h.5c4.14 0 7.5-3.36 7.5-7.5V9a1.5 1.5 0 0 0-1.5-1.5z"/>
+        </svg>
+        <span style="font-size: 11px; font-weight: 800; background: rgba(0,0,0,0.7); padding: 1px 7px; border-radius: 8px; color: #fff; margin-top: -4px;">Pilot #${stampCounter}</span>
+      `;
+
+      canvas.appendChild(stampEl);
+      stampElements.push(stampEl);
+      setTimeout(() => { stampEl.style.transform = `rotate(${rot}deg) scale(1)`; }, 15);
+
+      document.getElementById('board-stamp-count').textContent = stampCounter;
+      playApplauseSound();
+    }
+
+    function undoLastStamp() {
+      playClickSound();
+      if (stampElements.length > 0) {
+        const el = stampElements.pop();
+        el.remove();
+        stampCounter = Math.max(0, stampCounter - 1);
+        document.getElementById('board-stamp-count').textContent = stampCounter;
+        if (stampElements.length === 0) {
+          document.getElementById('canvas-placeholder').style.display = 'block';
+        }
+      }
+    }
+
+    function triggerCelebration() {
+      document.getElementById('celebration-banner').classList.add('show');
+      playApplauseSound();
+    }
+
+    // Speaker randomizer
+    let lastTaskIdx = -1;
+    function spinPilotTask() {
+      playClickSound();
+      const display = document.getElementById('random-task-display');
+      display.style.transform = 'scale(1.08)';
+      display.style.transition = 'transform 0.15s ease';
+      
+      let newIdx;
+      do {
+        newIdx = Math.floor(Math.random() * funSpeakerTasks.length);
+      } while (newIdx === lastTaskIdx && funSpeakerTasks.length > 1);
+      
+      lastTaskIdx = newIdx;
+      display.textContent = funSpeakerTasks[newIdx];
+      
+      setTimeout(() => {
+        display.style.transform = 'scale(1)';
+      }, 180);
+    }
+
+    // ===================================================
+    // SLIDE 6: DRAG & DROP ENGINE (KARIŞTIRILMIŞ HEDEFLER)
+    // ===================================================
+    let selectedDragCardId = null;
+    let matchedCount = 0;
+    const totalMatchItems = 4;
+
+    const cardThumbnails = {
+      'hezarfen': 'images/hezarfen.jpg',
+      'balon': 'images/balon.jpg',
+      'wright': 'images/wright_ucak.jpg',
+      'vecihi': 'images/hurkus.jpg'
+    };
+
+    const cardTitles = {
+      'hezarfen': 'Hezarfen Ahmet Çelebi',
+      'balon': 'Sıcak Hava Balonu',
+      'wright': 'Wright Kardeşler',
+      'vecihi': 'Vecihi Hürkuş'
+    };
+
+    function initDragGame() {
+      const cards = document.querySelectorAll('.draggable-card');
+      const targets = document.querySelectorAll('.drop-target-box');
+
+      cards.forEach(card => {
+        card.addEventListener('dragstart', (e) => {
+          card.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', card.dataset.id);
+        });
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+        });
+      });
+
+      targets.forEach(target => {
+        target.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          target.classList.add('drag-over');
+        });
+        target.addEventListener('dragleave', () => {
+          target.classList.remove('drag-over');
+        });
+        target.addEventListener('drop', (e) => {
+          e.preventDefault();
+          target.classList.remove('drag-over');
+          const cardId = e.dataTransfer.getData('text/plain');
+          attemptMatch(cardId, target.dataset.target);
+        });
+      });
+    }
+
+    function selectCardForMatch(cardId) {
+      playClickSound();
+      const card = document.getElementById('card-' + cardId);
+      if (card.classList.contains('matched')) return;
+
+      document.querySelectorAll('.draggable-card').forEach(c => c.classList.remove('selected'));
+
+      if (selectedDragCardId === cardId) {
+        selectedDragCardId = null;
+      } else {
+        selectedDragCardId = cardId;
+        card.classList.add('selected');
+      }
+    }
+
+    function dropCardToTarget(targetId) {
+      if (!selectedDragCardId) return;
+      attemptMatch(selectedDragCardId, targetId);
+    }
+
+    function attemptMatch(cardId, targetId) {
+      const card = document.getElementById('card-' + cardId);
+      const target = document.getElementById('target-' + targetId);
+      const badge = document.getElementById('badge-' + targetId);
+
+      if (cardId === targetId) {
+        // CORRECT MATCH!
+        playSuccessChime();
+        card.classList.remove('selected', 'dragging');
+        card.classList.add('matched');
+        target.classList.add('matched');
+        target.style.pointerEvents = 'none';
+
+        const thumb = cardThumbnails[cardId] || '';
+        const title = cardTitles[cardId] || '';
+
+        badge.innerHTML = `
+          <img src="${thumb}" style="width:34px; height:24px; object-fit:cover; border-radius:4px; border:1px solid #34d399;">
+          <span style="color:#34d399; font-weight:800; font-size:13px;">${title} ✓</span>
+        `;
+        badge.style.background = 'rgba(52,211,153,0.3)';
+        badge.style.borderColor = '#34d399';
+
+        matchedCount++;
+        document.getElementById('game-matched-count').textContent = matchedCount;
+        selectedDragCardId = null;
+
+        if (matchedCount >= totalMatchItems) {
+          setTimeout(() => {
+            document.getElementById('game-celebration').style.display = 'flex';
+            playApplauseSound();
+          }, 500);
+        }
+      } else {
+        // WRONG MATCH!
+        playErrorBeep();
+        target.style.borderColor = '#f43f5e';
+        target.style.background = 'rgba(244,63,94,0.2)';
+        setTimeout(() => {
+          target.style.borderColor = '';
+          target.style.background = '';
+        }, 600);
+      }
+    }
+
+    // Shuffles drop targets so that NO target box aligns with its card
+    function shuffleDropTargets() {
+      const container = document.getElementById('drop-targets-container');
+      if (!container) return;
+      const targets = Array.from(container.children);
+      const cardOrder = ['hezarfen', 'balon', 'wright', 'vecihi'];
+
+      let shuffled = targets.slice();
+      let isValid = false;
+      let attempts = 0;
+
+      while (!isValid && attempts < 50) {
+        attempts++;
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        // Ensure no target is in the exact row of its matching card!
+        isValid = shuffled.every((el, idx) => el.dataset.target !== cardOrder[idx]);
+      }
+
+      shuffled.forEach(el => container.appendChild(el));
+    }
+
+    function shuffleAndResetGame() {
+      resetDragGame();
+      shuffleDropTargets();
+    }
+
+    function resetDragGame() {
+      playClickSound();
+      matchedCount = 0;
+      selectedDragCardId = null;
+      document.getElementById('game-matched-count').textContent = '0';
+      document.getElementById('game-celebration').style.display = 'none';
+
+      document.querySelectorAll('.draggable-card').forEach(c => {
+        c.classList.remove('matched', 'selected', 'dragging');
+      });
+
+      const badges = {
+        'hezarfen': 'Buraya Bırak ➔',
+        'balon': 'Buraya Bırak ➔',
+        'wright': 'Buraya Bırak ➔',
+        'vecihi': 'Buraya Bırak ➔'
+      };
+
+      document.querySelectorAll('.drop-target-box').forEach(t => {
+        t.classList.remove('matched', 'drag-over');
+        t.style.pointerEvents = 'auto';
+        t.style.borderColor = '';
+        t.style.background = '';
+        const id = t.dataset.target;
+        document.getElementById('badge-' + id).innerHTML = badges[id];
+        document.getElementById('badge-' + id).style.background = '';
+        document.getElementById('badge-' + id).style.borderColor = '';
+      });
+    }
+
+    // Timer Widget on Slide 7
+    let timerInterval = null;
+    let timerSeconds = 600;
+
+    function updateTimerDisplay() {
+      const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+      const s = (timerSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('countdown-timer').textContent = `${m}:${s}`;
+    }
+
+    function startTimer() {
+      playClickSound();
+      if (timerInterval) return;
+      timerInterval = setInterval(() => {
+        if (timerSeconds > 0) {
+          timerSeconds--;
+          updateTimerDisplay();
+        } else {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          playApplauseSound();
+          alert('Süre doldu! Kimlik kartlarınızı ve harika çizimlerinizi havaya kaldırın! 🎨✈️');
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      playClickSound();
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function resetTimer() {
+      playClickSound();
+      pauseTimer();
+      timerSeconds = 600;
+      updateTimerDisplay();
+    }
+
+    // Drawer and Modal toggles
+    function toggleNotes() {
+      playClickSound();
+      const drawer = document.getElementById('notes-drawer');
+      const btn = document.getElementById('btn-notes');
+      drawer.classList.toggle('open');
+      btn.classList.toggle('active', drawer.classList.contains('open'));
+    }
+
+    function toggleOverview(forceState) {
+      playClickSound();
+      const modal = document.getElementById('overview-modal');
+      const btn = document.getElementById('btn-overview');
+      if (forceState !== undefined) {
+        modal.classList.toggle('open', forceState);
+      } else {
+        modal.classList.toggle('open');
+      }
+      btn.classList.toggle('active', modal.classList.contains('open'));
+    }
+
+    function toggleFullscreen() {
+      playClickSound();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Keyboard events
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      switch(e.key) {
+        case 'ArrowRight':
+        case ' ':
+        case 'PageDown':
+          e.preventDefault();
+          nextSlide();
+          break;
+        case 'ArrowLeft':
+        case 'PageUp':
+          e.preventDefault();
+          prevSlide();
+          break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'n':
+        case 'N':
+          e.preventDefault();
+          toggleNotes();
+          break;
+        case 'o':
+        case 'O':
+          e.preventDefault();
+          toggleOverview();
+          break;
+        case 'm':
+        case 'M':
+          e.preventDefault();
+          toggleSound();
+          break;
+        case 'Escape':
+          toggleOverview(false);
+          document.getElementById('notes-drawer').classList.remove('open');
+          break;
+      }
+    });
+
+    // Touch support for smart boards
+    let touchStartX = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 60) {
+        if (diff < 0) nextSlide();
+        else prevSlide();
+      }
+    }, { passive: true });
+
+    // Window load init
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSlide();
+      initDragGame();
+      updateTimerDisplay();
+    });
+  </script>
+</body>
+</html>
