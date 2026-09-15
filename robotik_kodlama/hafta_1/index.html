@@ -1,0 +1,2698 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loom Akademi • Robotik ve Kodlama - 1. Hafta: Tanışma, Robotik Dünyası & Yönlendirici Oyunu</title>
+  <style>
+    :root {
+      --primary: #38bdf8;
+      --primary-light: #7dd3fc;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --bg-dark: #090e1a;
+      --bg-card: rgba(22, 31, 54, 0.94);
+      --border-card: rgba(255, 255, 255, 0.18);
+      --sunny-yellow: #fbbf24;
+      --emerald-green: #34d399;
+      --candy-red: #fb7185;
+      --cute-purple: #c084fc;
+      --electric-blue: #3b82f6;
+      --text-white: #ffffff;
+      --text-muted: #cbd5e1;
+      --font-main: 'Segoe UI', 'Trebuchet MS', Arial, -apple-system, sans-serif;
+      --slide-w: 1280px;
+      --slide-h: 720px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body {
+      background: radial-gradient(circle at top right, #1a2542 0%, #0c1322 60%, #060911 100%);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      overflow: hidden;
+      width: 100vw; height: 100vh;
+      display: flex; flex-direction: column;
+      user-select: none;
+    }
+
+    /* Top Progress Bar */
+    #progress-track {
+      position: fixed; top: 0; left: 0; width: 100%; height: 6px;
+      background: rgba(255, 255, 255, 0.08); z-index: 1000;
+    }
+    #progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #3b82f6, #38bdf8, #34d399, #fbbf24, #c084fc);
+      box-shadow: 0 0 12px var(--primary-light);
+      transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Header */
+    header {
+      position: fixed; top: 6px; left: 0; width: 100%; height: 62px;
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(12, 19, 34, 0.96); backdrop-filter: blur(14px);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.14); z-index: 900;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .grade-badge {
+      background: linear-gradient(135deg, #2563eb, #0284c7);
+      color: #fff; font-size: 14.5px; font-weight: 800;
+      padding: 6px 14px; border-radius: 12px; letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+    .brand-title {
+      font-size: 19px; font-weight: 800; letter-spacing: 0.5px;
+      color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .brand-title span { color: var(--primary); font-weight: 700; font-size: 16px; }
+    .header-tools { display: flex; align-items: center; gap: 10px; }
+    .tool-btn {
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1; width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; font-size: 16px;
+    }
+    .tool-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; transform: scale(1.05); }
+    .tool-btn.active { background: var(--primary); color: #042f2e; border-color: var(--primary); }
+
+    /* Main Container */
+    main {
+      flex: 1; margin-top: 68px; margin-bottom: 68px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px 20px; overflow: hidden; position: relative;
+    }
+    #slide-viewport {
+      width: 100%; max-width: var(--slide-w); height: 100%; max-height: var(--slide-h);
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Slide Box */
+    .slide {
+      position: absolute; inset: 0;
+      opacity: 0; pointer-events: none; visibility: hidden;
+      display: flex; flex-direction: column;
+      padding: 20px 36px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transform: translateY(16px) scale(0.985);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    }
+    .slide.active {
+      opacity: 1; pointer-events: auto; visibility: visible;
+      transform: translateY(0) scale(1); z-index: 10;
+    }
+
+    /* Slide Titles */
+    .slide-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--primary); margin-bottom: 4px;
+    }
+    .slide-title {
+      font-size: 32px; font-weight: 800; line-height: 1.2;
+      color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      margin-bottom: 2px;
+    }
+    .slide-subtitle {
+      font-size: 16px; color: var(--text-muted); line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    /* Slide Layouts */
+    .slide-content { flex: 1; display: flex; gap: 24px; min-height: 0; overflow: hidden; }
+    .col-half { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .col-full { width: 100%; height: 100%; display: flex; flex-direction: column; }
+    .col-60 { flex: 1.35; display: flex; flex-direction: column; min-height: 0; }
+    .col-40 { flex: 0.95; display: flex; flex-direction: column; min-height: 0; }
+
+    /* Fun Box */
+    .fun-box {
+      background: rgba(30, 41, 65, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Grade Tag Pills */
+    .grade-tag {
+      font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 8px;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .tag-g12 { background: rgba(56, 189, 248, 0.2); color: var(--primary); border: 1px solid var(--primary); }
+    .tag-g34 { background: rgba(192, 132, 252, 0.2); color: var(--cute-purple); border: 1px solid var(--cute-purple); }
+
+    /* Speaker Wheel */
+    .speaker-box {
+      background: radial-gradient(circle at center, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%);
+      border: 2px dashed var(--primary);
+      border-radius: var(--radius-md);
+      padding: 16px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      height: 100%; gap: 12px;
+    }
+    .mic-btn {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      border: 4px solid rgba(255,255,255,0.8);
+      font-size: 44px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .mic-btn:hover { transform: scale(1.1) rotate(5deg); }
+    .mic-btn:active { transform: scale(0.92); }
+
+    /* 5 Classroom Rules */
+    .rule-item {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-md); padding: 8px 16px;
+      transition: all 0.2s ease;
+    }
+    .rule-item:hover {
+      background: rgba(56, 189, 248, 0.15); border-color: var(--primary);
+      transform: translateX(6px);
+    }
+    .rule-icon {
+      font-size: 26px; width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .rule-text h4 { font-size: 16px; font-weight: 800; color: #fff; line-height: 1.25; }
+    .rule-text p { font-size: 13px; color: #cbd5e1; margin-top: 2px; line-height: 1.35; }
+
+    /* Board Stamp Marks */
+    .board-stamp-mark {
+      position: absolute; width: 54px; height: 54px; pointer-events: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      animation: stampPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes stampPop {
+      0% { transform: scale(3.5); opacity: 0; }
+      70% { transform: scale(0.85); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Celebration Banner */
+    #celebration-banner {
+      position: absolute; inset: 0;
+      background: rgba(12, 19, 34, 0.95);
+      border-radius: var(--radius-lg);
+      z-index: 100;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; text-align: center; padding: 28px;
+    }
+    #celebration-banner.show { display: flex; }
+
+    /* ===================================================
+       SLIDE 5: ROBOT NEDİR? (STEPPER KEŞİF)
+       =================================================== */
+    .stepper-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 12px; padding: 6px 12px;
+      background: rgba(15, 23, 42, 0.85); border-radius: 14px;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+    }
+    .step-tabs { display: flex; align-items: center; gap: 8px; flex: 1; }
+    .step-btn {
+      display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+      border-radius: 10px; background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.15); color: #cbd5e1;
+      font-family: var(--font-main); font-size: 13.5px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .step-btn:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+    .step-btn.active {
+      background: rgba(56, 189, 248, 0.25); border-color: var(--primary);
+      color: #fff; box-shadow: 0 0 12px var(--primary-glow);
+    }
+    .step-btn.completed { border-color: var(--emerald-green); color: #a7f3d0; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 12px;
+    }
+    .step-btn.active .step-num { background: var(--primary); color: #042f2e; font-weight: 800; }
+    .step-btn.completed .step-num { background: var(--emerald-green); color: #064e3b; font-weight: 800; }
+    .step-connector { width: 14px; height: 2px; background: rgba(255, 255, 255, 0.2); border-radius: 1px; }
+
+    .stepper-viewport { flex: 1; position: relative; width: 100%; height: 100%; display: flex; }
+    .step-panel {
+      position: absolute; inset: 0; display: none; gap: 24px;
+      background: rgba(22, 31, 54, 0.94); border: 2px solid rgba(255, 255, 255, 0.18);
+      border-radius: 18px; padding: 18px 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      animation: fadeInScale 0.25s ease forwards;
+    }
+    .step-panel.active { display: flex; }
+
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Image Placeholder Box with Fallback SVG & Details */
+    .img-placeholder-card {
+      width: 100%; height: 100%; min-height: 200px;
+      border: 2px dashed rgba(56, 189, 248, 0.5);
+      border-radius: 14px; background: rgba(15, 23, 42, 0.7);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 12px; text-align: center; position: relative; overflow: hidden;
+    }
+    .placeholder-badge {
+      font-size: 11px; font-weight: 800; color: var(--sunny-yellow);
+      background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 6px;
+      margin-top: 6px; border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+
+    /* ===================================================
+       SLIDE 6: ROBOT MU, DEĞİL Mİ? OYUNU
+       =================================================== */
+    .drag-game-container { display: flex; gap: 20px; height: 100%; width: 100%; }
+    .drag-items-col { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: space-between; }
+    .drop-targets-col { flex: 1.25; display: flex; flex-direction: column; gap: 12px; justify-content: space-between; }
+    
+    .draggable-card {
+      background: linear-gradient(135deg, rgba(30, 41, 65, 0.95), rgba(15, 23, 42, 0.95));
+      border: 2px solid var(--primary); border-radius: 12px; padding: 8px 12px;
+      display: flex; align-items: center; gap: 12px; cursor: grab;
+      font-size: 15px; font-weight: 800; color: #fff;
+      transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .draggable-card:hover { transform: scale(1.02); background: rgba(56, 189, 248, 0.2); border-color: var(--sunny-yellow); }
+    .draggable-card.dragging { opacity: 0.4; }
+    .draggable-card.selected { border-color: var(--sunny-yellow); background: rgba(251, 191, 36, 0.25); box-shadow: 0 0 16px var(--sunny-yellow); transform: scale(1.03); }
+    .draggable-card.matched { opacity: 0.2; pointer-events: none; border-color: #64748b; }
+    .card-icon-box { font-size: 28px; width: 42px; height: 42px; border-radius: 8px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    .drop-bin-box {
+      flex: 1; border: 2.5px dashed rgba(255, 255, 255, 0.3); border-radius: 16px;
+      padding: 12px 18px; display: flex; flex-direction: column; justify-content: space-between;
+      transition: all 0.25s ease; cursor: pointer; background: rgba(15, 23, 42, 0.8);
+    }
+    .drop-bin-box.is-robot { border-color: var(--emerald-green); background: rgba(52, 211, 153, 0.08); }
+    .drop-bin-box.not-robot { border-color: var(--candy-red); background: rgba(251, 113, 133, 0.08); }
+    .drop-bin-box.drag-over { transform: scale(1.02); }
+    .drop-bin-box.is-robot.drag-over { background: rgba(52, 211, 153, 0.2); }
+    .drop-bin-box.not-robot.drag-over { background: rgba(251, 113, 133, 0.2); }
+    .bin-tags-tray { display: flex; flex-wrap: wrap; gap: 6px; min-height: 40px; align-items: center; }
+    .bin-item-tag {
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      padding: 3px 10px; border-radius: 12px; font-size: 12.5px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 6px; animation: popTag 0.25s ease;
+    }
+    @keyframes popTag { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* ===================================================
+       SLIDE 8: İNTERAKTİF YÖNLENDİRİCİ LABİRENTİ
+       =================================================== */
+    .maze-game-container {
+      display: flex; gap: 16px; height: 100%; width: 100%;
+      min-height: 0; min-width: 0; overflow: hidden;
+    }
+    .maze-board-area {
+      flex: 1.25; min-width: 0; min-height: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      background: rgba(15, 23, 42, 0.9); border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-md); padding: 8px 12px; position: relative;
+    }
+    .maze-nav-bar {
+      width: 100%; display: flex; flex-direction: column; gap: 4px;
+    }
+    .maze-tier-row {
+      display: flex; justify-content: space-between; align-items: center; width: 100%;
+    }
+    .tier-tab-btn {
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s; font-family: var(--font-main);
+    }
+    .tier-tab-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+    .tier-tab-btn.active {
+      background: rgba(56, 189, 248, 0.3); border-color: var(--primary); color: #fff;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .mission-picker {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .mission-pill {
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1; padding: 3px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s; font-family: var(--font-main);
+    }
+    .mission-pill:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+    .mission-pill.active {
+      background: var(--sunny-yellow); color: #000; border-color: var(--sunny-yellow);
+      font-weight: 800; box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+    }
+
+    .maze-grid {
+      display: grid; grid-template-columns: repeat(5, 52px); grid-template-rows: repeat(5, 52px);
+      gap: 5px; background: rgba(30, 41, 65, 0.5); padding: 6px; border-radius: 12px;
+      border: 2px solid rgba(56, 189, 248, 0.4); margin: 2px 0;
+    }
+    .maze-cell {
+      width: 52px; height: 52px; border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+      position: relative; transition: all 0.2s;
+    }
+    .maze-cell.wall { background: rgba(244, 63, 94, 0.25); border-color: var(--candy-red); }
+    .maze-cell.goal { background: rgba(52, 211, 153, 0.25); border-color: var(--emerald-green); }
+    .maze-cell.has-battery { animation: glowPulse 1.5s infinite alternate; }
+    @keyframes glowPulse { from { transform: scale(0.95); } to { transform: scale(1.08); } }
+
+    .robot-sprite {
+      position: relative; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 26px; filter: drop-shadow(0 0 8px #38bdf8);
+      transition: transform 0.25s ease;
+    }
+    .robot-arrow-indicator {
+      position: absolute; right: -7px; top: 50%; transform: translateY(-50%);
+      font-size: 13px; color: #38bdf8; font-weight: 900; line-height: 1;
+      text-shadow: 0 0 6px #38bdf8;
+    }
+
+    .maze-controls-col {
+      flex: 1; min-width: 0; min-height: 0;
+      display: flex; flex-direction: column; gap: 8px; justify-content: space-between;
+    }
+    .cmd-pad-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+      background: rgba(30, 41, 65, 0.6); padding: 7px; border-radius: 12px;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+    }
+    .cmd-btn {
+      background: rgba(255, 255, 255, 0.08); border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px; padding: 6px 4px; color: #fff; font-size: 12.5px; font-weight: 800;
+      cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
+      transition: all 0.15s ease; font-family: var(--font-main);
+    }
+    .cmd-btn:hover { background: rgba(56, 189, 248, 0.25); border-color: var(--primary); transform: translateY(-2px); }
+    .cmd-btn:active { transform: scale(0.94); }
+    .cmd-btn span.icon { font-size: 20px; }
+
+    /* Fixed Height Queue Container with Scrollbar to never break slide layout */
+    .cmd-queue-box {
+      background: rgba(15, 23, 42, 0.9); border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px; padding: 5px 8px; height: 60px; max-height: 60px; min-height: 60px;
+      display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px;
+      overflow-y: auto; overflow-x: hidden;
+    }
+    .cmd-queue-box::-webkit-scrollbar { width: 5px; }
+    .cmd-queue-box::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+    .cmd-queue-box::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.5); border-radius: 4px; }
+
+    .queue-chip {
+      background: #2563eb; color: #fff; font-weight: 800; font-size: 11px;
+      padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center;
+      gap: 3px; border: 1px solid rgba(255, 255, 255, 0.3); animation: popChip 0.15s ease;
+      white-space: nowrap; cursor: pointer; transition: all 0.15s ease;
+    }
+    .queue-chip:hover {
+      background: #ef4444; border-color: #f87171;
+    }
+    .queue-chip.active-step {
+      background: var(--sunny-yellow); color: #000; box-shadow: 0 0 10px var(--sunny-yellow);
+      transform: scale(1.1);
+    }
+
+    /* Video Frame */
+    .video-container {
+      width: 100%; height: 100%; border-radius: var(--radius-lg);
+      overflow: hidden; border: 3px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6); background: #000;
+      display: flex; flex-direction: column;
+    }
+    .video-container iframe { flex: 1; width: 100%; height: 100%; border: none; }
+
+    /* Footer */
+    footer {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 68px;
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(12, 19, 34, 0.96); backdrop-filter: blur(14px);
+      border-top: 2px solid rgba(255, 255, 255, 0.14); z-index: 900;
+    }
+    .footer-left { display: flex; align-items: center; gap: 18px; }
+    .slide-counter {
+      font-family: 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: 800;
+      color: #cbd5e1; cursor: pointer; padding: 8px 18px; border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+    }
+    .slide-counter span.current { color: var(--sunny-yellow); font-size: 20px; }
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2);
+      color: #fff; padding: 10px 24px; border-radius: 14px;
+      font-family: var(--font-main); font-size: 16px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;
+    }
+    .nav-btn:hover { background: rgba(255, 255, 255, 0.22); transform: scale(1.04); }
+    .nav-btn.primary {
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #042f2e; border: none; font-weight: 800;
+    }
+
+    /* Notes Drawer & Overview Modal */
+    #notes-drawer {
+      position: fixed; right: 0; top: 62px; bottom: 68px; width: 440px;
+      background: rgba(12, 19, 34, 0.98); border-left: 2px solid var(--primary);
+      z-index: 1200; padding: 24px; display: flex; flex-direction: column; gap: 14px;
+      transform: translateX(100%); transition: transform 0.3s ease;
+    }
+    #notes-drawer.open { transform: translateX(0); }
+    .notes-body { font-size: 15px; line-height: 1.55; color: #cbd5e1; overflow-y: auto; flex: 1; }
+    .notes-body h4 { color: var(--sunny-yellow); margin: 12px 0 4px; font-size: 16px; font-weight: 800; }
+    .notes-grade-box {
+      background: rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 10px;
+      margin: 6px 0; border-left: 3px solid var(--primary); font-size: 13.5px;
+    }
+
+    #overview-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(10, 15, 28, 0.96); backdrop-filter: blur(20px);
+      z-index: 2000; display: flex; flex-direction: column; padding: 36px;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    #overview-modal.open { opacity: 1; visibility: visible; }
+    .overview-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px; overflow-y: auto; margin-top: 18px;
+    }
+    .overview-card {
+      background: rgba(30, 41, 65, 0.85); border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-md); padding: 16px; cursor: pointer; transition: all 0.2s;
+      font-size: 15px; font-weight: 700;
+    }
+    .overview-card:hover { border-color: var(--sunny-yellow); transform: translateY(-3px); }
+    .overview-card.active { border-color: var(--primary); background: rgba(56, 189, 248, 0.22); }
+
+    @media (max-width: 1280px) or (max-height: 720px) {
+      :root { --slide-w: 1024px; --slide-h: 576px; }
+      .slide { padding: 14px 24px; }
+      .slide-title { font-size: 26px; }
+      .slide-subtitle { font-size: 14px; margin-bottom: 6px; }
+      .rule-item { padding: 5px 10px; }
+      .rule-text h4 { font-size: 14.5px; }
+      .rule-text p { font-size: 12px; }
+      .maze-grid { grid-template-columns: repeat(5, 50px); grid-template-rows: repeat(5, 50px); }
+      .maze-cell { width: 50px; height: 50px; font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <header>
+    <div class="brand">
+      <div class="grade-badge">🤖 1. HAFTA: ROBOTİK KODLAMA</div>
+      <div class="brand-title">LOOM AKADEMİ • ROBOTİK DÜNYASI <span>• TANIŞMA, ROBOTLAR & YÖNLENDİRİCİ OYUNU</span></div>
+    </div>
+    <div class="header-tools">
+      <button class="tool-btn" id="btn-sound" onclick="toggleSound()" title="Sesi Aç/Kapat">🔊</button>
+      <button class="tool-btn" id="btn-notes" onclick="toggleNotes()" title="Öğretmen Notları (N)">📋</button>
+      <button class="tool-btn" id="btn-overview" onclick="toggleOverview()" title="Tüm Slaytlar (O)">📑</button>
+      <button class="tool-btn" onclick="toggleFullscreen()" title="Tam Ekran (F)">⛶</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="slide-viewport">
+
+      <!-- ========================================================
+           SLIDE 1: Hoş Geldiniz & Atölye Vizyonu
+           ======================================================== -->
+      <section class="slide active" data-slide="1">
+        <div class="slide-badge">🚀 GELECEĞİN MUCİTLERİ ATÖLYESİ</div>
+        <h1 class="slide-title">Robotik ve Kodlama Dünyasına Hoş Geldiniz! 🤖✨</h1>
+        <p class="slide-subtitle">Bugün sadece bilgisayar kullanmayı değil, robotları canlandıran gizli kod dilini öğrenmeye başlıyoruz!</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; background: linear-gradient(135deg, rgba(30,41,65,0.92), rgba(15,23,42,0.96)); border-color: var(--primary);">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="font-size: 52px; background: rgba(56,189,248,0.15); width: 84px; height: 84px; border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary);">👨‍🏫</div>
+                <div>
+                  <h3 style="font-size: 24px; color: var(--sunny-yellow); margin-bottom: 2px; font-weight: 800;">Ben Robotik Öğretmeniniz!</h3>
+                  <p style="font-size: 16px; color: #cbd5e1;">Bu atölyede hepimiz birer yazılımcı ve mucidiz.</p>
+                </div>
+              </div>
+              <p style="font-size: 16px; line-height: 1.55; color: #e2e8f0;">
+                Bu sınıfta pasifçe ekran izlemek yok! Akıllı tahtamızla oyunlar kuracak, tabletlerimizle eşli kodlama yapacak, <strong>mBot, LEGO Spike ve Makey Makey</strong> kitlerimizle robotları hayata geçireceğiz!
+              </p>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <span class="grade-tag tag-g12">1-2. Sınıf: Simgeler & Hareket</span>
+                <span class="grade-tag tag-g34">3-4. Sınıf: Algoritmalar & Hata Ayıklama</span>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 4px;">
+                <span style="background: rgba(56,189,248,0.2); border: 1.5px solid var(--primary); padding: 5px 14px; border-radius: 18px; font-size: 14px; font-weight: 700;">🧩 Algoritma Ustası</span>
+                <span style="background: rgba(251,191,36,0.2); border: 1.5px solid var(--sunny-yellow); padding: 5px 14px; border-radius: 18px; font-size: 14px; font-weight: 700;">⚡ Sensör Kaşifi</span>
+                <span style="background: rgba(52,211,153,0.2); border: 1.5px solid var(--emerald-green); padding: 5px 14px; border-radius: 18px; font-size: 14px; font-weight: 700;">🤖 Robot Programcısı</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 21px; color: #fff; margin-bottom: 6px; font-weight: 800;">📋 Bugünkü Macera Planımız (80 Dakika)</h3>
+              <div style="display: flex; flex-direction: column; gap: 7px;">
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 7px 14px; border-radius: 12px; font-size: 15px;">
+                  <span style="background: #2563eb; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">1</span>
+                  <span><strong>Tanışma Çemberi & Çarkı:</strong> Sırayla mikrofon sende! 🎤</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 7px 14px; border-radius: 12px; font-size: 15px;">
+                  <span style="background: var(--sunny-yellow); color: #000; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">2</span>
+                  <span><strong>Dönem Tanıtımı:</strong> mBot, Spike, Makey Makey & Scratch</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 7px 14px; border-radius: 12px; font-size: 15px;">
+                  <span style="background: var(--emerald-green); color: #000; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">3</span>
+                  <span><strong>Atölye Sözleşmesi:</strong> Akıllı tahtaya el izinizi basın ✋</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 7px 14px; border-radius: 12px; font-size: 15px;">
+                  <span style="background: var(--primary); color: #000; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">4</span>
+                  <span><strong>Robot Dünyası & Oyunu:</strong> Robot mu, Değil mi? 🎮</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 7px 14px; border-radius: 12px; font-size: 15px;">
+                  <span style="background: var(--cute-purple); color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">5</span>
+                  <span><strong>Yönlendirici Oyunu & Kodlu Piksel Robot A4:</strong> Zeka & Boyama!</span>
+                </div>
+              </div>
+              <div style="text-align: center; margin-top: 6px;">
+                <button class="nav-btn primary" style="width: 100%; justify-content: center; font-size: 16px;" onclick="nextSlide()">Robotları Uyandıralım! Başlıyoruz ➔</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 2: Tanışma Çarkı: Geleceğin Mucitleri
+           ======================================================== -->
+      <section class="slide" data-slide="2">
+        <div class="slide-badge">🎙️ TANIŞMA ZAMANI</div>
+        <h1 class="slide-title">Sırayla Mikrofon Sende: Geleceğin Mucitleri! 🎤</h1>
+        <p class="slide-subtitle">Sıran geldiğinde adını söyle ve bize hayalindeki robot arkadaşını anlat!</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px;">
+              <h3 style="font-size: 21px; color: var(--sunny-yellow); font-weight: 800;">💬 Sıran Geldiğinde Bize Şunları Söyle:</h3>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: rgba(255,255,255,0.06); border-left: 5px solid var(--primary); padding: 10px 16px; border-radius: 0 14px 14px 0;">
+                  <strong style="font-size: 18px; color: #fff;">1. Adın ve Soyadın ne?</strong>
+                  <p style="font-size: 15px; color: #cbd5e1; margin-top: 2px;">Kodlama takımında sana hangi havalı isimle seslenelim?</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); border-left: 5px solid var(--sunny-yellow); padding: 10px 16px; border-radius: 0 14px 14px 0;">
+                  <strong style="font-size: 18px; color: #fff;">2. En sevdiğin oyun veya çizgi film nedir?</strong>
+                  <p style="font-size: 15px; color: #cbd5e1; margin-top: 2px;">İleride Scratch ile kendi oyununu tasarlarken bu karakteri kodlayabilirsin!</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); border-left: 5px solid var(--emerald-green); padding: 10px 16px; border-radius: 0 14px 14px 0;">
+                  <strong style="font-size: 18px; color: #fff;">3. Sana özel bir robotun olsa senin için ne yapardı?</strong>
+                  <p style="font-size: 15px; color: #cbd5e1; margin-top: 2px;">Dağınık odanı mı toplardı, dondurma mı yapardı, yoksa uçurur muydu?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="speaker-box">
+              <div style="font-size: 19px; font-weight: 800; color: var(--sunny-yellow);">🎲 ŞANS ÇARKI / RASTGELE ROBOTİK SORUSU</div>
+              <button class="mic-btn" id="mic-trigger-btn" onclick="spinRobotTask()" title="Tıkla ve Yeni Soruyu Aç!">🎙️</button>
+              <div id="random-task-display" style="min-height: 70px; font-size: 17px; color: #fff; font-weight: 700; padding: 14px 20px; background: rgba(0,0,0,0.4); border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.25); width: 100%; display: flex; align-items: center; justify-content: center;">
+                Mikrofona dokun ve eğlenceli bir soru aç! 🎯
+              </div>
+              <p style="font-size: 14px; color: var(--text-muted); line-height: 1.4;">
+                Öğretmen İpucu: Çekingen öğrencilere akıllı tahtadaki mikrofona basma şansı vererek ilgilerini çekin.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 3: Yıllık & Dönemlik Macera Haritamız
+           ======================================================== -->
+      <section class="slide" data-slide="3">
+        <div class="slide-badge">🗺️ YILLIK YOL HARİTAMIZ</div>
+        <h1 class="slide-title">Bu Yıl Neler Öğreneceğiz ve Hangi Robotları Keşfedeceğiz? 🛠️</h1>
+        <p class="slide-subtitle">1. Dönem blok kodlama ve hikaye tasarımı; 2. Dönem mBlock, mBot, LEGO Spike ve Makey Makey!</p>
+        
+        <div class="slide-content">
+          <!-- 1. DÖNEM -->
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; border-color: var(--primary);">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="background: #0284c7; color: #fff; font-size: 13.5px; font-weight: 800; padding: 4px 14px; border-radius: 20px;">1. DÖNEM (1-8. HAFTALAR)</span>
+                <span style="font-size: 24px;">🧩</span>
+              </div>
+              <h3 style="font-size: 21px; color: var(--primary); margin: 4px 0; font-weight: 800;">Algoritmalar, Code.org & Scratch Jr</h3>
+              
+              <div style="height: 200px; width: 100%; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.7); border: 2px solid rgba(56, 189, 248, 0.3); box-shadow: 0 8px 24px rgba(0,0,0,0.4); margin: 4px 0;">
+                <img src="images/codeorg_scratch.jpg" 
+                     alt="Code.org ve Scratch Jr" 
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; transition: transform 0.3s ease;"
+                     onmouseenter="this.style.transform='scale(1.03)'"
+                     onmouseleave="this.style.transform='scale(1)'">
+              </div>
+
+              <ul style="font-size: 14.5px; color: #cbd5e1; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                <li>✓ <strong>Code.org:</strong> Labirent oyunları ve eğlenceli algoritmik bulmacalar</li>
+                <li>✓ <strong>Robot Bileşenleri:</strong> Sensörler, çipler ve motorlar nasıl çalışır?</li>
+                <li>✓ <strong>Scratch Jr:</strong> Tabletlerde kendi animasyon ve hikaye kodlamamız</li>
+                <li>✓ <strong>Somut Üretim:</strong> Mini robot maskesi ve ipli mekanik el yapımı!</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 2. DÖNEM -->
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; border-color: var(--emerald-green);">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="background: #059669; color: #fff; font-size: 13.5px; font-weight: 800; padding: 4px 14px; border-radius: 20px;">2. DÖNEM (9-16. HAFTALAR)</span>
+                <span style="font-size: 24px;">🤖</span>
+              </div>
+              <h3 style="font-size: 21px; color: var(--emerald-green); margin: 4px 0; font-weight: 800;">mBlock & mBot, LEGO Spike, Makey Makey</h3>
+              
+              <div style="height: 200px; width: 100%; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.7); border: 2px solid rgba(52, 211, 153, 0.3); box-shadow: 0 8px 24px rgba(0,0,0,0.4); margin: 4px 0;">
+                <img src="images/mbot_spike.jpg" 
+                     alt="mBot ve LEGO Spike" 
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; transition: transform 0.3s ease;"
+                     onmouseenter="this.style.transform='scale(1.03)'"
+                     onmouseleave="this.style.transform='scale(1)'">
+              </div>
+
+              <ul style="font-size: 14.5px; color: #cbd5e1; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                <li>✓ <strong>Bilgisayar Donanımları:</strong> RAM, anakart, işlemci beyni nedir?</li>
+                <li>✓ <strong>mBlock Kodlama:</strong> Bloklarla gerçek robot motorlarını çalıştırma</li>
+                <li>✓ <strong>mBot Robot Çalışmaları:</strong> Çizgi izleyen ve engelden kaçan robotlar</li>
+                <li>✓ <strong>Dönüşümlü Kitler:</strong> LEGO Spike Prime & Makey Makey meyve piyanoları!</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 4: Robotik Sınıf Sözleşmesi (5 Altın Kural + İmza Duvarı)
+           ======================================================== -->
+      <section class="slide" data-slide="4">
+        <div class="slide-badge">🤝 OYUNLAŞTIRILMIŞ SINIF SÖZLEŞMESİ</div>
+        <h1 class="slide-title">Robotik Atölyesi Sözleşmesi: 5 Altın Kural 📜</h1>
+        <p class="slide-subtitle">Kuralları hep birlikte okuyalım; sırayla akıllı tahtaya gelip sağdaki panoya dokunarak el izinizi basın!</p>
+        
+        <div class="slide-content">
+          <!-- Sol Taraf: 5 Kural -->
+          <div class="col-half" style="flex: 0.95; display: flex; flex-direction: column; gap: 7px;">
+            <div class="rule-item">
+              <div class="rule-icon">✋</div>
+              <div class="rule-text">
+                <h4>1. Parmak Kaldırarak Söz Alırız</h4>
+                <p>Kodlama sınıfında herkesin fikri değerlidir! Birbirimizin sözünü kesmez, sıramızı bekleriz.</p>
+              </div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-icon">🛑</div>
+              <div class="rule-text">
+                <h4>2. İzin Almadan Robot ve Parçalara Dokunmayız</h4>
+                <p>Kablolar, sensörler ve robotlar hassastır. Öğretmenimiz 'Başlayın' demeden kutuları açmayız.</p>
+              </div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-icon">🧃🚫</div>
+              <div class="rule-text">
+                <h4>3. Bilgisayar ve Robotların Yanında Bir Şey Tüketmeyiz</h4>
+                <p>Elektronik devreleri korumak için masalarda yiyecek/içecek bulundurmayız (sadece kapaklı su).</p>
+              </div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-icon">🎧</div>
+              <div class="rule-text">
+                <h4>4. Usta Kodlayıcıyı Can Kulağıyla Dinleriz</h4>
+                <p>Kodlarda hata (bug) yapmamak için adımları dikkatle takip eder, fısıldaşmayız.</p>
+              </div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-icon">🤝</div>
+              <div class="rule-text">
+                <h4>5. Tablet ve Kitleri Sevgiyle Paylaşırız</h4>
+                <p>2-3 kişilik ekipler halinde çalışır, arkadaşlarımıza nazikçe yardım ederiz.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sağ Taraf: Tüm Sınıf Ortak İmza Panosu -->
+          <div class="col-half" style="flex: 1.05; display: flex; flex-direction: column;">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; padding: 14px; position: relative;">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(255,255,255,0.15); padding-bottom: 6px; margin-bottom: 6px;">
+                <div>
+                  <h3 style="font-size: 20px; color: var(--sunny-yellow); font-weight: 800;">✋ SINIF İMZA DUVARI</h3>
+                  <p style="font-size: 14px; color: #cbd5e1;">Sırayla tahtaya gelin ve boş alana dokunarak el izinizi basın!</p>
+                </div>
+                <div style="background: rgba(56,189,248,0.2); border: 1.5px solid var(--primary); padding: 5px 14px; border-radius: 20px; font-size: 14px; font-weight: 800; color: #fff;">
+                  İmzalayan: <span id="board-stamp-count" style="color: var(--sunny-yellow); font-size: 20px; font-weight: 800;">0</span> Mucit
+                </div>
+              </div>
+              
+              <!-- Interactive Handprint Stamping Canvas -->
+              <div id="handprint-stamp-canvas" onclick="handleBoardStamp(event)" style="flex: 1; border: 3px dashed rgba(56,189,248,0.55); border-radius: 16px; background: radial-gradient(circle at center, rgba(30, 41, 65, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%); position: relative; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <div id="canvas-placeholder" style="text-align: center; pointer-events: none; color: rgba(255,255,255,0.5);">
+                  <div style="font-size: 52px; margin-bottom: 4px;">✋🤖</div>
+                  <div style="font-size: 21px; font-weight: 800; color: #fff;">Elini Basmak İçin Dokun!</div>
+                  <div style="font-size: 14px; color: #cbd5e1; margin-top: 2px;">Tüm öğrenciler sırayla bu panoya dokunarak kendi el izini bırakır</div>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                <button class="nav-btn" style="padding: 6px 14px; font-size: 13.5px;" onclick="undoLastStamp()">↺ Son İmzayı Geri Al</button>
+                <button class="nav-btn primary" style="padding: 7px 18px; font-size: 14.5px;" onclick="triggerCelebration()">🎉 Sözleşmeyi Tamamla ➔</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Celebration Banner Overlay -->
+          <div id="celebration-banner">
+            <div style="font-size: 64px;">🎉🤖✨</div>
+            <h2 style="font-size: 30px; color: var(--sunny-yellow); text-shadow: 0 4px 12px rgba(0,0,0,0.6); font-weight: 800;">
+              TEBRİKLER! ROBOTİK SÖZLEŞMESİ ONAYLANDI!
+            </h2>
+            <p style="font-size: 17px; color: #e2e8f0; max-width: 700px; line-height: 1.5;">
+              Tüm genç mucitlerimiz el izlerini panoya mühürledi! Artık resmi bir robotik ekibiyiz. Şimdi bir robotun nasıl çalıştığını keşfetme zamanı!
+            </p>
+            <button class="nav-btn primary" style="font-size: 16px; padding: 12px 28px;" onclick="nextSlide()">
+              Robot Dünyasını Keşfet ➔
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 5: Robot Nedir? (Adım Adım Keşif)
+           ======================================================== -->
+      <section class="slide" data-slide="5">
+        <div class="slide-badge">💡 MÜFREDAT KAZANIMI</div>
+        <h1 class="slide-title">Robot Nedir ve Nasıl Çalışır? 🧠⚙️👀</h1>
+        <p class="slide-subtitle">Dikkatin dağılmasın diye robotun gizemli dünyasını 4 adımda teker teker keşfedelim!</p>
+        
+        <div class="slide-content" style="flex-direction: column;">
+          <!-- Top Stepper Navigation -->
+          <div class="stepper-nav">
+            <div class="step-tabs">
+              <button class="step-btn active" id="r-tab-1" onclick="setRobotStep(1)">
+                <span class="step-num">1</span>
+                <span>Robot Nedir? 🤖</span>
+              </button>
+              <div class="step-connector"></div>
+              <button class="step-btn" id="r-tab-2" onclick="setRobotStep(2)">
+                <span class="step-num">2</span>
+                <span>3 Temel Güç ⚡</span>
+              </button>
+              <div class="step-connector"></div>
+              <button class="step-btn" id="r-tab-3" onclick="setRobotStep(3)">
+                <span class="step-num">3</span>
+                <span>Robot mu, Makine mi? 🥪</span>
+              </button>
+              <div class="step-connector"></div>
+              <button class="step-btn" id="r-tab-4" onclick="setRobotStep(4)">
+                <span class="step-num">4</span>
+                <span>Hayatımızdaki Robotlar 🚀</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Stepper Panels -->
+          <div class="stepper-viewport">
+            
+            <!-- STEP 1: Robotun Tanımı -->
+            <div class="step-panel active" id="r-panel-1">
+              <div class="col-half" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0;">
+                <div style="width: 100%; height: 260px; max-height: 260px; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.85); border: 2.5px solid rgba(56, 189, 248, 0.35); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
+                  <img src="images/friendly_robot.jpg" 
+                       alt="Sevimli Robot" 
+                       style="width: 100%; height: 100%; object-fit: cover; border-radius: 14px; transition: transform 0.3s ease;"
+                       onmouseenter="this.style.transform='scale(1.03)'" 
+                       onmouseleave="this.style.transform='scale(1)'">
+                </div>
+                <div style="font-size: 13.5px; font-weight: 800; color: var(--sunny-yellow); text-align: center; margin-top: 8px;">
+                  🤖 Akıllı, Çevresini Algılayan ve Karar Veren Dostumuz
+                </div>
+              </div>
+              <div class="col-half" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 0;">
+                <div>
+                  <span class="grade-tag tag-g12" style="margin-bottom: 8px;">1 / 4 • TEMEL TANIM</span>
+                  <h2 style="font-size: 26px; color: #fff; margin-bottom: 8px;">Robot Nedir?</h2>
+                  <p style="font-size: 16px; color: #cbd5e1; line-height: 1.55;">
+                    Robot; çevresini <strong>algılayan</strong>, öğrendiği bilgilere göre <strong>karar veren</strong> ve verilen komutları yerine getiren <strong>akıllı bir makinedir</strong>.
+                  </p>
+                  <div style="background: rgba(255,255,255,0.06); border-left: 4px solid var(--primary); padding: 10px 14px; border-radius: 0 10px 10px 0; margin-top: 10px; font-size: 15px;">
+                    💡 <strong>Unutma:</strong> Robotlar sadece çelikten insan şeklinde olmak zorunda değildir! Dört tekerlekli bir araba, bir kol veya havada uçan bir drone da robottur!
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                  <button class="nav-btn primary" onclick="setRobotStep(2)">Sıradaki: 3 Temel Güç (2/4) ➔</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 2: Robotun 3 Temel Gücü -->
+            <div class="step-panel" id="r-panel-2">
+              <div class="col-full" style="justify-content: space-between;">
+                <div>
+                  <span class="grade-tag tag-g12">2 / 4 • ROBOT ANATOMİSİ</span>
+                  <h2 style="font-size: 25px; color: #fff; margin: 6px 0 12px;">Bir Robotu Robot Yapan 3 Sihirli Parça ⚡</h2>
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                    
+                    <div style="background: rgba(56,189,248,0.12); border: 2px solid var(--primary); border-radius: 14px; padding: 14px; text-align: center;">
+                      <div style="font-size: 38px;">👀👂</div>
+                      <h3 style="font-size: 18px; color: var(--primary); margin: 6px 0 4px;">1. SENSÖRLER (Duyu)</h3>
+                      <p style="font-size: 14px; color: #cbd5e1; line-height: 1.4;">
+                        Robotun gözleri ve kulaklarıdır! Işığı, mesafeyi, engelleri ve sesleri hisseder.
+                      </p>
+                    </div>
+
+                    <div style="background: rgba(251,191,36,0.12); border: 2px solid var(--sunny-yellow); border-radius: 14px; padding: 14px; text-align: center;">
+                      <div style="font-size: 38px;">🧠💾</div>
+                      <h3 style="font-size: 18px; color: var(--sunny-yellow); margin: 6px 0 4px;">2. İŞLEMCİ (Beyin)</h3>
+                      <p style="font-size: 14px; color: #cbd5e1; line-height: 1.4;">
+                        Bizim yazdığımız kodları okuyan mikroçiptir! "Engeli gördüm, şimdi durmalıyım" kararı verir.
+                      </p>
+                    </div>
+
+                    <div style="background: rgba(52,211,153,0.12); border: 2px solid var(--emerald-green); border-radius: 14px; padding: 14px; text-align: center;">
+                      <div style="font-size: 38px;">⚙️🦾</div>
+                      <h3 style="font-size: 18px; color: var(--emerald-green); margin: 6px 0 4px;">3. MOTORLAR (Kaslar)</h3>
+                      <p style="font-size: 14px; color: #cbd5e1; line-height: 1.4;">
+                        Robotun tekerleklerini, kollarını ve paletlerini hareket ettiren fiziksel güçtür!
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <button class="nav-btn" onclick="setRobotStep(1)">◀ Önceki Adım</button>
+                  <button class="nav-btn primary" onclick="setRobotStep(3)">Sıradaki: Robot mu, Makine mi? (3/4) ➔</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 3: Robot vs Sıradan Makine -->
+            <div class="step-panel" id="r-panel-3">
+              <div class="col-half">
+                <div style="background: rgba(244,63,94,0.15); border: 2px solid var(--candy-red); border-radius: 14px; padding: 16px; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div style="font-size: 40px; margin-bottom: 6px;">🥪❌</div>
+                    <h3 style="font-size: 20px; color: var(--candy-red); font-weight: 800;">Sıradan Makine: Tost Makinesi</h3>
+                    <p style="font-size: 15px; color: #cbd5e1; line-height: 1.5; margin-top: 8px;">
+                      Düğmesine basarsın ve ısınır. Ekmek yansa bile dumanı hissetmez, fişi çekilmeden durmaz! Çünkü <strong>sensörü ve düşünen bir beyni yoktur</strong>.
+                    </p>
+                  </div>
+                  <div style="font-size: 13.5px; color: #fca5a5; font-weight: 700;">➔ Kendi kendine karar veremez!</div>
+                </div>
+              </div>
+              <div class="col-half">
+                <div style="background: rgba(52,211,153,0.15); border: 2px solid var(--emerald-green); border-radius: 14px; padding: 16px; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div style="font-size: 40px; margin-bottom: 6px;">🧹🤖✔️</div>
+                    <h3 style="font-size: 20px; color: var(--emerald-green); font-weight: 800;">Akıllı Robot: Robot Süpürge</h3>
+                    <p style="font-size: 15px; color: #cbd5e1; line-height: 1.5; margin-top: 8px;">
+                      Evi gezerken lazer sensörüyle koltuğu görür, merdivene gelince aşağı yuvarlanmamak için geri çekilir, şarjı bitince yuvasına döner!
+                    </p>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 13.5px; color: #86efac; font-weight: 700;">➔ Hisseder, düşünür ve hareket eder!</div>
+                    <button class="nav-btn primary" onclick="setRobotStep(4)">Son Adım (4/4) ➔</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 4: Hayatımızdaki Robotlar -->
+            <div class="step-panel" id="r-panel-4">
+              <div class="col-full" style="justify-content: space-between;">
+                <div>
+                  <span class="grade-tag tag-g34">4 / 4 • GÜNLÜK HAYAT VE UZAY</span>
+                  <h2 style="font-size: 25px; color: #fff; margin: 6px 0 12px;">Robotlar Nerede Çalışıyor? 🌍</h2>
+                  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                    <div class="fun-box" style="padding: 12px; text-align: center;">
+                      <div style="font-size: 34px;">🏠</div>
+                      <h4 style="color: var(--primary); font-size: 16px; margin: 4px 0;">Evlerimizde</h4>
+                      <p style="font-size: 12.5px; color: #cbd5e1;">Robot süpürgeler, çim biçme robotları.</p>
+                    </div>
+                    <div class="fun-box" style="padding: 12px; text-align: center;">
+                      <div style="font-size: 34px;">🏭</div>
+                      <h4 style="color: var(--sunny-yellow); font-size: 16px; margin: 4px 0;">Fabrikalarda</h4>
+                      <p style="font-size: 12.5px; color: #cbd5e1;">Araba parçalarını milimetrik kaynaklayan robot kollar.</p>
+                    </div>
+                    <div class="fun-box" style="padding: 12px; text-align: center;">
+                      <div style="font-size: 34px;">🏥</div>
+                      <h4 style="color: var(--emerald-green); font-size: 16px; margin: 4px 0;">Hastanelerde</h4>
+                      <p style="font-size: 12.5px; color: #cbd5e1;">Doktorlara ameliyatlarda yardım eden mikro robotlar.</p>
+                    </div>
+                    <div class="fun-box" style="padding: 12px; text-align: center;">
+                      <div style="font-size: 34px;">🪐</div>
+                      <h4 style="color: var(--cute-purple); font-size: 16px; margin: 4px 0;">Mars ve Uzayda</h4>
+                      <p style="font-size: 12.5px; color: #cbd5e1;">Perseverance & Curiosity uzay gezginleri.</p>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <button class="nav-btn" onclick="setRobotStep(3)">◀ Önceki Adım</button>
+                  <button class="nav-btn primary" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000;" onclick="nextSlide()">
+                    🎮 "Robot mu, Değil mi?" Oyununa Başla ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 6: Akıllı Tahta Oyunu: "Robot mu, Değil mi?"
+           ======================================================== -->
+      <section class="slide" data-slide="6">
+        <div class="slide-badge">🧩 AKILLI TAHTA OYUNU</div>
+        <h1 class="slide-title">Robot mu, Değil mi? (Sürükle-Bırak veya Dokun) 🎮</h1>
+        <p class="slide-subtitle">Sol taraftaki kartlara dokunun veya sürükleyin; doğru kutuya yerleştirin! (Sensörü ve beyni var mı?)</p>
+        
+        <div class="slide-content">
+          <div class="drag-game-container">
+            
+            <!-- Sol: Kartlar -->
+            <div class="drag-items-col">
+              <div style="font-size: 15px; font-weight: 800; color: var(--sunny-yellow);">
+                👇 Nesne Kartları (Tıkla veya Sürükle)
+              </div>
+
+              <div class="draggable-card" id="card-vacuum" draggable="true" data-type="robot" onclick="selectDragCard('vacuum')">
+                <div class="card-icon-box">🧹</div>
+                <div>
+                  <div style="color: #fff; font-size: 15px;">Akıllı Robot Süpürge</div>
+                  <div style="font-size: 12px; color: var(--primary);">Engelleri görür ve kendi süpürür</div>
+                </div>
+              </div>
+
+              <div class="draggable-card" id="card-teddy" draggable="true" data-type="not-robot" onclick="selectDragCard('teddy')">
+                <div class="card-icon-box">🧸</div>
+                <div>
+                  <div style="color: #fff; font-size: 15px;">Peluş Oyuncak Ayı</div>
+                  <div style="font-size: 12px; color: var(--candy-red);">İçi pamuk dolu, devresi yok</div>
+                </div>
+              </div>
+
+              <div class="draggable-card" id="card-mars" draggable="true" data-type="robot" onclick="selectDragCard('mars')">
+                <div class="card-icon-box">🛰️</div>
+                <div>
+                  <div style="color: #fff; font-size: 15px;">Mars Gezgini (Curiosity)</div>
+                  <div style="font-size: 12px; color: var(--primary);">Kendi başına kaya inceler ve fotoğraf çeker</div>
+                </div>
+              </div>
+
+              <div class="draggable-card" id="card-toaster" draggable="true" data-type="not-robot" onclick="selectDragCard('toaster')">
+                <div class="card-icon-box">🍞</div>
+                <div>
+                  <div style="color: #fff; font-size: 15px;">Klasik Ekmek Kızartıcı</div>
+                  <div style="font-size: 12px; color: var(--candy-red);">Sensörü yok, sadece düğmeye basınca ısınır</div>
+                </div>
+              </div>
+
+              <div class="draggable-card" id="card-mbot" draggable="true" data-type="robot" onclick="selectDragCard('mbot')">
+                <div class="card-icon-box">🤖</div>
+                <div>
+                  <div style="color: #fff; font-size: 15px;">mBot Kodlama Robotu</div>
+                  <div style="font-size: 12px; color: var(--primary);">Sensörleriyle çizgileri takip eder</div>
+                </div>
+              </div>
+
+              <div class="draggable-card" id="card-clock" draggable="true" data-type="not-robot" onclick="selectDragCard('clock')">
+                <div class="card-icon-box">⏰</div>
+                <div>
+                  <div style="color: #fff; font-size: 15px;">Kurmalı Masa Saati</div>
+                  <div style="font-size: 12px; color: var(--candy-red);">Sadece yay ve çarklarla döner</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sağ: İki Büyük Hedef Kutusu -->
+            <div class="drop-targets-col">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 15px; font-weight: 800; color: #fff;">Doğru Kategoriye Gönder!</span>
+                <span style="background: rgba(56,189,248,0.2); border: 1px solid var(--primary); padding: 3px 12px; border-radius: 14px; font-size: 13px; font-weight: 800;">
+                  Eşleşen: <span id="robot-game-score">0</span> / 6
+                </span>
+              </div>
+
+              <!-- ROBOT BÖLGESİ -->
+              <div class="drop-bin-box is-robot" id="bin-robot" data-target="robot" onclick="dropSelectedToBin('robot')">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <strong style="font-size: 17px; color: var(--emerald-green); display: flex; align-items: center; gap: 8px;">
+                    <span>🤖</span> EVET, BU BİR ROBOT!
+                  </strong>
+                  <span style="font-size: 12px; color: #a7f3d0; font-weight: 700;">(Sensör + Beyin + Motor)</span>
+                </div>
+                <div class="bin-tags-tray" id="tray-robot">
+                  <span style="font-size: 12.5px; color: rgba(255,255,255,0.4);">Robot olan kartları buraya at...</span>
+                </div>
+              </div>
+
+              <!-- ROBOT DEĞİL BÖLGESİ -->
+              <div class="drop-bin-box not-robot" id="bin-not-robot" data-target="not-robot" onclick="dropSelectedToBin('not-robot')">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <strong style="font-size: 17px; color: var(--candy-red); display: flex; align-items: center; gap: 8px;">
+                    <span>❌</span> HAYIR, ROBOT DEĞİL!
+                  </strong>
+                  <span style="font-size: 12px; color: #fca5a5; font-weight: 700;">(Düşünemez veya sensörü yok)</span>
+                </div>
+                <div class="bin-tags-tray" id="tray-not-robot">
+                  <span style="font-size: 12.5px; color: rgba(255,255,255,0.4);">Robot olmayan kartları buraya at...</span>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end;">
+                <button class="nav-btn" style="padding: 6px 16px; font-size: 13px;" onclick="resetRobotGame()">↺ Oyunu Sıfırla</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Game Celebration Overlay -->
+          <div id="robot-game-celebration" style="position: absolute; inset: 0; background: rgba(12, 19, 34, 0.96); border-radius: var(--radius-lg); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px;">
+            <div style="font-size: 64px;">🏆🤖🎉</div>
+            <h2 style="font-size: 30px; color: var(--sunny-yellow); font-weight: 800;">HARİKA BİR ROBOT UZMANISIN!</h2>
+            <p style="font-size: 17px; color: #e2e8f0; max-width: 650px; line-height: 1.5;">
+              Neyin robot olup olmadığını tam olarak öğrendin! Şimdi bu robotları nasıl yönlendireceğimizi keşfedelim!
+            </p>
+            <div style="display: flex; gap: 12px;">
+              <button class="nav-btn" onclick="resetRobotGame()">↺ Yeniden Oyna</button>
+              <button class="nav-btn primary" onclick="nextSlide()">Robot Hareketlerine Geç ➔</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 7: Robot Hareketleri & Algoritmik Düşünme
+           ======================================================== -->
+      <section class="slide" data-slide="7">
+        <div class="slide-badge">👣 ALGORİTMA MANTIĞI</div>
+        <h1 class="slide-title">Robotlar Nasıl Hareket Eder? Komut Dili 🧭</h1>
+        <p class="slide-subtitle">Robotlar akıllıdır ama kendi başlarına karar veremezler! Biz ne dersek tam olarak onu yaparlar.</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 20px; color: var(--sunny-yellow); font-weight: 800;">Temel 4 Yönlendirme Komutumuz:</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 12px;">
+                  <span style="font-size: 28px; background: #2563eb; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">⬆️</span>
+                  <div>
+                    <strong style="color: #fff; font-size: 16px;">İLERİ GİT (1 Adım)</strong>
+                    <p style="font-size: 13px; color: #cbd5e1;">Robot baktığı yönde tam 1 kare ileri adım atar.</p>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 12px;">
+                  <span style="font-size: 28px; background: #0284c7; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">⬇️</span>
+                  <div>
+                    <strong style="color: #fff; font-size: 16px;">GERİ GİT (1 Adım)</strong>
+                    <p style="font-size: 13px; color: #cbd5e1;">Yönünü değiştirmeden arkaya doğru 1 kare çekilir.</p>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 12px;">
+                  <span style="font-size: 28px; background: #10b981; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">↪️</span>
+                  <div>
+                    <strong style="color: #fff; font-size: 16px;">SAĞA DÖN (Olduğu Yerde 90°)</strong>
+                    <p style="font-size: 13px; color: #cbd5e1;">İlerlemez! Olduğu yerde yüzünü sağ tarafa çevirir.</p>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 12px;">
+                  <span style="font-size: 28px; background: #8b5cf6; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">↩️</span>
+                  <div>
+                    <strong style="color: #fff; font-size: 16px;">SOLA DÖN (Olduğu Yerde 90°)</strong>
+                    <p style="font-size: 13px; color: #cbd5e1;">İlerlemez! Olduğu yerde yüzünü sol tarafa çevirir.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background: rgba(251,191,36,0.15); border: 1.5px solid var(--sunny-yellow); padding: 8px 12px; border-radius: 10px; font-size: 13.5px; color: #fef08a;">
+                ⚠️ <strong>Önemli Kural:</strong> "Dön" demek ilerlemek demek değildir! Dönüşten sonra mutlaka "İleri" komutu vermelisin.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 20px; color: var(--primary); font-weight: 800;">🎯 Kademe Kılavuzumuz:</h3>
+
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: rgba(56,189,248,0.1); border-left: 4px solid var(--primary); padding: 12px; border-radius: 0 12px 12px 0;">
+                  <span class="grade-tag tag-g12">1. ve 2. Sınıf Düzeyi</span>
+                  <h4 style="color: #fff; margin: 4px 0 2px; font-size: 16px;">Kare Kare Yönlendirme</h4>
+                  <p style="font-size: 14px; color: #cbd5e1; line-height: 1.45;">
+                    Basit oklar kullanılır: Robotu doğrudan kareler üzerinde yukarı, aşağı, sağa ve sola kaydırarak hedefe ulaştırırız.
+                  </p>
+                </div>
+
+                <div style="background: rgba(192,132,252,0.1); border-left: 4px solid var(--cute-purple); padding: 12px; border-radius: 0 12px 12px 0;">
+                  <span class="grade-tag tag-g34">3. ve 4. Sınıf Düzeyi</span>
+                  <h4 style="color: #fff; margin: 4px 0 2px; font-size: 16px;">Robotun Bakış Açısı & Debugging</h4>
+                  <p style="font-size: 14px; color: #cbd5e1; line-height: 1.45;">
+                    Sağ ve sol dönüşler robotun kendi baktığı yöne göredir! Yanlış komut verilirse hata bulunur (Bug) ve algoritma düzeltilir.
+                  </p>
+                </div>
+              </div>
+
+              <div style="background: rgba(15,23,42,0.85); padding: 12px; border-radius: 12px; text-align: center; border: 1.5px solid rgba(255,255,255,0.15);">
+                <div style="font-size: 15px; font-weight: 800; color: var(--emerald-green); margin-bottom: 4px;">Şimdi Sıra Sende!</div>
+                <p style="font-size: 13px; color: #cbd5e1;">Sıradaki slaytta akıllı tahtadaki robotu sen kodlayacaksın!</p>
+                <button class="nav-btn primary" style="width: 100%; justify-content: center; margin-top: 6px; font-size: 15px;" onclick="nextSlide()">
+                  🕹️ İnteraktif Labirenti Aç ➔
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 8: İnteraktif Yönlendirici Oyunu (Akıllı Tahta & Tablet Labirenti)
+           ======================================================== -->
+      <section class="slide" data-slide="8">
+        <div class="slide-badge">🕹️ CANLI ÇALIŞAN KODLAMA OYUNU</div>
+        <h1 class="slide-title">İnteraktif Yönlendirici Labirenti: Robotu Şarj İstasyonuna Ulaştır! 🏁</h1>
+        <p class="slide-subtitle">Yön oklarına basarak komut zincirini (programını) oluştur, ardından "KODLARI ÇALIŞTIR"a bas!</p>
+        
+        <div class="slide-content">
+          <div class="maze-game-container">
+            
+            <!-- Sol: Labirent Grid Alanı -->
+            <div class="maze-board-area">
+              <div class="maze-nav-bar">
+                <div class="maze-tier-row">
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <button id="btn-lvl-1" class="tier-tab-btn active" onclick="selectMazeTier(1)">1-2. Sınıf (Temel)</button>
+                    <button id="btn-lvl-2" class="tier-tab-btn" onclick="selectMazeTier(2)">3-4. Sınıf (Labirent)</button>
+                  </div>
+                  <div id="maze-battery-status" style="font-size: 12.5px; font-weight: 800; color: var(--sunny-yellow);">
+                    ⚡ Enerji Pili: 0 / 1
+                  </div>
+                </div>
+
+                <!-- 3 Missions per level -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+                  <div class="mission-picker">
+                    <span style="font-size: 11px; font-weight: 800; color: #94a3b8;">PARKUR:</span>
+                    <button id="btn-mission-1" class="mission-pill active" onclick="selectMazeMission(1)">1. Parkur</button>
+                    <button id="btn-mission-2" class="mission-pill" onclick="selectMazeMission(2)">2. Parkur</button>
+                    <button id="btn-mission-3" class="mission-pill" onclick="selectMazeMission(3)">3. Parkur</button>
+                  </div>
+                  <span id="maze-mission-title" style="font-size: 11.5px; color: var(--primary); font-weight: 800;">Düz Yol</span>
+                </div>
+              </div>
+
+              <!-- 5x5 Grid Board -->
+              <div class="maze-grid" id="maze-grid-board">
+                <!-- Dynamically generated cells in JS -->
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 2px 4px 0 4px;">
+                <div id="maze-heading-display" style="font-size: 12px; color: var(--primary); font-weight: 800;">
+                  🧭 Robot Yönü: ➡️ Sağa Bakıyor
+                </div>
+                <div id="maze-hint-display" style="font-size: 11px; color: #94a3b8; font-weight: 600;">
+                  (İleri = Baktığı yönde 1 adım)
+                </div>
+              </div>
+
+              <div id="maze-status-text" style="font-size: 12px; font-weight: 800; color: var(--text-muted); min-height: 20px; text-align: center; line-height: 1.2;">
+                Komutlarını seç ve çalıştır! (Komuta tıklayarak silebilirsin)
+              </div>
+            </div>
+
+            <!-- Sağ: Kontrol Butonları & Komut Kuyruğu -->
+            <div class="maze-controls-col">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <span style="font-size: 13.5px; font-weight: 800; color: var(--sunny-yellow);">1. Kodlama Dili:</span>
+                  <div style="display: flex; gap: 4px;">
+                    <button id="btn-mode-robot" class="tier-tab-btn active" style="padding: 2px 8px; font-size: 11px;" onclick="setControlMode('ROBOT')">🤖 Robot Açısı (İleri/Dön)</button>
+                    <button id="btn-mode-compass" class="tier-tab-btn" style="padding: 2px 8px; font-size: 11px;" onclick="setControlMode('COMPASS')">🧭 Harita Yönü (Oklar)</button>
+                  </div>
+                </div>
+                
+                <div class="cmd-pad-grid" id="cmd-pad-buttons">
+                  <!-- Dinamik olarak renderControlPad() ile oluşturulur -->
+                </div>
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                  <span style="font-size: 13.5px; font-weight: 800; color: var(--emerald-green);">2. Komut Kuyruğun:</span>
+                  <div style="display: flex; gap: 4px;">
+                    <button class="nav-btn" style="padding: 2px 8px; font-size: 11px; border-radius: 6px;" onclick="removeLastMazeCommand()" title="Son komutu geri al">⌫ Geri Al</button>
+                    <button class="nav-btn" style="padding: 2px 8px; font-size: 11px; border-radius: 6px;" onclick="clearMazeQueue()" title="Tümünü temizle">🗑️ Temizle</button>
+                  </div>
+                </div>
+                <div class="cmd-queue-box" id="cmd-queue-container" title="Çıkarmak istediğin komuta tıkla!">
+                  <span style="color: rgba(255,255,255,0.4); font-size: 12px;">Ok butonlarına basarak buraya komut ekle...</span>
+                </div>
+                <div style="font-size: 10.5px; color: #94a3b8; text-align: right; margin-top: 1px;">
+                  💡 İpucu: Çıkarmak istediğin komuta tıklayabilirsin.
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px;">
+                <button class="nav-btn" style="flex: 1; justify-content: center; font-size: 13.5px;" onclick="resetMazeRobot()">↺ Başa Al</button>
+                <button id="btn-run-maze" class="nav-btn primary" style="flex: 1.8; justify-content: center; font-size: 15px; background: linear-gradient(135deg, #10b981, #059669); color: #fff;" onclick="runMazeProgram()">
+                  ▶ KODLARI ÇALIŞTIR
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 9: Fiziksel Sınıf Oyunu: "İnsan Robot & Yönlendirici"
+           ======================================================== -->
+      <section class="slide" data-slide="9">
+        <div class="slide-badge">🏃 FİZİKSEL UNPLUGGED ETKİNLİK</div>
+        <h1 class="slide-title">Sınıf Etkinliği: "İnsan Robot & Yönlendirici" Oyunu! 🤖🧭</h1>
+        <p class="slide-subtitle">Bilgisayarsız (unplugged) kodlama zamanı! Bir öğrenci robot olur, arkadaşı ise onu kodlarla yönlendirir.</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <h3 style="font-size: 20px; color: var(--sunny-yellow); font-weight: 800; margin-bottom: 8px;">🎮 Oyunun Kuralları ve Rolleri:</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 12px; border-left: 4px solid var(--primary);">
+                    <strong style="color: #fff; font-size: 16px;">🤖 1. Öğrenci: PROGRAMLANMIŞ ROBOT</strong>
+                    <p style="font-size: 13.5px; color: #cbd5e1; margin-top: 2px;">
+                      Gözlerini hafifçe kapatır veya düz bakar. Kendi başına adım atamaz! Sadece yönlendiriciden gelen komutları aynen uygular.
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 12px; border-left: 4px solid var(--emerald-green);">
+                    <strong style="color: #fff; font-size: 16px;">👨‍💻 2. Öğrenci: KODLAYICI / YÖNLENDİRİCİ</strong>
+                    <p style="font-size: 13.5px; color: #cbd5e1; margin-top: 2px;">
+                      Robotun arkasında durur. Komutları sesli veya omuzlarına hafifçe dokunarak verir. Robotu engellere çarpmadan hedefe götürür!
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 12px; border-left: 4px solid var(--candy-red);">
+                    <strong style="color: #fff; font-size: 16px;">⚠️ GÜVENLİK KURALI:</strong>
+                    <p style="font-size: 13.5px; color: #cbd5e1; margin-top: 2px;">
+                      Asla hızlı koşmak yok! Küçük ve yavaş robot adımlarıyla ilerlenir.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background: rgba(56,189,248,0.15); padding: 8px 14px; border-radius: 10px; font-size: 14px; color: #bae6fd;">
+                🎯 <strong>Hedef:</strong> Sınıf zeminindeki engelleri (sıralar, su şişeleri) aşarak "Şarj İstasyonu"na ulaşmak!
+              </div>
+            </div>
+          </div>
+
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; border-color: var(--cute-purple);">
+              <h3 style="font-size: 20px; color: var(--cute-purple); font-weight: 800;">🌟 Kademelere Göre Oyun Modları:</h3>
+
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="background: rgba(255,255,255,0.06); padding: 12px; border-radius: 12px;">
+                  <span class="grade-tag tag-g12">1-2. Sınıf: Dokunmatik Kodlama (Omuz Telsizi)</span>
+                  <p style="font-size: 14px; color: #cbd5e1; margin-top: 4px; line-height: 1.45;">
+                    • Sağ omuza 1 tık = Sağa 1 adım<br>
+                    • Sol omuza 1 tık = Sola 1 adım<br>
+                    • Sırtın ortasına tık = İleri 1 adım<br>
+                    • Kafaya hafif dokunuş = Dur!
+                  </p>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.06); padding: 12px; border-radius: 12px;">
+                  <span class="grade-tag tag-g34">3-4. Sınıf: Kağıt Üzerinde Algoritma & Debug</span>
+                  <p style="font-size: 14px; color: #cbd5e1; margin-top: 4px; line-height: 1.45;">
+                    • Kodlayıcı önce tüm yolu tahtaya veya kağıda yazar: <code>[3 İleri, 1 Sağa, 2 İleri]</code>.<br>
+                    • Robot komutları sırayla uygular.<br>
+                    • Robot engele çarparsa "BUG (Hata) bulundu!" denir, kod düzeltilir.
+                  </p>
+                </div>
+              </div>
+
+              <div style="text-align: center; margin-top: 6px;">
+                <button class="nav-btn primary" style="width: 100%; justify-content: center; font-size: 15px;" onclick="nextSlide()">
+                  Resmi Kodlayıcı Kimlik & Boyama A4'üne Geç ➔
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 10: Kimlik Kartı & Kodlu Piksel Boyama A4
+           ======================================================== -->
+      <section class="slide" data-slide="10">
+        <div class="slide-badge">🎫 RESMİ KODLAYICI BELGESİ</div>
+        <h1 class="slide-title">Kodlayıcı Kimlik Kartı & Kodlu Piksel Robot Boyama 🎨</h1>
+        <p class="slide-subtitle">Öğretmeninizden aldığınız A4 çalışma kağıdını doldurarak resmi mühendislik kimliğinizi kazanın!</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 21px; color: var(--sunny-yellow); font-weight: 800;">📋 A4 Sayfasında Neler Yapacağız?</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: rgba(255,255,255,0.06); padding: 12px 16px; border-radius: 12px; border-left: 5px solid var(--primary);">
+                  <strong style="color: #fff; font-size: 17px;">1. Üst Kısım: Genç Kodlayıcı Kimlik Kartı</strong>
+                  <p style="color: #cbd5e1; margin-top: 3px; font-size: 14.5px; line-height: 1.4;">
+                    Adını, Soyadını, Sınıfını ve Uzmanlık Alanını yaz. Boş kutucuğa kendi mucit/avatar portreni çiz!
+                  </p>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.06); padding: 12px 16px; border-radius: 12px; border-left: 5px solid var(--cute-purple);">
+                  <strong style="color: #fff; font-size: 17px;">2. Alt Kısım: Kodlu Piksel Robot Boyama (Kendi Renk Paletin!)</strong>
+                  <p style="color: #cbd5e1; margin-top: 3px; font-size: 14.5px; line-height: 1.4;">
+                    Paletteki boş kutuları istediğin 5 renge boyayarak kendi paletini oluştur; matristeki sayıları kendi paletine göre renklendir!
+                  </p>
+                </div>
+              </div>
+
+              <!-- Focus Timer Widget -->
+              <div style="background: rgba(15,23,42,0.85); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Çizim & Boyama Süresi</div>
+                  <div id="countdown-timer" style="font-size: 28px; font-weight: 800; color: var(--sunny-yellow); font-family: monospace;">10:00</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="nav-btn" style="padding: 6px 14px; font-size: 13.5px;" onclick="startTimer()">▶ Başlat</button>
+                  <button class="nav-btn" style="padding: 6px 14px; font-size: 13.5px;" onclick="pauseTimer()">⏸ Duraklat</button>
+                  <button class="nav-btn" style="padding: 6px 14px; font-size: 13.5px;" onclick="resetTimer()">↺ Sıfırla</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; background: rgba(15,23,42,0.92);">
+              <div style="font-size: 16px; font-weight: 800; color: var(--text-muted);">📄 A4 ÇALIŞMA SAYFASI ÖNİZLEMESİ</div>
+              
+              <!-- Realistic Mini A4 Mockup -->
+              <div style="width: 270px; height: 330px; background: #fff; border-radius: 10px; border: 4px solid var(--primary); padding: 8px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transform: rotate(-2deg); transition: transform 0.3s;" onmouseenter="this.style.transform='rotate(0deg) scale(1.04)'" onmouseleave="this.style.transform='rotate(-2deg) scale(1)'">
+                
+                <!-- Mini ID Header -->
+                <div style="border: 2px solid #2563eb; border-radius: 6px; padding: 5px; height: 100px; display: flex; flex-direction: column; justify-content: space-between; background: #eff6ff;">
+                  <div style="font-size: 8.5px; font-weight: 800; color: #1e40af; text-align: center;">LOOM AKADEMİ • KODLAYICI KİMLİK KARTI</div>
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <div style="width: 38px; height: 46px; border: 1.5px dashed #2563eb; border-radius: 4px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px;">👤</div>
+                    <div style="flex: 1; font-size: 8.5px; color: #0f172a; font-weight: 700; display: flex; flex-direction: column; gap: 2px; text-align: left;">
+                      <div>Adı: .........................</div>
+                      <div>Soyadı: ..................</div>
+                      <div>Okulu: ....................</div>
+                      <div>Uzmanlık: .............</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 7.5px; font-weight: 800; color: #e11d48; border-top: 1px solid #cbd5e1; padding-top: 1px;">
+                    <span style="color: #475569;">RK-2026-001</span>
+                    <span>★ ONAYLI KODLAYICI</span>
+                  </div>
+                </div>
+
+                <!-- Mini Cut Divider -->
+                <div style="border-top: 1.5px dashed #94a3b8; margin: 1px 0;"></div>
+
+                <!-- Mini Pixel Coloring Section -->
+                <div style="flex: 1; border: 2px solid #7c3aed; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; background: #fff;">
+                  <div style="font-size: 8px; font-weight: 800; color: #6d28d9;">KODLU PİKSEL BOYAMA (KENDİ PALETİN)</div>
+                  <!-- Mini Matrix Grid Mockup -->
+                  <div style="display: grid; grid-template-columns: repeat(7, 12px); gap: 1px; background: #ddd6fe; padding: 2px; border-radius: 4px;">
+                    <div style="background:#fff; height:10px; font-size:6px; text-align:center;">1</div>
+                    <div style="background:#fff; height:10px; font-size:6px; text-align:center;">5</div>
+                    <div style="background:#fff; height:10px; font-size:6px; text-align:center;">3</div>
+                    <div style="background:#fff; height:10px; font-size:6px; text-align:center;">2</div>
+                    <div style="background:#fff; height:10px; font-size:6px; text-align:center;">4</div>
+                    <div style="background:#fff; height:10px; font-size:6px; text-align:center;">3</div>
+                    <div style="background:#fff; height:10px; font-size:6px; text-align:center;">5</div>
+                  </div>
+                  <div style="font-size: 7.5px; font-weight: 800; color: #a21caf; width: 100%; text-align: left; border-top: 1px solid #f3e8ff; padding-top: 1px;">
+                    🤖 Robotumun İsmi: ..............................
+                  </div>
+                </div>
+
+              </div>
+
+              <a href="./Robotik_Kodlama_Kimlik_ve_Boyama_A4.html" target="_blank" class="nav-btn primary" style="font-size: 14.5px; text-decoration: none;">
+                🖨️ A4 Belgesini Yeni Sekmede Aç / Yazdır
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 11: İlham & Teknoloji Köşesi (Video)
+           ======================================================== -->
+      <section class="slide" data-slide="11">
+        <div class="slide-badge">🎬 İLHAM VİDEOSU</div>
+        <h1 class="slide-title">Geleceğin Robotları: Dünyanın En Yetenekli Makineleri! 🦾</h1>
+        <p class="slide-subtitle">Mühendislerin tasarladığı akıllı robotların nasıl zıpladığını, dans ettiğini ve engelleri aştığını izleyelim!</p>
+        
+        <div class="slide-content">
+          <div class="col-60">
+            <div class="video-container">
+              <iframe 
+                src="https://www.youtube.com/embed/fn3KWM1kuAw?feature=oembed&enablejsapi=1" 
+                title="Boston Dynamics Robot Showcase" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+              </iframe>
+              <div style="background: rgba(15,23,42,0.95); padding: 6px 14px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.15);">
+                <span style="font-size: 13.5px; color: #cbd5e1;">Video tahtada açılmazsa:</span>
+                <a href="https://www.youtube.com/watch?v=fn3KWM1kuAw" target="_blank" class="nav-btn" style="text-decoration: none; font-size: 12.5px; padding: 5px 14px; background: #e11d48; border-color: #f43f5e; color: #fff;">
+                  ▶ YouTube'da Doğrudan İzle
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-40">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 20px; color: var(--sunny-yellow); font-weight: 800;">👀 İzlerken Şunlara Dikkat Et:</h3>
+              <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14.5px; color: #cbd5e1;">
+                <div style="background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 12px;">
+                  <strong style="color: #fff; font-size: 16px;">1. Denge Sensörleri (Jiroskop):</strong>
+                  <p style="margin-top: 2px;">Kaygan zeminde bile kaymadan nasıl tek ayak üstünde durabiliyor?</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 12px;">
+                  <strong style="color: #fff; font-size: 16px;">2. Kameralar & Lazerler (LIDAR):</strong>
+                  <p style="margin-top: 2px;">Önündeki kutuyu görüp üzerinden takla atarak nasıl geçiyor?</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 12px;">
+                  <strong style="color: #fff; font-size: 16px;">3. Yazılım ve Kodlar:</strong>
+                  <p style="margin-top: 2px;">Tüm bu hareketler, tıpkı bizim bugün yaptığımız gibi satır satır yazılan kodlarla gerçekleşiyor!</p>
+                </div>
+              </div>
+              <div style="margin-top: 6px;">
+                <button class="nav-btn primary" style="width: 100%; justify-content: center; font-size: 15px;" onclick="nextSlide()">
+                  🏁 Büyük Kapanışa Geç ➔
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 12: Ders Kapanışı & Gelecek Haftanın Müjdesi
+           ======================================================== -->
+      <section class="slide" data-slide="12">
+        <div class="slide-badge">🏁 1. HAFTANIN SONU & TEBRİKLER</div>
+        <h1 class="slide-title">1. Hafta Görevi Başarıyla Tamamlandı! 🎉🤖</h1>
+        <p class="slide-subtitle">Bugün robotik dünyasına ilk resmi adımınızı attınız ve genç birer kodlayıcı oldunuz!</p>
+        
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 21px; color: var(--sunny-yellow); font-weight: 800;">🌟 Bugün Neler Başardık?</h3>
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px;">
+                <div style="background: rgba(255,255,255,0.06); padding: 10px 16px; border-radius: 12px; border-left: 5px solid var(--primary);">
+                  <strong style="color: #fff; font-size: 16.5px;">✓ Robotik Atölyesiyle Tanıştık:</strong>
+                  <p style="color: #cbd5e1; margin-top: 2px;">Sözleşmemizi imzaladık ve kurallarımızı belirledik.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 10px 16px; border-radius: 12px; border-left: 5px solid var(--emerald-green);">
+                  <strong style="color: #fff; font-size: 16.5px;">✓ Robotun Anatomisini Çözdük:</strong>
+                  <p style="color: #cbd5e1; margin-top: 2px;">Sensörler, beyin ve motor üçlüsünü keşfettik.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 10px 16px; border-radius: 12px; border-left: 5px solid var(--cute-purple);">
+                  <strong style="color: #fff; font-size: 16.5px;">✓ Yönlendirici & Kodlayıcı Olduk:</strong>
+                  <p style="color: #cbd5e1; margin-top: 2px;">Hem tahtada hem sınıfta komutlarla robotları hedefe ulaştırdık!</p>
+                </div>
+              </div>
+              <div style="text-align: center; font-size: 15px; font-weight: 800; color: var(--emerald-green); background: rgba(52,211,153,0.15); padding: 10px; border-radius: 12px;">
+                🏆 Kazanılan Rozet: "1. Hafta Genç Mucit Rozeti!"
+              </div>
+            </div>
+          </div>
+
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(135deg, rgba(30,41,65,0.95), rgba(15,23,42,0.95)); border-color: var(--sunny-yellow);">
+              <div>
+                <span style="background: var(--sunny-yellow); color: #000; font-size: 13px; font-weight: 800; padding: 4px 14px; border-radius: 20px;">GELECEK HAFTANIN MÜJDESİ</span>
+                <h3 style="font-size: 24px; color: #fff; margin: 10px 0 6px; font-weight: 800;">2. Hafta: Code.org Seviye 1 Başlıyor! 🎮</h3>
+                <p style="font-size: 15.5px; color: #cbd5e1; line-height: 1.55;">
+                  Önümüzdeki hafta tabletlerimizi açıyoruz! Angry Birds, Zombiler ve Scrat ile algoritma labirentlerinde seviyeleri teker teker fethedeceğiz!
+                </p>
+              </div>
+
+              <div style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 14px; text-align: center;">
+                <div style="font-size: 19px; font-weight: 800; color: var(--sunny-yellow); margin-bottom: 3px;">Bugünkü Görev Başarıyla Bitti! 🎉</div>
+                <p style="font-size: 14px; color: #cbd5e1;">
+                  Kimlik kartlarınızı ve robot boyamalarınızı çantanıza özenle koyun. Haftaya görüşmek üzere!
+                </p>
+              </div>
+
+              <button class="nav-btn primary" style="width: 100%; justify-content: center; font-size: 17px;" onclick="playApplauseSound()">
+                👏 Tüm Sınıfa Kocaman Bir Alkış!
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer Navigation -->
+  <footer>
+    <div class="footer-left">
+      <div class="slide-counter" onclick="toggleOverview()" title="Tüm Slaytları Gör">
+        SLAYT <span class="current" id="current-slide-num">1</span> / 12
+      </div>
+      <div style="font-size: 14px; color: var(--text-muted);">
+        İpucu: <strong>Boşluk / Sağ Ok</strong> ile ilerle, <strong>N</strong> ile öğretmen notlarını aç
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button class="nav-btn" onclick="prevSlide()">◀ Önceki</button>
+      <button class="nav-btn primary" onclick="nextSlide()">Sonraki ▶</button>
+    </div>
+  </footer>
+
+  <!-- Teacher Notes Drawer -->
+  <aside id="notes-drawer">
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 10px;">
+      <h3 style="font-size: 18px; color: var(--sunny-yellow); display: flex; align-items: center; gap: 6px; font-weight: 800;">📋 Öğretmen Ders Notu</h3>
+      <button class="tool-btn" style="width: 32px; height: 32px; font-size: 14px;" onclick="toggleNotes()">✕</button>
+    </div>
+    <div class="notes-body" id="slide-notes-content"></div>
+  </aside>
+
+  <!-- Overview Modal -->
+  <div id="overview-modal" onclick="if(event.target===this) toggleOverview()">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1200px; margin: 0 auto;">
+      <h2 style="font-size: 26px; color: var(--sunny-yellow); font-weight: 800;">📑 Slayt Gezgini (1. Hafta: Robotik Kodlama)</h2>
+      <button class="tool-btn" style="width: 40px; height: 40px;" onclick="toggleOverview()">✕</button>
+    </div>
+    <div class="overview-grid" style="max-width: 1200px; width: 100%; margin: 20px auto 0;">
+      <div class="overview-card" onclick="goToSlide(1)"><strong>1.</strong> Hoş Geldiniz & Atölye Vizyonu</div>
+      <div class="overview-card" onclick="goToSlide(2)"><strong>2.</strong> Tanışma Çarkı: Geleceğin Mucitleri</div>
+      <div class="overview-card" onclick="goToSlide(3)"><strong>3.</strong> Yıllık & Dönemlik Macera Haritası</div>
+      <div class="overview-card" onclick="goToSlide(4)"><strong>4.</strong> Atölye Sözleşmesi (İmza Duvarı)</div>
+      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> Robot Nedir? (Adım Adım Keşif)</div>
+      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Robot mu, Değil mi? Oyunu</div>
+      <div class="overview-card" onclick="goToSlide(7)"><strong>7.</strong> Robot Hareketleri & Komut Dili</div>
+      <div class="overview-card" onclick="goToSlide(8)"><strong>8.</strong> İnteraktif Labirent Oyunu</div>
+      <div class="overview-card" onclick="goToSlide(9)"><strong>9.</strong> Sınıf İçi Unplugged Etkinlik</div>
+      <div class="overview-card" onclick="goToSlide(10)"><strong>10.</strong> Kimlik Kartı & Piksel Boyama A4</div>
+      <div class="overview-card" onclick="goToSlide(11)"><strong>11.</strong> İlham Videosu: Robotlar</div>
+      <div class="overview-card" onclick="goToSlide(12)"><strong>12.</strong> 1. Hafta Sonu & Tebrikler</div>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 12;
+    let stampCounter = 0;
+    const stampElements = [];
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    // Slide 5 Robot Stepper State
+    let currentRobotStep = 1;
+    const totalRobotSteps = 4;
+
+    // Teacher Notes with detailed 1-4 grade guidance
+    const slideNotes = {
+      "1": "<h4>1. Karşılama ve Vizyon (5 Dk)</h4><p>Öğrencileri 'Genç Mucitler Hoş Geldiniz!' enerjisiyle karşılayın. Bu sınıfta sadece oyun oynanmayacağını, teknolojiyi üreten tarafa geçeceklerini vurgulayın.</p><div class='notes-grade-box'><strong>Kademe Farkı:</strong> 1-2. sınıflara 'robot arkadaş yapmak', 3-4. sınıflara ise 'gerçek yazılımcı gibi düşünmek' vizyonunu aşılayın.</div>",
+      "2": "<h4>2. Tanışma Çemberi & Çark (10 Dk)</h4><p>Tahtadaki mikrofona basarak rastgele eğlenceli sorular açın. Sırayla her öğrenciye söz hakkı verin.</p><div class='notes-grade-box'><strong>Öğretmen Taktigi:</strong> Utangaç öğrencileri mikrofona bizzat dokunmaya teşvik edin. 'Senin robotun olsaydı ne yapardı?' sorusu çocukların hayal gücünü anında açar.</div>",
+      "3": "<h4>3. Dönem Tanıtımı (8 Dk)</h4><p>1. Dönem blok kodlama (Code.org, Scratch Jr) ve maske tasarımını; 2. Dönem mBot, LEGO Spike ve Makey Makey donanımlarını heyecanla müjdeleyin.</p><div class='notes-grade-box'><strong>Donanım Bilgisi:</strong> Robot kitlerinin sırayla sınıflara geleceğini, bu yüzden ilk haftalarda mantığı öğrenmenin kritik olduğunu belirtin.</div>",
+      "4": "<h4>4. Atölye Sözleşmesi & İmza Panosu (10 Dk)</h4><p>5 altın kuralı sesli okuyun. Çocuklar sırayla akıllı tahtaya gelip sağdaki panoya dokunsun. Her dokunuşta el izi çıkar ve alkış çalar.</p><div class='notes-grade-box'><strong>Sınıf Yönetimi:</strong> Sırayla tahtaya kalkma disiplini, dönem boyunca donanım kullanırken sınıfın düzenini sağlar.</div>",
+      "5": "<h4>5. Robot Nedir? Adım Adım Keşif (10 Dk)</h4><p>Dikkatin dağılmaması için 4 adımı teker teker açın: 1. Robotun tanımı ➔ 2. Sensör, Beyin, Motor ➔ 3. Tost makinesi vs Robot Süpürge ➔ 4. Günlük hayattaki robotlar.</p><div class='notes-grade-box'><strong>1-2. Sınıflar için:</strong> Sensörü 'göz-kulak', motoru 'ayak-kol' olarak benzetin.<br><strong>3-4. Sınıflar için:</strong> 'Girdi (Sensör) ➔ İşlem (CPU) ➔ Çıktı (Motor)' kavramını sezdirin.</div>",
+      "6": "<h4>6. Robot mu, Değil mi? Oyunu (10 Dk)</h4><p>Öğrencileri tahtaya davet edin. Kartlara dokunarak veya sürükleyerek doğru sepete atsınlar.</p><div class='notes-grade-box'><strong>Kritik Ayrım:</strong> Kurmalı saat ve tost makinesi mekaniktir ama robot değildir çünkü sensörü ve beyni yoktur! Peluş ayı ise sadece oyuncaktır.</div>",
+      "7": "<h4>7. Robot Hareketleri & Komut Dili (8 Dk)</h4><p>Robotun kendi başına yürüyemeyeceğini, tam talimat beklediğini anlatın.</p><div class='notes-grade-box'><strong>Püf Noktası:</strong> Sağa dönmek 1 adım atmak demek değildir; sadece yüzünü çevirmektir! Sınıfça ayağa kalkıp 'Olduğun yerde sağa dön!' komutunu denettirin.</div>",
+      "8": "<h4>8. İnteraktif Yönlendirici Labirenti (12 Dk)</h4><p>Öğrenciler yön oklarıyla komut zinciri oluşturup 'KODLARI ÇALIŞTIR'a bassın. Robot animasyonlu olarak hedefe gider.</p><div class='notes-grade-box'><strong>1-2. Sınıf Modu:</strong> Düz, engelsiz parkur.<br><strong>3-4. Sınıf Modu:</strong> Duvarlar ve enerji pilleri içeren engelli labirent (Pili Al komutu şart!).</div>",
+      "9": "<h4>9. Sınıf Oyunu: İnsan Robot & Kodlayıcı (10 Dk)</h4><p>Sınıf zemininde unplugged oyun oynatın. Bir çocuk robot, diğeri yönlendirici olur.</p><div class='notes-grade-box'><strong>Eşleştirme:</strong> Tabletleri 2-3 öğrenciye 1 tane verdiğinizde bu ikili/üçlü grup mantığı oturmuş olur. Biri yönlendirir, biri kontrol eder.</div>",
+      "10": "<h4>10. Kimlik Kartı & Piksel Robot Boyama (15 Dk)</h4><p>A4 çıktılarını dağıtın. Akıllı tahtadaki 10 dakikalık sayacı başlatın.</p><div class='notes-grade-box'><strong>3-4. Sınıf Ek Görevi:</strong> Piksel sayımı yaptırın: 'Kaç kırmızı (1), kaç sarı (2) boyadınız?' veri analizi temeli atar.</div>",
+      "11": "<h4>11. İlham Videosu (5 Dk)</h4><p>Boston Dynamics robot videosunu izletin. Denge sensörlerinin önemini ve geleceğin mesleklerini konuşun.</p>",
+      "12": "<h4>12. Büyük Kapanış & Gelecek Hafta (2 Dk)</h4><p>Sınıfı alkışlatın. Gelecek hafta Code.org ile ilk blok kodlama macerasına başlayacağımızı müjdeleyin!</p>"
+    };
+
+    const funRobotTasks = [
+      "Sana özel bir robotun olsa odanı toplamasını mı, sana krep yapmasını mı isterdin? 🥞",
+      "Bir robot tasarlasan rengi ve ismi ne olurdu? 🎨",
+      "Robotlar sence uyurken şarj rüyaları görür mü? 💤⚡",
+      "Bir robot arkadaşın olsa ona ilk hangi oyunu öğretirdin? ⚽",
+      "Uçan bir drone robotun mu olsun isterdin, yoksa su altı denizaltı robotun mu? 🌊🛸",
+      "Robotunun ses tonu komik bir sincap gibi mi olsun isterdin, yoksa karizmatik bir radyo spikeri mi? 🐿️",
+      "Gelecekte okula uçan bir robot servisle gitmek ister miydin? 🚀",
+      "Evdeki hangi can sıkıcı işi robota devretmek isterdin? (Çorap toplamak mı, bulaşık mı?) 🧦",
+      "Robotlar gıdıklanır mı sence? (Metal vidalarını gıdıklasak ne olur?) 😄",
+      "En sevdiğin süper kahramanın robot versiyonunu tasarlasan adı ne olurdu? 🦸"
+    ];
+
+    // Web Audio Synthesizer
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playClickSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(650, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    function playRobotBeep() {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch(e) {}
+    }
+
+    function playRobotTurnSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(640, audioCtx.currentTime + 0.11);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.11);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.11);
+      } catch(e) {}
+    }
+
+    function playSuccessChime() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+        gain.gain.setValueAtTime(0.18, now + idx * 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + idx * 0.09);
+        osc.stop(now + idx * 0.09 + 0.35);
+      });
+    }
+
+    function playErrorBeep() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.16);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.16);
+    }
+
+    function playApplauseSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      
+      for (let i = 0; i < 28; i++) {
+        const time = now + Math.random() * 1.4;
+        const dur = 0.04 + Math.random() * 0.03;
+        const bufSize = Math.floor(audioCtx.sampleRate * dur);
+        const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let j = 0; j < bufSize; j++) {
+          data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (bufSize * 0.35));
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buf;
+        const filt = audioCtx.createBiquadFilter();
+        filt.type = 'bandpass';
+        filt.frequency.setValueAtTime(900 + Math.random() * 1100, time);
+        filt.Q.setValueAtTime(3.0, time);
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(0.16 + Math.random() * 0.12, time);
+        g.gain.exponentialRampToValueAtTime(0.001, time + dur);
+        noise.connect(filt);
+        filt.connect(g);
+        g.connect(audioCtx.destination);
+        noise.start(time);
+        noise.stop(time + dur);
+      }
+
+      const freqs = [523.25, 659.25, 783.99, 1046.50];
+      freqs.forEach((f, idx) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, now + idx * 0.12);
+        g.gain.setValueAtTime(0.2, now + idx * 0.12);
+        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.45);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(now + idx * 0.12);
+        osc.stop(now + idx * 0.12 + 0.45);
+      });
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('btn-sound');
+      btn.textContent = soundEnabled ? '🔊' : '🔇';
+      btn.classList.toggle('active', !soundEnabled);
+    }
+
+    function updateSlide() {
+      document.querySelectorAll('.slide').forEach((s, idx) => {
+        s.classList.toggle('active', idx + 1 === currentSlide);
+      });
+      document.getElementById('current-slide-num').textContent = currentSlide;
+      document.getElementById('progress-fill').style.width = ((currentSlide - 1) / (totalSlides - 1) * 100) + '%';
+      
+      document.querySelectorAll('.overview-card').forEach((card, idx) => {
+        card.classList.toggle('active', idx + 1 === currentSlide);
+      });
+
+      document.getElementById('slide-notes-content').innerHTML = slideNotes[currentSlide] || '<p>Bu slayt için özel not bulunmuyor.</p>';
+
+      if (currentSlide === 8) {
+        if (!mazeInitialized) initMazeGame();
+      }
+    }
+
+    function nextSlide() {
+      // Advance step 5 if within stepper
+      if (currentSlide === 5 && currentRobotStep < totalRobotSteps) {
+        setRobotStep(currentRobotStep + 1);
+        return;
+      }
+
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        playClickSound();
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide === 5 && currentRobotStep > 1) {
+        setRobotStep(currentRobotStep - 1);
+        return;
+      }
+
+      if (currentSlide > 1) {
+        currentSlide--;
+        playClickSound();
+        updateSlide();
+      }
+    }
+
+    function goToSlide(n) {
+      currentSlide = n;
+      playClickSound();
+      updateSlide();
+      toggleOverview(false);
+    }
+
+    // ===================================================
+    // SLIDE 2: SPINNER
+    // ===================================================
+    let lastTaskIdx = -1;
+    function spinRobotTask() {
+      playClickSound();
+      const display = document.getElementById('random-task-display');
+      display.style.transform = 'scale(1.08)';
+      display.style.transition = 'transform 0.15s ease';
+      
+      let newIdx;
+      do {
+        newIdx = Math.floor(Math.random() * funRobotTasks.length);
+      } while (newIdx === lastTaskIdx && funRobotTasks.length > 1);
+      
+      lastTaskIdx = newIdx;
+      display.textContent = funRobotTasks[newIdx];
+      
+      setTimeout(() => {
+        display.style.transform = 'scale(1)';
+      }, 180);
+    }
+
+    // ===================================================
+    // SLIDE 4: HANDPRINT BOARD STAMPING
+    // ===================================================
+    const stampColors = ['#38bdf8', '#34d399', '#fbbf24', '#f43f5e', '#a855f7', '#3b82f6', '#4ade80', '#e879f9'];
+
+    function handleBoardStamp(event) {
+      const canvas = document.getElementById('handprint-stamp-canvas');
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      const placeholder = document.getElementById('canvas-placeholder');
+      if (placeholder) placeholder.style.display = 'none';
+
+      stampCounter++;
+      const color = stampColors[(stampCounter - 1) % stampColors.length];
+      const rot = (Math.random() * 30 - 15).toFixed(1);
+
+      const stampEl = document.createElement('div');
+      stampEl.className = 'board-stamp-mark';
+      stampEl.style.left = (x - 26) + 'px';
+      stampEl.style.top = (y - 32) + 'px';
+      stampEl.style.color = color;
+      stampEl.style.transform = `rotate(${rot}deg) scale(0)`;
+      stampEl.style.zIndex = stampCounter;
+
+      stampEl.innerHTML = `
+        <svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor" style="filter: drop-shadow(0 3px 8px ${color}88);">
+          <path d="M18.5 7.5a1.5 1.5 0 0 0-1.5 1.5v3.5h-1V4.5a1.5 1.5 0 0 0-3 0v8h-1V3a1.5 1.5 0 0 0-3 0v9.5h-1V5.5a1.5 1.5 0 0 0-3 0v9.75c0 4.28 3.47 7.75 7.75 7.75h.5c4.14 0 7.5-3.36 7.5-7.5V9a1.5 1.5 0 0 0-1.5-1.5z"/>
+        </svg>
+        <span style="font-size: 11px; font-weight: 800; background: rgba(0,0,0,0.7); padding: 1px 7px; border-radius: 8px; color: #fff; margin-top: -4px;">Mucit #${stampCounter}</span>
+      `;
+
+      canvas.appendChild(stampEl);
+      stampElements.push(stampEl);
+      setTimeout(() => { stampEl.style.transform = `rotate(${rot}deg) scale(1)`; }, 15);
+
+      document.getElementById('board-stamp-count').textContent = stampCounter;
+      playApplauseSound();
+    }
+
+    function undoLastStamp() {
+      playClickSound();
+      if (stampElements.length > 0) {
+        const el = stampElements.pop();
+        el.remove();
+        stampCounter = Math.max(0, stampCounter - 1);
+        document.getElementById('board-stamp-count').textContent = stampCounter;
+        if (stampElements.length === 0) {
+          document.getElementById('canvas-placeholder').style.display = 'block';
+        }
+      }
+    }
+
+    function triggerCelebration() {
+      document.getElementById('celebration-banner').classList.add('show');
+      playApplauseSound();
+    }
+
+    // ===================================================
+    // SLIDE 5: STEPPER FUNCTIONS
+    // ===================================================
+    function setRobotStep(stepNum) {
+      playClickSound();
+      currentRobotStep = stepNum;
+
+      for (let i = 1; i <= totalRobotSteps; i++) {
+        const tab = document.getElementById('r-tab-' + i);
+        const panel = document.getElementById('r-panel-' + i);
+        if (tab) {
+          tab.classList.toggle('active', i === stepNum);
+          tab.classList.toggle('completed', i < stepNum);
+        }
+        if (panel) {
+          panel.classList.toggle('active', i === stepNum);
+        }
+      }
+    }
+
+    // ===================================================
+    // SLIDE 6: ROBOT MU DEĞİL Mİ? OYUNU
+    // ===================================================
+    let selectedDragCardId = null;
+    let robotScore = 0;
+    const totalRobotCards = 6;
+
+    const robotCardData = {
+      'vacuum': { title: 'Akıllı Süpürge', icon: '🧹', isRobot: true },
+      'teddy': { title: 'Peluş Ayı', icon: '🧸', isRobot: false },
+      'mars': { title: 'Mars Gezgini', icon: '🛰️', isRobot: true },
+      'toaster': { title: 'Ekmek Kızartıcı', icon: '🍞', isRobot: false },
+      'mbot': { title: 'mBot Robot', icon: '🤖', isRobot: true },
+      'clock': { title: 'Kurmalı Saat', icon: '⏰', isRobot: false }
+    };
+
+    function selectDragCard(cardId) {
+      playClickSound();
+      const card = document.getElementById('card-' + cardId);
+      if (card.classList.contains('matched')) return;
+
+      document.querySelectorAll('.draggable-card').forEach(c => c.classList.remove('selected'));
+
+      if (selectedDragCardId === cardId) {
+        selectedDragCardId = null;
+      } else {
+        selectedDragCardId = cardId;
+        card.classList.add('selected');
+      }
+    }
+
+    function dropSelectedToBin(binType) {
+      if (!selectedDragCardId) return;
+      evaluateCardPlacement(selectedDragCardId, binType);
+    }
+
+    function evaluateCardPlacement(cardId, binType) {
+      const data = robotCardData[cardId];
+      const correctBin = data.isRobot ? 'robot' : 'not-robot';
+      const card = document.getElementById('card-' + cardId);
+      const bin = document.getElementById('bin-' + binType);
+
+      if (binType === correctBin) {
+        // CORRECT!
+        playSuccessChime();
+        card.classList.remove('selected', 'dragging');
+        card.classList.add('matched');
+
+        const tray = document.getElementById('tray-' + binType);
+        const tag = document.createElement('div');
+        tag.className = 'bin-item-tag';
+        tag.innerHTML = `<span>${data.icon}</span> <span>${data.title} ✓</span>`;
+        tray.appendChild(tag);
+
+        robotScore++;
+        document.getElementById('robot-game-score').textContent = robotScore;
+        selectedDragCardId = null;
+
+        if (robotScore >= totalRobotCards) {
+          setTimeout(() => {
+            document.getElementById('robot-game-celebration').style.display = 'flex';
+            playApplauseSound();
+          }, 450);
+        }
+      } else {
+        // WRONG!
+        playErrorBeep();
+        bin.style.borderColor = '#f43f5e';
+        bin.style.background = 'rgba(244,63,94,0.2)';
+        setTimeout(() => {
+          bin.style.borderColor = '';
+          bin.style.background = '';
+        }, 500);
+      }
+    }
+
+    function resetRobotGame() {
+      playClickSound();
+      robotScore = 0;
+      selectedDragCardId = null;
+      document.getElementById('robot-game-score').textContent = '0';
+      document.getElementById('robot-game-celebration').style.display = 'none';
+
+      document.querySelectorAll('.draggable-card').forEach(c => {
+        c.classList.remove('matched', 'selected', 'dragging');
+      });
+
+      document.getElementById('tray-robot').innerHTML = '<span style="font-size: 12.5px; color: rgba(255,255,255,0.4);">Robot olan kartları buraya at...</span>';
+      document.getElementById('tray-not-robot').innerHTML = '<span style="font-size: 12.5px; color: rgba(255,255,255,0.4);">Robot olmayan kartları buraya at...</span>';
+    }
+
+    // ===================================================
+    // SLIDE 8: MULTI-MISSION MAZE GAME ENGINE (6 LABİRENT & DUAL-MODE KONTROL)
+    // ===================================================
+    let mazeInitialized = false;
+    let currentMazeTier = 1; // 1: 1-2. Sınıf, 2: 3-4. Sınıf
+    let currentMissionIdx = 1; // 1, 2, 3
+    let controlMode = 'ROBOT'; // 'ROBOT' (Robot Açısı / İleri-Dönüş) or 'COMPASS' (Harita / Oklar)
+    let robotPos = { r: 0, c: 0 };
+    let robotFacing = 'RIGHT'; // 'UP', 'RIGHT', 'DOWN', 'LEFT'
+    let batteriesCollected = 0;
+    let activeGrid = null;
+    let commandQueue = [];
+    let isRunningProgram = false;
+
+    const FACING_ORDER = ['UP', 'RIGHT', 'DOWN', 'LEFT'];
+    const FACING_DELTAS = {
+      'UP':    { r: -1, c: 0 },
+      'RIGHT': { r: 0, c: 1 },
+      'DOWN':  { r: 1, c: 0 },
+      'LEFT':  { r: 0, c: -1 }
+    };
+    const FACING_NAMES = {
+      'UP': 'Kuzey (Yukarı)',
+      'RIGHT': 'Doğu (Sağa)',
+      'DOWN': 'Güney (Aşağı)',
+      'LEFT': 'Batı (Sola)'
+    };
+    const FACING_ICONS = {
+      'UP': '⬆️',
+      'RIGHT': '➡️',
+      'DOWN': '⬇️',
+      'LEFT': '⬅️'
+    };
+
+    // 6 Unique 5x5 Mazes (3 for Grade 1-2, 3 for Grade 3-4)
+    // 0: Boş yol, 1: Duvar/Engel, 2: Enerji Pili, 3: Hedef/Şarj İstasyonu
+    const mazeDatabase = {
+      1: { // 1-2. Sınıf (Temel Düzey)
+        1: {
+          title: "Düz Parkur (Basit İlerleme)",
+          start: { r: 2, c: 0 },
+          facing: 'RIGHT',
+          totalBatteries: 1,
+          hint: "Düz git, ortadaki pili al ve şarj istasyonuna ulaş!",
+          grid: [
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 2, 0, 3],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0]
+          ]
+        },
+        2: {
+          title: "L-Virajı (Köşe Dönüşü)",
+          start: { r: 0, c: 1 },
+          facing: 'DOWN',
+          totalBatteries: 1,
+          hint: "Aşağı in, köşedeki pili al ve sağa dönüp hedefe ilerle!",
+          grid: [
+            [1, 0, 1, 0, 0],
+            [1, 0, 1, 0, 0],
+            [1, 2, 0, 0, 3],
+            [1, 1, 1, 0, 0],
+            [0, 0, 0, 0, 0]
+          ]
+        },
+        3: {
+          title: "U-Dönüşü & Çift Enerji",
+          start: { r: 1, c: 0 },
+          facing: 'RIGHT',
+          totalBatteries: 2,
+          hint: "U şeklinde dolan, 2 enerji pilini toplayıp istasyona var!",
+          grid: [
+            [0, 0, 0, 0, 0],
+            [0, 0, 2, 0, 0],
+            [0, 1, 1, 0, 0],
+            [3, 0, 2, 0, 0],
+            [0, 0, 0, 0, 0]
+          ]
+        }
+      },
+      2: { // 3-4. Sınıf (Labirent & Algoritma Düzeyi)
+        1: {
+          title: "Klasik Duvar Labirenti",
+          start: { r: 0, c: 0 },
+          facing: 'RIGHT',
+          totalBatteries: 1,
+          hint: "Duvarların arasından geç, pili al ve çıkışı bul!",
+          grid: [
+            [0, 0, 1, 0, 0],
+            [1, 0, 1, 2, 1],
+            [0, 0, 0, 0, 1],
+            [0, 1, 1, 0, 0],
+            [0, 0, 1, 1, 3]
+          ]
+        },
+        2: {
+          title: "S-Koridoru & Çift Pil",
+          start: { r: 4, c: 0 },
+          facing: 'RIGHT',
+          totalBatteries: 2,
+          hint: "S koridorlarında zikzak çiz, 2 pili topla ve istasyona var!",
+          grid: [
+            [3, 0, 0, 0, 0],
+            [1, 1, 1, 1, 0],
+            [0, 2, 0, 0, 0],
+            [0, 1, 1, 1, 1],
+            [0, 0, 2, 0, 0]
+          ]
+        },
+        3: {
+          title: "Büyük Şampiyona Labirenti",
+          start: { r: 0, c: 4 },
+          facing: 'LEFT',
+          totalBatteries: 1,
+          hint: "Dar geçitlerden geç, merkezdeki pili al ve en alt köşedeki istasyona ulaş!",
+          grid: [
+            [1, 0, 0, 0, 0],
+            [0, 0, 1, 0, 1],
+            [0, 1, 2, 0, 0],
+            [0, 1, 1, 1, 0],
+            [3, 0, 0, 0, 0]
+          ]
+        }
+      }
+    };
+
+    function initMazeGame() {
+      mazeInitialized = true;
+      renderControlPad();
+      selectMazeTier(1);
+    }
+
+    function setControlMode(mode) {
+      playClickSound();
+      controlMode = mode;
+      const btnRobot = document.getElementById('btn-mode-robot');
+      const btnCompass = document.getElementById('btn-mode-compass');
+      if (btnRobot) btnRobot.classList.toggle('active', mode === 'ROBOT');
+      if (btnCompass) btnCompass.classList.toggle('active', mode === 'COMPASS');
+      renderControlPad();
+      updateHeadingDisplay();
+      renderCommandQueue();
+    }
+
+    function renderControlPad() {
+      const pad = document.getElementById('cmd-pad-buttons');
+      if (!pad) return;
+
+      if (controlMode === 'ROBOT') {
+        pad.innerHTML = `
+          <div></div>
+          <button class="cmd-btn" onclick="addMazeCommand('FORWARD')" title="Baktığı yönde 1 adım ileri git">
+            <span class="icon">⬆️</span>
+            <span>İLERİ GİT</span>
+            <small style="font-size: 9px; color: #a7f3d0; font-weight: 700;">(Baktığı Yöne)</small>
+          </button>
+          <div></div>
+
+          <button class="cmd-btn" onclick="addMazeCommand('TURN_LEFT')" title="Yerinde 90° sola dön">
+            <span class="icon">↺</span>
+            <span>SOLA DÖN</span>
+            <small style="font-size: 9px; color: #93c5fd; font-weight: 700;">(Yerinde 90°)</small>
+          </button>
+          <button class="cmd-btn" onclick="addMazeCommand('PICK')" style="background: rgba(251,191,36,0.18); border-color: var(--sunny-yellow);" title="Bulunduğu yerdeki pili al">
+            <span class="icon">⚡</span>
+            <span>PİL TOPLA</span>
+            <small style="font-size: 9px; color: var(--sunny-yellow); font-weight: 700;">(Şarj Al)</small>
+          </button>
+          <button class="cmd-btn" onclick="addMazeCommand('TURN_RIGHT')" title="Yerinde 90° sağa dön">
+            <span class="icon">↻</span>
+            <span>SAĞA DÖN</span>
+            <small style="font-size: 9px; color: #93c5fd; font-weight: 700;">(Yerinde 90°)</small>
+          </button>
+
+          <div></div>
+          <button class="cmd-btn" onclick="addMazeCommand('BACKWARD')" title="Dönmeden 1 adım geri git">
+            <span class="icon">⬇️</span>
+            <span>GERİ GİT</span>
+            <small style="font-size: 9px; color: #fca5a5; font-weight: 700;">(Ters Yöne)</small>
+          </button>
+          <div></div>
+        `;
+      } else {
+        pad.innerHTML = `
+          <div></div>
+          <button class="cmd-btn" onclick="addMazeCommand('MOVE_UP')" title="1 kare yukarı git">
+            <span class="icon">⬆️</span>
+            <span>YUKARI</span>
+            <small style="font-size: 9px; color: #a7f3d0; font-weight: 700;">(1 Kare)</small>
+          </button>
+          <div></div>
+
+          <button class="cmd-btn" onclick="addMazeCommand('MOVE_LEFT')" title="1 kare sola git">
+            <span class="icon">⬅️</span>
+            <span>SOLA</span>
+            <small style="font-size: 9px; color: #93c5fd; font-weight: 700;">(1 Kare)</small>
+          </button>
+          <button class="cmd-btn" onclick="addMazeCommand('PICK')" style="background: rgba(251,191,36,0.18); border-color: var(--sunny-yellow);" title="Bulunduğu yerdeki pili al">
+            <span class="icon">⚡</span>
+            <span>PİL TOPLA</span>
+            <small style="font-size: 9px; color: var(--sunny-yellow); font-weight: 700;">(Şarj Al)</small>
+          </button>
+          <button class="cmd-btn" onclick="addMazeCommand('MOVE_RIGHT')" title="1 kare sağa git">
+            <span class="icon">➡️</span>
+            <span>SAĞA</span>
+            <small style="font-size: 9px; color: #93c5fd; font-weight: 700;">(1 Kare)</small>
+          </button>
+
+          <div></div>
+          <button class="cmd-btn" onclick="addMazeCommand('MOVE_DOWN')" title="1 kare aşağı git">
+            <span class="icon">⬇️</span>
+            <span>AŞAĞI</span>
+            <small style="font-size: 9px; color: #fca5a5; font-weight: 700;">(1 Kare)</small>
+          </button>
+          <div></div>
+        `;
+      }
+    }
+
+    function updateHeadingDisplay() {
+      const headingEl = document.getElementById('maze-heading-display');
+      const hintEl = document.getElementById('maze-hint-display');
+      if (headingEl) {
+        headingEl.innerHTML = `🧭 Robot Yönü: <strong style="color: var(--sunny-yellow);">${FACING_ICONS[robotFacing]} ${FACING_NAMES[robotFacing]}</strong>`;
+      }
+      if (hintEl) {
+        if (controlMode === 'ROBOT') {
+          hintEl.textContent = `(İleri = ${FACING_ICONS[robotFacing]} Baktığı yöne 1 adım | Dönüşler yerinde)`;
+        } else {
+          hintEl.textContent = `(Harita Modu: Oklar doğrudan o yöndeki kareye ilerletir)`;
+        }
+      }
+    }
+
+    function selectMazeTier(tier) {
+      playClickSound();
+      currentMazeTier = tier;
+      document.getElementById('btn-lvl-1').classList.toggle('active', tier === 1);
+      document.getElementById('btn-lvl-2').classList.toggle('active', tier === 2);
+      selectMazeMission(1);
+    }
+
+    function selectMazeMission(missionIdx) {
+      playClickSound();
+      currentMissionIdx = missionIdx;
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById('btn-mission-' + i);
+        if (btn) btn.classList.toggle('active', i === missionIdx);
+      }
+      clearMazeQueue();
+      resetMazeRobot();
+    }
+
+    function resetMazeRobot() {
+      const mission = mazeDatabase[currentMazeTier][currentMissionIdx];
+      robotPos = { ...mission.start };
+      robotFacing = mission.facing;
+      activeGrid = JSON.parse(JSON.stringify(mission.grid));
+      batteriesCollected = 0;
+      isRunningProgram = false;
+
+      document.getElementById('maze-mission-title').textContent = mission.title;
+      document.getElementById('maze-battery-status').textContent = `⚡ Pil: 0 / ${mission.totalBatteries}`;
+      document.getElementById('maze-status-text').textContent = mission.hint;
+      document.getElementById('btn-run-maze').disabled = false;
+      updateHeadingDisplay();
+      renderMazeGrid();
+    }
+
+    function renderMazeGrid() {
+      const container = document.getElementById('maze-grid-board');
+      container.innerHTML = '';
+      if (!activeGrid) return;
+
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'maze-cell';
+          const val = activeGrid[r][c];
+
+          if (val === 1) cell.classList.add('wall');
+          if (val === 3) cell.classList.add('goal');
+
+          if (r === robotPos.r && c === robotPos.c) {
+            const rot = robotFacing === 'RIGHT' ? 0 : robotFacing === 'DOWN' ? 90 : robotFacing === 'LEFT' ? 180 : 270;
+            cell.innerHTML = `<div class="robot-sprite" style="transform: rotate(${rot}deg)"><span>🤖</span><span class="robot-arrow-indicator">▶</span></div>`;
+          } else if (val === 2) {
+            cell.classList.add('has-battery');
+            cell.innerHTML = '⚡';
+          } else if (val === 3) {
+            cell.innerHTML = '🏁';
+          } else if (val === 1) {
+            cell.innerHTML = '🧱';
+          }
+
+          container.appendChild(cell);
+        }
+      }
+    }
+
+    function addMazeCommand(cmd) {
+      if (isRunningProgram) return;
+      playClickSound();
+      if (commandQueue.length >= 24) {
+        alert('Maksimum 24 komut ekleyebilirsiniz.');
+        return;
+      }
+      commandQueue.push(cmd);
+      renderCommandQueue();
+    }
+
+    function removeLastMazeCommand() {
+      if (isRunningProgram || commandQueue.length === 0) return;
+      playClickSound();
+      commandQueue.pop();
+      renderCommandQueue();
+    }
+
+    function removeMazeCommand(idx) {
+      if (isRunningProgram) return;
+      playClickSound();
+      commandQueue.splice(idx, 1);
+      renderCommandQueue();
+    }
+
+    function clearMazeQueue() {
+      if (isRunningProgram) return;
+      playClickSound();
+      commandQueue = [];
+      renderCommandQueue();
+    }
+
+    function renderCommandQueue() {
+      const container = document.getElementById('cmd-queue-container');
+      if (!container) return;
+      if (commandQueue.length === 0) {
+        container.innerHTML = '<span style="color: rgba(255,255,255,0.4); font-size: 12px;">Ok butonlarına basarak buraya komut ekle...</span>';
+        return;
+      }
+      container.innerHTML = '';
+      const cmdTextMap = {
+        'FORWARD': '⬆️ İleri Git',
+        'BACKWARD': '⬇️ Geri Git',
+        'TURN_RIGHT': '↻ Sağa Dön',
+        'TURN_LEFT': '↺ Sola Dön',
+        'MOVE_UP': '⬆️ Yukarı',
+        'MOVE_DOWN': '⬇️ Aşağı',
+        'MOVE_LEFT': '⬅️ Sola',
+        'MOVE_RIGHT': '➡️ Sağa',
+        'UP': '⬆️ Yukarı',
+        'DOWN': '⬇️ Aşağı',
+        'LEFT': '⬅️ Sola',
+        'RIGHT': '➡️ Sağa',
+        'PICK': '⚡ Pil Topla'
+      };
+
+      commandQueue.forEach((cmd, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'queue-chip';
+        chip.id = 'chip-step-' + idx;
+        chip.title = 'Silmek için tıkla';
+        chip.onclick = () => removeMazeCommand(idx);
+
+        const label = cmdTextMap[cmd] || cmd;
+        chip.textContent = `${idx + 1}. ${label}`;
+        container.appendChild(chip);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function runMazeProgram() {
+      if (isRunningProgram || commandQueue.length === 0) return;
+      isRunningProgram = true;
+      document.getElementById('btn-run-maze').disabled = true;
+
+      const mission = mazeDatabase[currentMazeTier][currentMissionIdx];
+
+      for (let i = 0; i < commandQueue.length; i++) {
+        // Highlight active step
+        document.querySelectorAll('.queue-chip').forEach(c => c.classList.remove('active-step'));
+        const activeChip = document.getElementById('chip-step-' + i);
+        if (activeChip) activeChip.classList.add('active-step');
+
+        const cmd = commandQueue[i];
+
+        if (cmd === 'TURN_RIGHT') {
+          playRobotTurnSound();
+          const curIdx = FACING_ORDER.indexOf(robotFacing);
+          robotFacing = FACING_ORDER[(curIdx + 1) % 4];
+          updateHeadingDisplay();
+          renderMazeGrid();
+          await new Promise(r => setTimeout(r, 380));
+          continue;
+        }
+
+        if (cmd === 'TURN_LEFT') {
+          playRobotTurnSound();
+          const curIdx = FACING_ORDER.indexOf(robotFacing);
+          robotFacing = FACING_ORDER[(curIdx - 1 + 4) % 4];
+          updateHeadingDisplay();
+          renderMazeGrid();
+          await new Promise(r => setTimeout(r, 380));
+          continue;
+        }
+
+        if (cmd === 'PICK') {
+          if (activeGrid[robotPos.r][robotPos.c] === 2) {
+            activeGrid[robotPos.r][robotPos.c] = 0;
+            batteriesCollected++;
+            playSuccessChime();
+            document.getElementById('maze-battery-status').textContent = `⚡ Pil: ${batteriesCollected} / ${mission.totalBatteries}`;
+            document.getElementById('maze-status-text').textContent = `Pil toplandı! (${batteriesCollected}/${mission.totalBatteries})`;
+          } else {
+            playClickSound();
+            document.getElementById('maze-status-text').textContent = 'Bu karede enerji pili yoktu, araştırmaya devam!';
+          }
+          await new Promise(r => setTimeout(r, 320));
+          continue;
+        }
+
+        // Movement commands
+        playRobotBeep();
+        let newR = robotPos.r;
+        let newC = robotPos.c;
+
+        if (cmd === 'FORWARD') {
+          const delta = FACING_DELTAS[robotFacing];
+          newR += delta.r;
+          newC += delta.c;
+        } else if (cmd === 'BACKWARD') {
+          const delta = FACING_DELTAS[robotFacing];
+          newR -= delta.r;
+          newC -= delta.c;
+        } else if (cmd === 'MOVE_UP' || cmd === 'UP') {
+          newR--;
+          robotFacing = 'UP';
+          updateHeadingDisplay();
+        } else if (cmd === 'MOVE_DOWN' || cmd === 'DOWN') {
+          newR++;
+          robotFacing = 'DOWN';
+          updateHeadingDisplay();
+        } else if (cmd === 'MOVE_LEFT' || cmd === 'LEFT') {
+          newC--;
+          robotFacing = 'LEFT';
+          updateHeadingDisplay();
+        } else if (cmd === 'MOVE_RIGHT' || cmd === 'RIGHT') {
+          newC++;
+          robotFacing = 'RIGHT';
+          updateHeadingDisplay();
+        }
+
+        // Boundary / Wall check
+        if (newR >= 0 && newR < 5 && newC >= 0 && newC < 5) {
+          if (activeGrid[newR][newC] === 1) {
+            // HIT WALL!
+            playErrorBeep();
+            document.getElementById('maze-status-text').textContent = '💥 DUVARA ÇARPTIK! Algoritmayı düzeltmelisin.';
+            isRunningProgram = false;
+            document.getElementById('btn-run-maze').disabled = false;
+            return;
+          } else {
+            robotPos.r = newR;
+            robotPos.c = newC;
+          }
+        } else {
+          // Out of grid
+          playErrorBeep();
+          document.getElementById('maze-status-text').textContent = '⚠️ PİSTİN DIŞINA ÇIKTIK! Sınırları kontrol et.';
+          isRunningProgram = false;
+          document.getElementById('btn-run-maze').disabled = false;
+          return;
+        }
+
+        renderMazeGrid();
+        await new Promise(r => setTimeout(r, 420));
+      }
+
+      // Check final position
+      if (activeGrid[robotPos.r][robotPos.c] === 3) {
+        if (batteriesCollected < mission.totalBatteries) {
+          playErrorBeep();
+          document.getElementById('maze-status-text').textContent = `⚠️ Hedefe ulaştın ama piller eksik! (${batteriesCollected}/${mission.totalBatteries})`;
+        } else {
+          playSuccessChime();
+          playApplauseSound();
+          document.getElementById('maze-status-text').textContent = `🎉 GÖREV BAŞARILI! ${mission.title} tamamlandı!`;
+        }
+      } else {
+        document.getElementById('maze-status-text').textContent = 'Adımlar bitti ama henüz şarj istasyonuna (🏁) varamadık. Biraz daha komut ekle!';
+      }
+
+      isRunningProgram = false;
+      document.getElementById('btn-run-maze').disabled = false;
+    }
+
+    // ===================================================
+    // TIMER WIDGET (SLIDE 10)
+    // ===================================================
+    let timerInterval = null;
+    let timerSeconds = 600;
+
+    function updateTimerDisplay() {
+      const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+      const s = (timerSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('countdown-timer').textContent = `${m}:${s}`;
+    }
+
+    function startTimer() {
+      playClickSound();
+      if (timerInterval) return;
+      timerInterval = setInterval(() => {
+        if (timerSeconds > 0) {
+          timerSeconds--;
+          updateTimerDisplay();
+        } else {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          playApplauseSound();
+          alert('Süre doldu! Kimlik kartlarınızı ve sevimli robot boyamalarınızı havaya kaldırın! 🎨🤖');
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      playClickSound();
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function resetTimer() {
+      playClickSound();
+      pauseTimer();
+      timerSeconds = 600;
+      updateTimerDisplay();
+    }
+
+    // ===================================================
+    // DRAWER AND MODAL TOGGLES
+    // ===================================================
+    function toggleNotes() {
+      playClickSound();
+      const drawer = document.getElementById('notes-drawer');
+      const btn = document.getElementById('btn-notes');
+      drawer.classList.toggle('open');
+      btn.classList.toggle('active', drawer.classList.contains('open'));
+    }
+
+    function toggleOverview(forceState) {
+      playClickSound();
+      const modal = document.getElementById('overview-modal');
+      const btn = document.getElementById('btn-overview');
+      if (forceState !== undefined) {
+        modal.classList.toggle('open', forceState);
+      } else {
+        modal.classList.toggle('open');
+      }
+      btn.classList.toggle('active', modal.classList.contains('open'));
+    }
+
+    function toggleFullscreen() {
+      playClickSound();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      switch(e.key) {
+        case 'ArrowRight':
+        case ' ':
+        case 'PageDown':
+          e.preventDefault();
+          nextSlide();
+          break;
+        case 'ArrowLeft':
+        case 'PageUp':
+          e.preventDefault();
+          prevSlide();
+          break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'n':
+        case 'N':
+          e.preventDefault();
+          toggleNotes();
+          break;
+        case 'o':
+        case 'O':
+          e.preventDefault();
+          toggleOverview();
+          break;
+        case 'm':
+        case 'M':
+          e.preventDefault();
+          toggleSound();
+          break;
+        case 'Escape':
+          toggleOverview(false);
+          document.getElementById('notes-drawer').classList.remove('open');
+          break;
+      }
+    });
+
+    // Touch navigation for smart boards
+    let touchStartX = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 70) {
+        if (diff < 0) nextSlide();
+        else prevSlide();
+      }
+    }, { passive: true });
+
+    // Window Init
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSlide();
+      updateTimerDisplay();
+      initMazeGame();
+    });
+  </script>
+</body>
+</html>
