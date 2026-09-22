@@ -736,18 +736,49 @@
               TEBRİKLER! SINIF SÖZLEŞMEMİZ TAMAMLANDI!
             </h2>
             <p style="font-size: 18px; color: #e2e8f0; max-width: 720px; line-height: 1.6;">
-              Tüm pilotlarımız el izlerini panoya mühürledi! Artık hepimiz resmi bir havacılık ekibiyiz. Şimdi havacılığın efsanevi tarihini keşfedelim!
+              Tüm pilotlarımız el izlerini panoya mühürledi! Artık hepimiz resmi bir havacılık ekibiyiz. Şimdi uçuş öncesi dikkat ve reflekslerimizi test edelim!
             </p>
             <button class="nav-btn primary" style="font-size: 17px; padding: 14px 32px;" onclick="nextSlide()">
-              Havacılık Tarihini Keşfet ➔
+              Kule Oyununa Başla ➔
             </button>
           </div>
 
         </div>
       </section>
 
-      <!-- SLIDE 5: HAVACILIK VE TAYYARENİN TARİHSEL GELİŞİMİ (TEKER TEKER SIRAYLA KEŞİF) -->
+      
+      <!-- SLIDE 5: Kule'den Pilot'a (Simon Says) Oyunu -->
       <section class="slide" data-slide="5">
+        <div class="slide-badge">🎮 REFLEKS & DİKKAT TESTİ</div>
+        <h1 class="slide-title">Kule'den Pilot'a: Dikkat ve Refleks Testi! 🎧</h1>
+        <p class="slide-subtitle">Tahtada çıkan komutları öğretmeniniz okuyacak. Sadece başında KULE DİYOR Kİ olan komutları uygulayın!</p>
+        
+        <div class="slide-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+          <div class="fun-box" style="width: 100%; max-width: 950px; min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px; text-align: center; border: 3px solid rgba(56, 189, 248, 0.45); background: radial-gradient(circle at center, rgba(16, 24, 44, 0.9) 0%, rgba(7, 11, 20, 0.98) 100%); box-shadow: 0 16px 45px rgba(0, 0, 0, 0.55); border-radius: 24px;">
+            
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; color: var(--sky-blue); text-transform: uppercase; letter-spacing: 1px; background: rgba(56, 189, 248, 0.15); padding: 8px 24px; border-radius: 999px; border: 1px solid rgba(56, 189, 248, 0.35);">
+              📡 HAVA TRAFİK KONTROL KULESİ YAYINDA
+            </div>
+
+            <!-- Metin Kutusu (id='kule-komut-ekrani') -->
+            <div id="kule-komut-ekrani" style="width: 100%; min-height: 160px; display: flex; align-items: center; justify-content: center; font-size: clamp(24px, 3.2vw, 40px); font-weight: 900; line-height: 1.35; color: var(--sunny-yellow); text-shadow: 0 4px 16px rgba(0,0,0,0.6); padding: 28px 32px; background: rgba(0, 0, 0, 0.4); border-radius: 20px; border: 2.5px dashed rgba(251, 191, 36, 0.5); transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, border-color 0.2s;">
+              Kule hazır! İlk komutu göndermek için aşağıdaki butona basın... 🛫
+            </div>
+
+            <!-- Buton (id='btn-yeni-komut') -->
+            <button id="btn-yeni-komut" onclick="yeniKuleKomutu()" class="nav-btn primary" style="font-size: clamp(20px, 2.2vw, 26px); font-weight: 800; padding: 18px 48px; border-radius: 20px; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.45); cursor: pointer;">
+              🎲 Yeni Komut Gönder
+            </button>
+
+            <div style="font-size: 15px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; font-weight: 600;">
+              <span>🚨 <strong>Önemli Kural:</strong> Başında <em>"Kule diyor ki"</em> olmayan bir komutu yaparsanız elenirsiniz!</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 6: HAVACILIK VE TAYYARENİN TARİHSEL GELİŞİMİ (TEKER TEKER SIRAYLA KEŞİF) -->
+      <section class="slide" data-slide="6">
         <div class="slide-badge">📜 MÜFREDAT KAZANIMI</div>
         <h1 class="slide-title">İnsanlığın Büyük Rüyası: Havacılığın Tarihi 🦅➔✈️</h1>
         <p class="slide-subtitle">Dikkatin dağılmasın diye adımları teker teker keşfedelim! Kuşlardan Hezarfen'e, Wright Kardeşler'den günümüze!</p>
@@ -1001,8 +1032,8 @@
         </div>
       </section>
 
-      <!-- SLIDE 6: HAVACILIK TARİHİ SÜRÜKLE-BIRAK OYUNU (KARIŞTIRILMIŞ SIRALAMA) -->
-      <section class="slide" data-slide="6">
+      <!-- SLIDE 7: HAVACILIK TARİHİ SÜRÜKLE-BIRAK OYUNU (KARIŞTIRILMIŞ SIRALAMA) -->
+      <section class="slide" data-slide="7">
         <div class="slide-badge">🧩 AKILLI TAHTA OYUNU</div>
         <h1 class="slide-title">Havacılık Tarihini Eşleştir! (Sürükle-Bırak) 🎮</h1>
         <p class="slide-subtitle">Sol taraftaki kartları tutup sağdaki doğru kutulara sürükleyin veya önce karta sonra kutuya dokunun! (Cevaplar tam karşıda değil, dikkatli oku!)</p>
@@ -1125,8 +1156,8 @@
         </div>
       </section>
 
-      <!-- SLIDE 7: Kimlik Kartı & Uçak Boyama A4 -->
-      <section class="slide" data-slide="7">
+      <!-- SLIDE 8: Kimlik Kartı & Uçak Boyama A4 -->
+      <section class="slide" data-slide="8">
         <div class="slide-badge">🎫 RESMİ MÜHENDİSLİK KİMLİĞİ</div>
         <h1 class="slide-title">Gökyüzü Mühendisi Kimlik Kartı & Hayalimdeki Uçak 🎨</h1>
         <p class="slide-subtitle">Öğretmeninizden aldığınız A4 kağıdını doldurarak ilk mühendislik belgenizi oluşturun!</p>
@@ -1195,16 +1226,21 @@
                   </div>
                 </div>
               </div>
-              <a href="./Gokyuzu_Muhendisi_Kimlik_ve_Boyama_A4.html" target="_blank" class="nav-btn primary" style="font-size: 15px; text-decoration: none;">
-                🖨️ A4 Belgesini Yeni Sekmede Aç / Yazdır
-              </a>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                <a href="./Gokyuzu_Muhendisi_Kimlik_ve_Boyama_A4.html" target="_blank" class="nav-btn primary" style="font-size: 14px; text-decoration: none;">
+                  🖨️ A4 Belgesini Aç / Yazdır
+                </a>
+                <a href="./ar_ucak.html" target="_blank" class="nav-btn" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; font-size: 14px; text-decoration: none; border: none; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);">
+                  🥽 3D & AR Canlandırıcıyı Aç
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-            <!-- SLIDE 8 [YENİ]: 1. Dönem Yıldızımız: Meteor75 Pro II Drone ile Uçuş! -->
-      <section class="slide" data-slide="8">
+            <!-- SLIDE 9 [YENİ]: 1. Dönem Yıldızımız: Meteor75 Pro II Drone ile Uçuş! -->
+      <section class="slide" data-slide="9">
         <div class="slide-badge">🛸 1. DÖNEM VİDEO ZAMANI & İLHAM</div>
         <h1 class="slide-title">1. Dönem Yıldızımız: Meteor75 Pro II FPV Drone! 💨</h1>
         <p class="slide-subtitle">Önümüzdeki hafta kutusunu açacağımız yarış dronunun gerçek FPV uçuş anı ve gücü!</p>
@@ -1255,8 +1291,8 @@
         </div>
       </section>
 
-      <!-- SLIDE 9: 3D Uçak Nasıl Doğuyor? (Montaj Videosu) -->
-      <section class="slide" data-slide="9">
+      <!-- SLIDE 10: 3D Uçak Nasıl Doğuyor? (Montaj Videosu) -->
+      <section class="slide" data-slide="10">
         <div class="slide-badge">🎬 VİDEO ZAMANI & İLHAM</div>
         <h1 class="slide-title">3D Uçağımız Nasıl Üretiliyor ve Nasıl Uçuyor? 🛩️</h1>
         <p class="slide-subtitle">2. Dönem Hangarda Kendi Ellerimizle Üreteceğimiz Craycle Stick Uçağının Gerçek Hikayesi!</p>
@@ -1307,8 +1343,8 @@
         </div>
       </section>
 
-            <!-- SLIDE 10 [YENİ]: Craycle Stick Gökyüzünde: Gerçek Uçuş Testi! -->
-      <section class="slide" data-slide="10">
+            <!-- SLIDE 11 [YENİ]: Craycle Stick Gökyüzünde: Gerçek Uçuş Testi! -->
+      <section class="slide" data-slide="11">
         <div class="slide-badge">🛩️ 2. DÖNEM VİDEO ZAMANI & İLHAM</div>
         <h1 class="slide-title">Craycle Stick Gökyüzünde: Gerçek Uçuş Testi! ✈️💨</h1>
         <p class="slide-subtitle">2. Dönem Hangarda kendi ellerimizle monte edeceğimiz 3D uçağın gökyüzünde süzülüşü ve akrobasisi!</p>
@@ -1359,8 +1395,8 @@
         </div>
       </section>
 
-      <!-- SLIDE 11: Kağıttan Uçak Katlama (Ekrana Tam Sığan Glider #2 + Shorts) -->
-      <section class="slide" data-slide="11">
+      <!-- SLIDE 12: Kağıttan Uçak Katlama (Ekrana Tam Sığan Glider #2 + Shorts) -->
+      <section class="slide" data-slide="12">
         <div class="slide-badge">📐 İLK MÜHENDİSLİK GÖREVİ</div>
         <h1 class="slide-title">Hangar Atölyesi: Süzülen Glider Kağıt Uçak ✈️</h1>
         <p class="slide-subtitle">Katlaması çok kolay, havada süzülüşü muhteşem tek ve efsane modelimiz!</p>
@@ -1415,8 +1451,8 @@
         </div>
       </section>
 
-      <!-- SLIDE 12: Test Uçuşları & Haftanın Kapanışı -->
-      <section class="slide" data-slide="12">
+      <!-- SLIDE 13: Test Uçuşları & Haftanın Kapanışı -->
+      <section class="slide" data-slide="13">
         <div class="slide-badge">🏁 BÜYÜK UÇUŞ TESTİ & VEDA</div>
         <h1 class="slide-title">Uçuş Test Pisti: 3, 2, 1... Fırlat! 🎯</h1>
         <p class="slide-subtitle">Katladığınız uçakları sırayla fırlatma çizgisine getirin ve aerodinamik dengesini test edin!</p>
@@ -1477,7 +1513,7 @@
   <footer>
     <div class="footer-left">
       <div class="slide-counter" onclick="toggleOverview()" title="Tüm Slaytları Gör">
-        SLAYT <span class="current" id="current-slide-num">1</span> / 12
+        SLAYT <span class="current" id="current-slide-num">1</span> / 13
       </div>
       <div style="font-size: 14px; color: var(--text-muted);">
         İpucu: <strong>Boşluk / Sağ Ok</strong> ile ilerle, <strong>N</strong> ile öğretmen notlarını aç
@@ -1509,20 +1545,21 @@
       <div class="overview-card" onclick="goToSlide(2)"><strong>2.</strong> Sırayla Mikrofon Sende (Tanışma)</div>
       <div class="overview-card" onclick="goToSlide(3)"><strong>3.</strong> Dönem Tanıtımı (Drone & 3D Uçak)</div>
       <div class="overview-card" onclick="goToSlide(4)"><strong>4.</strong> Sınıf Sözleşmesi (İmza Duvarı)</div>
-      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> Havacılığın Tarihsel Gelişimi (Adım Adım)</div>
-      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Sürükle-Bırak Tarih Oyunu 🎲</div>
-      <div class="overview-card" onclick="goToSlide(7)"><strong>7.</strong> Kimlik Kartı & Uçak Boyama A4</div>
-      <div class="overview-card" onclick="goToSlide(8)"><strong>8.</strong> Meteor75 Pro II Drone Uçuş Videosu 🛸</div>
-      <div class="overview-card" onclick="goToSlide(9)"><strong>9.</strong> 3D Uçak Nasıl Üretiliyor? (Montaj) 🛠️</div>
-      <div class="overview-card" onclick="goToSlide(10)"><strong>10.</strong> Craycle Stick Gökyüzünde! (Uçuş) ✈️</div>
-      <div class="overview-card" onclick="goToSlide(11)"><strong>11.</strong> Glider Kağıt Uçak & Shorts</div>
-      <div class="overview-card" onclick="goToSlide(12)"><strong>12.</strong> Uçuş Test Pisti & Kapanış</div>
+      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> Kule'den Pilot'a Oyunu 🎧</div>
+      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Havacılığın Tarihsel Gelişimi (Adım Adım)</div>
+      <div class="overview-card" onclick="goToSlide(7)"><strong>7.</strong> Sürükle-Bırak Tarih Oyunu 🎲</div>
+      <div class="overview-card" onclick="goToSlide(8)"><strong>8.</strong> Kimlik Kartı & Uçak Boyama A4</div>
+      <div class="overview-card" onclick="goToSlide(9)"><strong>9.</strong> Meteor75 Pro II Drone Uçuş Videosu 🛸</div>
+      <div class="overview-card" onclick="goToSlide(10)"><strong>10.</strong> 3D Uçak Nasıl Üretiliyor? (Montaj) 🛠️</div>
+      <div class="overview-card" onclick="goToSlide(11)"><strong>11.</strong> Craycle Stick Gökyüzünde! (Uçuş) ✈️</div>
+      <div class="overview-card" onclick="goToSlide(12)"><strong>12.</strong> Glider Kağıt Uçak & Shorts</div>
+      <div class="overview-card" onclick="goToSlide(13)"><strong>13.</strong> Uçuş Test Pisti & Kapanış</div>
     </div>
   </div>
 
   <script>
     let currentSlide = 1;
-    const totalSlides = 12;
+    const totalSlides = 13;
     let stampCounter = 0;
     const stampElements = [];
     let audioCtx = null;
@@ -1533,7 +1570,21 @@
     const totalHistorySteps = 4;
     let isHistoryGridView = false;
 
-    const slideNotes = {"1": "<h4>1. Karşılama ve Vizyon (5 Dk)</h4><p>Çocukları 'Gökyüzü Hangarına Hoş Geldiniz' diyerek karşılayın. Bu atölyede birer üretici ve pilot olacaklarını hissettirin.</p>", "2": "<h4>2. Tanışma Çemberi (10 Dk)</h4><p>Öğrenciler sırayla isimlerini ve sevdikleri rengi söylesin. Tahtadaki mikrofona basarak rastgele neşeli sorular açın.</p>", "3": "<h4>3. Dönem Tanıtımı (8 Dk)</h4><p>1. Dönem Meteor75 Drone ile simülatör ve uçuşu, 2. Dönem Craycle Stick 3D uçağıyla uçuş şenliğini hedefe koyun.</p>", "4": "<h4>4. Sınıf Sözleşmesi (8 Dk)</h4><p>5 altın kuralı okuyun. Öğrenciler sırayla tahtaya gelip sağdaki panoya dokunarak el izi bıraksın. Sınıfça alkışlayın.</p>", "5": "<h4>5. Havacılığın Tarihi Gelişimi (8 Dk)</h4><p>Dikkatin dağılmaması için 4 adımı teker teker açın: Hezarfen (1632) ➔ Sıcak Hava Balonu (1783) ➔ Wright Kardeşler (1903) ➔ Vecihi Hürkuş (1924) & 3D Uçaklar. Her görseli ve hikayeyi ilgiyle anlatın.</p>", "6": "<h4>6. Akıllı Tahta Sürükle-Bırak Etkinliği (8 Dk)</h4><p>Öğrencileri tahtaya davet edin. Kartlar ve hedefler karışıktır. Önce karta sonra doğru kutuya dokunarak eşleştirmelerini sağlayın.</p>", "7": "<h4>7. Kimlik Kartı & Uçak Boyama (10 Dk)</h4><p>A4 kağıtlarını dağıtın. 10 dakikalık sayacı başlatın. Öğrenciler kimliklerini doldursun ve Craycle Stick uçağına isim versin.</p>", "8": "<h4>8. 1. Dönem Yıldızımız: Meteor75 Pro II Drone Uçuşu (5 Dk)</h4><p>Önümüzdeki hafta kutularını açacağımız yarış dronunun FPV gözlükle uçuş videosunu izletin. 4 motorun çevikliğine ve gözlükten görünen pilot açısına dikkat çekin.</p>", "9": "<h4>9. 2. Dönem Projemiz: 3D Uçak Montajı (5 Dk)</h4><p>Craycle Stick uçağının 3D yazıcıdan nasıl basıldığını, fırçasız motorunun ve plastik parçalarının nasıl monte edildiğini gösterin.</p>", "10": "<h4>10. Craycle Stick Gökyüzünde! (Gerçek Uçuş Videosu) (5 Dk)</h4><p>3D uçağımızın çim pistten kalkışını, havada süzülüşünü ve takla atışını izletin. 32. haftadaki büyük Uçuş Pikniği hedefini hatırlatın.</p>", "11": "<h4>11. Glider Kağıt Uçak & Shorts (8 Dk)</h4><p>Glider #2 şeması ve Shorts videosu eşliğinde adım adım katlama yaptırın. Kilit üçgenini iyice bastırsınlar.</p>", "12": "<h4>12. Uçuş Test Pisti & Kapanış (5 Dk)</h4><p>Fırlatma çizgisine 3'erli filolarla geçip uçakları fırlatın. Gelecek hafta ilk drone kutularını açacağımızı duyurun!</p>"};
+    const slideNotes = {
+      "1": "<h4>1. Karşılama ve Vizyon (5 Dk)</h4><p>Çocukları 'Gökyüzü Hangarına Hoş Geldiniz' diyerek karşılayın. Bu atölyede birer üretici ve pilot olacaklarını hissettirin.</p>",
+      "2": "<h4>2. Tanışma Çemberi (10 Dk)</h4><p>Öğrenciler sırayla isimlerini ve sevdikleri rengi söylesin. Tahtadaki mikrofona basarak rastgele neşeli sorular açın.</p>",
+      "3": "<h4>3. Dönem Tanıtımı (8 Dk)</h4><p>1. Dönem Meteor75 Drone ile simülatör ve uçuşu, 2. Dönem Craycle Stick 3D uçağıyla uçuş şenliğini hedefe koyun.</p>",
+      "4": "<h4>4. Sınıf Sözleşmesi (8 Dk)</h4><p>5 altın kuralı okuyun. Öğrenciler sırayla tahtaya gelip sağdaki panoya dokunarak el izi bıraksın. Sınıfça alkışlayın.</p>",
+      "5": "<h4>5. Kule'den Pilot'a Oyunu (7 Dk)</h4><p>Öğrenciler ayağa kalkmadan sıralarında oynasın. Komutları heyecanlı bir ses tonuyla, bir kule görevlisi gibi okuyun. Kule diyor ki olmayan komutu yapan pilotlar elenip yerine oturur.</p>",
+      "6": "<h4>6. Havacılığın Tarihi Gelişimi (8 Dk)</h4><p>Dikkatin dağılmaması için 4 adımı teker teker açın: Hezarfen (1632) ➔ Sıcak Hava Balonu (1783) ➔ Wright Kardeşler (1903) ➔ Vecihi Hürkuş (1924) & 3D Uçaklar. Her görseli ve hikayeyi ilgiyle anlatın.</p>",
+      "7": "<h4>7. Akıllı Tahta Sürükle-Bırak Etkinliği (8 Dk)</h4><p>Öğrencileri tahtaya davet edin. Kartlar ve hedefler karışıktır. Önce karta sonra doğru kutuya dokunarak eşleştirmelerini sağlayın.</p>",
+      "8": "<h4>8. Kimlik Kartı & Uçak Boyama (10 Dk)</h4><p>A4 kağıtlarını dağıtın. 10 dakikalık sayacı başlatın. Öğrenciler kimliklerini doldursun ve Craycle Stick uçağına isim versin.</p>",
+      "9": "<h4>9. 1. Dönem Yıldızımız: Meteor75 Pro II Drone Uçuşu (5 Dk)</h4><p>Önümüzdeki hafta kutularını açacağımız yarış dronunun FPV gözlükle uçuş videosunu izletin. 4 motorun çevikliğine ve gözlükten görünen pilot açısına dikkat çekin.</p>",
+      "10": "<h4>10. 2. Dönem Projemiz: 3D Uçak Montajı (5 Dk)</h4><p>Craycle Stick uçağının 3D yazıcıdan nasıl basıldığını, fırçasız motorunun ve plastik parçalarının nasıl monte edildiğini gösterin.</p>",
+      "11": "<h4>11. Craycle Stick Gökyüzünde! (Gerçek Uçuş Videosu) (5 Dk)</h4><p>3D uçağımızın çim pistten kalkışını, havada süzülüşünü ve takla atışını izletin. 32. haftadaki büyük Uçuş Pikniği hedefini hatırlatın.</p>",
+      "12": "<h4>12. Glider Kağıt Uçak & Shorts (8 Dk)</h4><p>Glider #2 şeması ve Shorts videosu eşliğinde adım adım katlama yaptırın. Kilit üçgenini iyice bastırsınlar.</p>",
+      "13": "<h4>13. Uçuş Test Pisti & Kapanış (5 Dk)</h4><p>Fırlatma çizgisine 3'erli filolarla geçip uçakları fırlatın. Gelecek hafta ilk drone kutularını açacağımızı duyurun!</p>"
+    };
     const funSpeakerTasks = ["En sevdiğin renk hangisi? Uçağımızı o renge boyayabiliriz! 🎨", "Göklerde süzülen bir kuş olsaydın hangi sevimli kuş olurdun? 🐦", "En sevdiğin çizgi film veya süper kahraman kim? 🦸", "Uçakla tatile gidecek olsan yanına en sevdiğin hangi oyuncağını alırdın? 🧸", "Bir uçağın olsa ilk kimi gezdirmek isterdin? (Anne, baba veya arkadaş) 👨‍👩‍👧", "Gökyüzünde bir buluta dokunsan sence neye benzerdi? (Pamuk şeker mi?) ☁️", "Uçağının gövdesine hangi resmi çizmek isterdin? (Yıldız, güneş veya kalp) ☀️", "En çok hangi mevsimde gökyüzüne bakmayı seversin? (Güneşli yaz mı, karlı kış mı?) 🌈", "Uçaklar sence gökyüzünde kuşlara el sallar mı? ✈️", "En sevdiğin meyve veya dondurma hangisi? 🍓"];
 
     function initAudio() {
@@ -1663,14 +1714,14 @@
 
       document.getElementById('slide-notes-content').innerHTML = slideNotes[currentSlide] || '<p>Bu slayt için özel not bulunmuyor.</p>';
 
-      if (currentSlide === 6) {
+      if (currentSlide === 7) {
         shuffleDropTargets();
       }
     }
 
     function nextSlide() {
-      // Special check for Slide 5: advance history steps first!
-      if (currentSlide === 5 && !isHistoryGridView && currentHistoryStep < totalHistorySteps) {
+      // Special check for Slide 6: advance history steps first!
+      if (currentSlide === 6 && !isHistoryGridView && currentHistoryStep < totalHistorySteps) {
         setHistoryStep(currentHistoryStep + 1);
         return;
       }
@@ -1683,8 +1734,8 @@
     }
 
     function prevSlide() {
-      // Special check for Slide 5: go back history steps first!
-      if (currentSlide === 5 && !isHistoryGridView && currentHistoryStep > 1) {
+      // Special check for Slide 6: go back history steps first!
+      if (currentSlide === 6 && !isHistoryGridView && currentHistoryStep > 1) {
         setHistoryStep(currentHistoryStep - 1);
         return;
       }
@@ -1703,8 +1754,67 @@
       toggleOverview(false);
     }
 
+    
     // ===================================================
-    // SLIDE 5: STEPPER FUNCTIONS
+    // SLIDE 5: KULE'DEN PİLOT'A (SIMON SAYS) OYUN MANTIĞI
+    // ===================================================
+    const kuleKomutHavuzu = [
+      // Doğru Komutlar (Uygulanacak):
+      "Kule diyor ki: Motorları çalıştır! (Kollar pervane gibi döner)",
+      "Kule diyor ki: Kemerleri bağla! (Göbekte eller birleşir)",
+      "Kule diyor ki: İniş takımlarını aç! (Olduğun yerde çömel)",
+      "Kule diyor ki: Türbülansa girdik! (Olduğun yerde titreme)",
+      "Kule diyor ki: Sağa dönüş yap! (Sandalyede sağa yat)",
+      "Kule diyor ki: Kaptan selamı ver! (Asker selamı verilir)",
+      // Tuzak Komutlar (Uygulanmayacak - Yapan Yanar):
+      "Fren yap! (Tuzak!)",
+      "Ayağa kalk! (Tuzak!)",
+      "Motorları durdur! (Tuzak!)",
+      "Kollarını havaya kaldır! (Tuzak!)"
+    ];
+
+    let aktifKuleKomutlari = [...kuleKomutHavuzu];
+
+    function yeniKuleKomutu() {
+      // 3. Komut ekrana yazdırılırken playClickSound() fonksiyonunu çağır
+      playClickSound();
+
+      // 2. Geçici dizi boşaldığında orijinal diziyi tekrar kopyalasın (arka arkaya tekrarı engelleme)
+      if (aktifKuleKomutlari.length === 0) {
+        aktifKuleKomutlari = [...kuleKomutHavuzu];
+      }
+
+      // Rastgele bir komut seç ve splice ile çıkar
+      const randIdx = Math.floor(Math.random() * aktifKuleKomutlari.length);
+      const secilenKomut = aktifKuleKomutlari.splice(randIdx, 1)[0];
+
+      const ekran = document.getElementById('kule-komut-ekrani');
+      if (!ekran) return;
+
+      // 3. Komut kutusuna hafif bir büyüme/küçülme animasyonu (CSS scale) ekle
+      ekran.style.transform = 'scale(1.08)';
+      ekran.style.transition = 'transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, border-color 0.2s';
+
+      const isTrap = secilenKomut.includes('(Tuzak!)');
+      if (isTrap) {
+        ekran.style.color = 'var(--candy-red)';
+        ekran.style.borderColor = 'var(--candy-red)';
+        ekran.style.background = 'rgba(244, 63, 94, 0.18)';
+      } else {
+        ekran.style.color = 'var(--sunny-yellow)';
+        ekran.style.borderColor = 'rgba(251, 191, 36, 0.6)';
+        ekran.style.background = 'rgba(56, 189, 248, 0.12)';
+      }
+
+      ekran.textContent = secilenKomut;
+
+      setTimeout(() => {
+        ekran.style.transform = 'scale(1)';
+      }, 160);
+    }
+
+    // ===================================================
+    // SLIDE 6: STEPPER FUNCTIONS
     // ===================================================
     function setHistoryStep(stepNum) {
       playClickSound();
@@ -1844,7 +1954,7 @@
     }
 
     // ===================================================
-    // SLIDE 6: DRAG & DROP ENGINE (KARIŞTIRILMIŞ HEDEFLER)
+    // SLIDE 7: DRAG & DROP ENGINE (KARIŞTIRILMIŞ HEDEFLER)
     // ===================================================
     let selectedDragCardId = null;
     let matchedCount = 0;
