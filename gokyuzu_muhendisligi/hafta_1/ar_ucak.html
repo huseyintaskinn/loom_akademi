@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Loom Akademi • 3D & AR Canlanan Craycle Stick Uçağı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Three.js and OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  
+  <style>
+    :root {
+      --bg-dark: #070b14;
+      --bg-card: rgba(16, 24, 44, 0.92);
+      --border-card: rgba(255, 255, 255, 0.12);
+      --sky-blue: #38bdf8;
+      --sky-glow: rgba(56, 189, 248, 0.45);
+      --sunny-yellow: #fbbf24;
+      --candy-red: #f43f5e;
+      --emerald-green: #10b981;
+      --orange: #f97316;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top Navigation Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 56px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(7, 11, 20, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-card);
+      z-index: 1000;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      box-shadow: 0 0 16px var(--sky-glow);
+    }
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.2px;
+      line-height: 1.1;
+    }
+    .brand-text span {
+      font-size: 10.5px;
+      color: var(--sky-blue);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .top-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-card);
+      color: #fff;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      transform: scale(1.05);
+    }
+
+    /* Main Viewport */
+    main {
+      flex: 1;
+      position: relative;
+      margin-top: 56px;
+      width: 100%;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    /* 3D Canvas */
+    #three-canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10;
+    }
+
+    /* AR Passthrough Video */
+    #ar-camera-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 5;
+      display: none;
+    }
+
+    /* HUD Top Badge & Tools */
+    .hud-overlay {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .hud-badge {
+      pointer-events: auto;
+      background: rgba(16, 24, 44, 0.88);
+      border: 1px solid var(--border-card);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--sky-blue);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hud-controls-group {
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .hud-tool-btn {
+      background: rgba(16, 24, 44, 0.88);
+      border: 1px solid var(--border-card);
+      color: #fff;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+    .hud-tool-btn.active {
+      background: var(--sky-blue);
+      color: #042f2e;
+      box-shadow: 0 0 18px var(--sky-glow);
+    }
+
+    /* AR Active Banner */
+    #ar-active-banner {
+      display: none;
+      position: absolute;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16, 185, 129, 0.92);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 800;
+      z-index: 150;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.5);
+      animation: pulseBanner 2s infinite;
+      white-space: nowrap;
+    }
+    @keyframes pulseBanner {
+      0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+      50% { opacity: 0.8; transform: translateX(-50%) scale(0.98); }
+    }
+
+    /* Bottom Action Dock */
+    .bottom-dock {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 28px);
+      max-width: 490px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .dock-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 12px 14px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .action-row {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-main {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-primary-ar {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.45);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-card);
+      color: #fff;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Palette Drawer */
+    #palette-drawer {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px 4px 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      animation: fadeIn 0.2s ease;
+    }
+    #palette-drawer.show {
+      display: flex;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .palette-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .palette-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 90px;
+    }
+    .color-swatches {
+      display: flex;
+      gap: 6px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+    .swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .swatch:hover, .swatch.active {
+      transform: scale(1.22);
+      box-shadow: 0 0 10px #fff;
+    }
+
+    /* Scanner Viewfinder Modal with Outline Guide */
+    #scanner-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(7, 11, 20, 0.96);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 16px 32px;
+    }
+    #scanner-modal.hidden {
+      display: none;
+    }
+    .scanner-header {
+      text-align: center;
+      margin-top: 8px;
+    }
+    .scanner-header h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--sunny-yellow);
+    }
+    .scanner-header p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      max-width: 340px;
+    }
+
+    .viewfinder-wrapper {
+      width: 100%;
+      max-width: 440px;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.35);
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #scanner-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    /* Transparent Airplane Silhouette Guide */
+    .viewfinder-plane-outline {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      opacity: 0.85;
+      filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
+      animation: guideGlow 2.2s ease-in-out infinite alternate;
+      z-index: 5;
+    }
+    @keyframes guideGlow {
+      0% { opacity: 0.72; filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6)); }
+      100% { opacity: 0.95; filter: drop-shadow(0 0 12px rgba(56, 189, 248, 1)); }
+    }
+
+    .viewfinder-frame {
+      position: absolute;
+      top: 4%;
+      left: 4%;
+      right: 4%;
+      bottom: 4%;
+      border: 2px dashed rgba(56, 189, 248, 0.6);
+      border-radius: 12px;
+      pointer-events: none;
+      box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.45);
+      z-index: 6;
+    }
+    .corner-bracket {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-color: var(--sunny-yellow);
+      border-style: solid;
+      pointer-events: none;
+    }
+    .corner-bracket.tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; }
+    .corner-bracket.tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; }
+    .corner-bracket.bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; }
+    .corner-bracket.br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; }
+
+    .scan-laser-line {
+      position: absolute;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--sky-blue), #fff, var(--sky-blue), transparent);
+      box-shadow: 0 0 14px var(--sky-blue);
+      top: 0;
+      animation: scanLaser 2.2s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 7;
+    }
+    @keyframes scanLaser {
+      0% { top: 6%; }
+      100% { top: 94%; }
+    }
+
+    .scanner-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .shutter-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      border: 4px solid #fff;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .shutter-btn:active {
+      transform: scale(0.92);
+    }
+    .alt-scan-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+    .alt-scan-btn {
+      flex: 1;
+      padding: 9px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border-card);
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 95px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background: rgba(15, 23, 42, 0.96);
+      border: 1.5px solid var(--sky-blue);
+      color: #fff;
+      padding: 9px 20px;
+      border-radius: 30px;
+      font-size: 13.5px;
+      font-weight: 700;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.7);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 3000;
+      white-space: nowrap;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand-group">
+      <div class="brand-icon">✈️</div>
+      <div class="brand-text">
+        <h1>CRAYCLE STICK 3D</h1>
+        <span>Loom Akademi • WebAR Stüdyosu</span>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="btn-sound-toggle" onclick="toggleEngineSound()" title="Motor Sesi Aç/Kapat">🔊</button>
+      <button class="icon-btn" onclick="openScanner()" title="Kağıdı Tara">📷</button>
+    </div>
+  </header>
+
+  <!-- Viewport -->
+  <main>
+    <video id="ar-camera-video" autoplay playsinline muted></video>
+    <div id="three-canvas-container"></div>
+
+    <!-- HUD Overlay -->
+    <div class="hud-overlay">
+      <div class="hud-badge" id="hud-status">
+        <span>✨</span> <span id="status-text">Craycle Stick 3D Hazır</span>
+      </div>
+      <div class="hud-controls-group">
+        <button class="hud-tool-btn" id="btn-spin" onclick="toggleFlightMode()" title="Uçuş / Motor Çalıştır">🚀</button>
+        <button class="hud-tool-btn" onclick="togglePaletteDrawer()" title="Renkleri Özelleştir">🎨</button>
+        <button class="hud-tool-btn" onclick="resetView()" title="Görünümü Sıfırla">🎯</button>
+        <button class="hud-tool-btn" onclick="takeSnapshot()" title="Fotoğraf Çek">📸</button>
+      </div>
+    </div>
+
+    <!-- AR Active Notification Banner -->
+    <div id="ar-active-banner">
+      🥽 AR Canlı Oda Modu Aktif • Masanıza Dokunarak Yerleştirin!
+    </div>
+
+    <!-- Bottom Dock -->
+    <div class="bottom-dock">
+      <div class="dock-card">
+        <!-- Palette Drawer (Optional manual tweak) -->
+        <div id="palette-drawer">
+          <div class="palette-row">
+            <span class="palette-label">🪽 Kanat Rengi:</span>
+            <div class="color-swatches" id="swatches-wing">
+              <span class="swatch" style="background: #ffffff;" onclick="setPartColor('wing', 0xffffff)"></span>
+              <span class="swatch" style="background: #ef4444;" onclick="setPartColor('wing', 0xef4444)"></span>
+              <span class="swatch" style="background: #3b82f6;" onclick="setPartColor('wing', 0x3b82f6)"></span>
+              <span class="swatch" style="background: #fbbf24;" onclick="setPartColor('wing', 0xfbbf24)"></span>
+              <span class="swatch" style="background: #10b981;" onclick="setPartColor('wing', 0x10b981)"></span>
+              <span class="swatch" style="background: #a855f7;" onclick="setPartColor('wing', 0xa855f7)"></span>
+            </div>
+          </div>
+          <div class="palette-row">
+            <span class="palette-label">✈️ Gövde Rengi:</span>
+            <div class="color-swatches" id="swatches-fuse">
+              <span class="swatch" style="background: #ffffff;" onclick="setPartColor('fuse', 0xffffff)"></span>
+              <span class="swatch" style="background: #0284c7;" onclick="setPartColor('fuse', 0x0284c7)"></span>
+              <span class="swatch" style="background: #f59e0b;" onclick="setPartColor('fuse', 0xf59e0b)"></span>
+              <span class="swatch" style="background: #dc2626;" onclick="setPartColor('fuse', 0xdc2626)"></span>
+              <span class="swatch" style="background: #1e293b;" onclick="setPartColor('fuse', 0x1e293b)"></span>
+            </div>
+          </div>
+          <div class="palette-row">
+            <span class="palette-label">🌪️ Pervane & Burun:</span>
+            <div class="color-swatches" id="swatches-spinner">
+              <span class="swatch" style="background: #38bdf8;" onclick="setPartColor('spinner', 0x38bdf8)"></span>
+              <span class="swatch" style="background: #ef4444;" onclick="setPartColor('spinner', 0xef4444)"></span>
+              <span class="swatch" style="background: #fbbf24;" onclick="setPartColor('spinner', 0xfbbf24)"></span>
+              <span class="swatch" style="background: #ffffff;" onclick="setPartColor('spinner', 0xffffff)"></span>
+              <span class="swatch" style="background: #000000;" onclick="setPartColor('spinner', 0x111827)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-main btn-secondary" onclick="openScanner()">
+            <span>📸</span> Sayfamı Tara
+          </button>
+          <button class="btn-main btn-primary-ar" id="btn-toggle-ar" onclick="toggleARMode()">
+            <span>🥽</span> Masamda Gör (AR)
+          </button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-muted); padding: 0 4px;">
+          <span>👆 Tek parmak: Döndür</span>
+          <span>🤏 İki parmak: Yakınlaştır</span>
+          <span style="color: var(--sky-blue); cursor: pointer;" onclick="togglePaletteDrawer()">🎨 Palet</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scanner Modal with Glowing Silhouette Guide Lines -->
+  <div id="scanner-modal" class="hidden">
+    <div class="scanner-header">
+      <h2>Uçağı Kılavuz Çizgilerine Yerleştirin 📸</h2>
+      <p>Mavi uçak silüeti ile kağıdınızdaki çizimi tam üst üste getirin</p>
+    </div>
+
+    <div class="viewfinder-wrapper">
+      <video id="scanner-video" autoplay playsinline muted></video>
+      
+      <!-- Semi-transparent glowing airplane outline overlay -->
+      <img src="images/plane_guide_outline.png" alt="Uçak Kılavuz Çizgileri" class="viewfinder-plane-outline">
+
+      <div class="viewfinder-frame">
+        <div class="corner-bracket tl"></div>
+        <div class="corner-bracket tr"></div>
+        <div class="corner-bracket bl"></div>
+        <div class="corner-bracket br"></div>
+        <div class="scan-laser-line"></div>
+      </div>
+    </div>
+
+    <div class="scanner-controls">
+      <button class="shutter-btn" onclick="captureAndExtractMaskedTextures()" title="Tara ve 3D Modele Aktar">
+        ✨
+      </button>
+      
+      <div class="alt-scan-row">
+        <label class="alt-scan-btn">
+          <span>📁</span> Fotoğraf Yükle
+          <input type="file" accept="image/*" onchange="handleFileUpload(event)" style="display: none;">
+        </label>
+        <button class="alt-scan-btn" onclick="loadDefaultDrawingTexture()">
+          <span>🎨</span> Örnek Çizim
+        </button>
+        <button class="alt-scan-btn" onclick="closeScanner()">
+          <span>✕</span> Vazgeç
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // ==========================================================
+    // 1. THREE.JS 3D SCENE SETUP
+    // ==========================================================
+    let scene, camera, renderer, controls;
+    let airplaneGroup, propellerGroup, wingMesh, fuselageMesh, tailFinMesh, tailHorizMesh;
+    let wingMaterial, fuselageMaterial, tailMaterial, spinnerMaterial, propBladeMaterial, wheelMaterial;
+    let isFlying = false;
+    let isSoundOn = true;
+    let isARActive = false;
+    let audioCtx = null;
+    let engineOsc = null;
+    let engineGain = null;
+
+    function init3D() {
+      const container = document.getElementById('three-canvas-container');
+      const width = container.clientWidth || window.innerWidth;
+      const height = container.clientHeight || (window.innerHeight - 56);
+
+      // Scene
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x070b14);
+
+      // Camera
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+      camera.position.set(4.5, 3.2, 5.5);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      // OrbitControls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxDistance = 16;
+      controls.minDistance = 1.8;
+      controls.maxPolarAngle = Math.PI / 2 + 0.15;
+      controls.target.set(0, 0, -0.2);
+
+      // Lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambientLight);
+
+      const mainLight = new THREE.DirectionalLight(0xffffff, 1.0);
+      mainLight.position.set(8, 14, 8);
+      mainLight.castShadow = true;
+      mainLight.shadow.mapSize.width = 1024;
+      mainLight.shadow.mapSize.height = 1024;
+      scene.add(mainLight);
+
+      const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.5);
+      rimLight.position.set(-8, 3, -6);
+      scene.add(rimLight);
+
+      // Ground plane
+      const gridHelper = new THREE.GridHelper(20, 20, 0x38bdf8, 0x1e293b);
+      gridHelper.position.y = -1.6;
+      scene.add(gridHelper);
+
+      const groundGeo = new THREE.PlaneGeometry(30, 30);
+      const groundMat = new THREE.ShadowMaterial({ opacity: 0.35 });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -1.6;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      // Build Craycle Stick Aircraft Model
+      buildCraycleStick();
+
+      window.addEventListener('resize', onWindowResize);
+      animate();
+
+      // Load initial texture extraction
+      loadDefaultDrawingTexture();
+    }
+
+    // ==========================================================
+    // 2. ACCURATE 3D CRAYCLE STICK MODEL (GEOMETRY & PROPORTIONS)
+    // ==========================================================
+    function buildCraycleStick() {
+      airplaneGroup = new THREE.Group();
+
+      // Independent Materials for each component:
+      wingMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.35,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      });
+
+      fuselageMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.35,
+        metalness: 0.05
+      });
+
+      tailMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.35,
+        metalness: 0.05
+      });
+
+      spinnerMaterial = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8, // Sky blue spinner
+        roughness: 0.25,
+        metalness: 0.2
+      });
+
+      propBladeMaterial = new THREE.MeshStandardMaterial({
+        color: 0x1e293b, // Black/charcoal propeller blade
+        roughness: 0.6
+      });
+
+      wheelMaterial = new THREE.MeshStandardMaterial({
+        color: 0x111827,
+        roughness: 0.85
+      });
+
+      const rimMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.3
+      });
+
+      const canopyMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x0284c7,
+        transmission: 0.7,
+        opacity: 1,
+        transparent: true,
+        roughness: 0.1,
+        ior: 1.45
+      });
+
+      // ----------------------------------------------------
+      // A) FUSELAGE (GÖVDE)
+      // Nose at z = +1.4, Tail at z = -2.6. Total length = 4.0
+      // ----------------------------------------------------
+      const fuseGeo = new THREE.BoxGeometry(0.65, 0.75, 4.0, 4, 4, 12);
+      const pos = fuseGeo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const y = pos.getY(i);
+        const z = pos.getZ(i);
+
+        if (z < -0.4) {
+          // Tail boom taper (slender backwards)
+          const factor = 1 - ((-z - 0.4) / 2.2) * 0.7;
+          pos.setX(i, x * factor);
+          pos.setY(i, (y + 0.1) * factor - 0.05);
+        } else if (z > 0.8) {
+          // Cowl nose taper (smooth round nose)
+          const factor = 1 - ((z - 0.8) / 1.2) * 0.35;
+          pos.setX(i, x * factor);
+          pos.setY(i, y * factor - 0.02);
+        }
+      }
+      fuseGeo.computeVertexNormals();
+      fuselageMesh = new THREE.Mesh(fuseGeo, fuselageMaterial);
+      fuselageMesh.position.set(0, 0, -0.6);
+      fuselageMesh.castShadow = true;
+      fuselageMesh.receiveShadow = true;
+      airplaneGroup.add(fuselageMesh);
+
+      // Battery Hatch / Canopy Cover
+      const canopyGeo = new THREE.BoxGeometry(0.55, 0.28, 1.1);
+      const canopy = new THREE.Mesh(canopyGeo, canopyMaterial);
+      canopy.position.set(0, 0.42, 0.1);
+      canopy.castShadow = true;
+      airplaneGroup.add(canopy);
+
+      // ----------------------------------------------------
+      // B) PROPELLER & SPINNER (FLUSH TO THE NOSE - NO FLOATING GAP!)
+      // Nose front is at z = 1.4 - 0.6 = +0.8 in world space
+      // ----------------------------------------------------
+      propellerGroup = new THREE.Group();
+      propellerGroup.position.set(0, -0.02, 1.4); // Exactly at the front nose bulkhead!
+
+      // Spinner Cone (Smooth bullet cone attached directly flush to nose)
+      const spinnerGeo = new THREE.ConeGeometry(0.24, 0.46, 24);
+      spinnerGeo.rotateX(Math.PI / 2);
+      const spinnerMesh = new THREE.Mesh(spinnerGeo, spinnerMaterial);
+      spinnerMesh.position.set(0, 0, 0.23); // Points straight forward
+      propellerGroup.add(spinnerMesh);
+
+      // 2-Blade Propeller (Nestled right behind the spinner cone against the cowl)
+      const propBladeGeo = new THREE.BoxGeometry(1.65, 0.13, 0.035);
+      const propBlade = new THREE.Mesh(propBladeGeo, propBladeMaterial);
+      propBlade.position.set(0, 0, 0.02);
+      propBlade.castShadow = true;
+      propellerGroup.add(propBlade);
+
+      airplaneGroup.add(propellerGroup);
+
+      // ----------------------------------------------------
+      // C) HIGH WING (ÜSTTEN KANAT - ANA BOYAMA DOKUSU)
+      // Span = 6.0, Chord = 1.25. Mounted on top of cabin at y = 0.42
+      // ----------------------------------------------------
+      const wingGeo = new THREE.BoxGeometry(6.0, 0.08, 1.25);
+      
+      // Map UV so left half gets left wing texture, right half gets right wing texture!
+      const uvs = wingGeo.attributes.uv;
+      // Top face vertices (indices 8, 9, 10, 11)
+      uvs.setXY(8, 0.0, 1.0);
+      uvs.setXY(9, 1.0, 1.0);
+      uvs.setXY(10, 0.0, 0.0);
+      uvs.setXY(11, 1.0, 0.0);
+      uvs.needsUpdate = true;
+
+      wingMesh = new THREE.Mesh(wingGeo, wingMaterial);
+      wingMesh.position.set(0, 0.42, -0.2);
+      wingMesh.castShadow = true;
+      wingMesh.receiveShadow = true;
+      airplaneGroup.add(wingMesh);
+
+      // Curved Upward Winglet Tips (Just like in ucak_boyama.jpg!)
+      [-3.0, 3.0].forEach(x => {
+        const wingletGeo = new THREE.BoxGeometry(0.08, 0.32, 1.25);
+        const winglet = new THREE.Mesh(wingletGeo, wingMaterial);
+        winglet.position.set(x > 0 ? x + 0.04 : x - 0.04, 0.54, -0.2);
+        winglet.rotation.z = x > 0 ? -0.25 : 0.25; // angled up
+        airplaneGroup.add(winglet);
+      });
+
+      // ----------------------------------------------------
+      // D) TAIL UNIT (DİKEY VE YATAY DÜMENLER)
+      // ----------------------------------------------------
+      // Horizontal Stabilizer
+      const tailHGeo = new THREE.BoxGeometry(2.1, 0.05, 0.72);
+      tailHorizMesh = new THREE.Mesh(tailHGeo, tailMaterial);
+      tailHorizMesh.position.set(0, 0.18, -2.4);
+      tailHorizMesh.castShadow = true;
+      airplaneGroup.add(tailHorizMesh);
+
+      // Vertical Fin (Angled leading edge like Craycle Stick)
+      const finShape = new THREE.Shape();
+      finShape.moveTo(0, 0);
+      finShape.lineTo(0.65, 0);
+      finShape.lineTo(0.45, 0.95);
+      finShape.lineTo(0.15, 0.95);
+      finShape.closePath();
+
+      const finExtrude = new THREE.ExtrudeGeometry(finShape, { depth: 0.06, bevelEnabled: false });
+      finExtrude.rotateY(Math.PI / 2);
+      tailFinMesh = new THREE.Mesh(finExtrude, tailMaterial);
+      tailFinMesh.position.set(0.03, 0.18, -2.45);
+      tailFinMesh.castShadow = true;
+      airplaneGroup.add(tailFinMesh);
+
+      // ----------------------------------------------------
+      // E) LANDING GEAR (ÖN VE ARKA İNİŞ TAKIMLARI)
+      // ----------------------------------------------------
+      [-0.6, 0.6].forEach(x => {
+        const strutGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.95);
+        const strut = new THREE.Mesh(strutGeo, spinnerMaterial);
+        strut.position.set(x * 0.5, -0.5, 0.2);
+        strut.rotation.z = x > 0 ? -0.3 : 0.3;
+        airplaneGroup.add(strut);
+
+        // Tire
+        const wheelGeo = new THREE.CylinderGeometry(0.26, 0.26, 0.11, 20);
+        wheelGeo.rotateZ(Math.PI / 2);
+        const wheel = new THREE.Mesh(wheelGeo, wheelMaterial);
+        wheel.position.set(x > 0 ? x + 0.12 : x - 0.12, -0.9, 0.2);
+        wheel.castShadow = true;
+        airplaneGroup.add(wheel);
+
+        // White Rim Cap
+        const rimGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.115, 16);
+        rimGeo.rotateZ(Math.PI / 2);
+        const rim = new THREE.Mesh(rimGeo, rimMaterial);
+        rim.position.copy(wheel.position);
+        airplaneGroup.add(rim);
+      });
+
+      // Tail Skid Wheel
+      const tailWheelGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.05, 14);
+      tailWheelGeo.rotateZ(Math.PI / 2);
+      const tailWheel = new THREE.Mesh(tailWheelGeo, wheelMaterial);
+      tailWheel.position.set(0, -0.15, -2.4);
+      airplaneGroup.add(tailWheel);
+
+      // Centered position
+      airplaneGroup.position.set(0, 0, 0);
+      scene.add(airplaneGroup);
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('three-canvas-container');
+      const width = container.clientWidth || window.innerWidth;
+      const height = container.clientHeight || (window.innerHeight - 56);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    // ==========================================================
+    // 3. ANIMATION & FLIGHT LOOP
+    // ==========================================================
+    let clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+      const time = clock.getElapsedTime();
+
+      // Spin propeller around Z
+      if (propellerGroup) {
+        const speed = isFlying ? 40 : 5;
+        propellerGroup.rotation.z += speed * delta;
+      }
+
+      // Flight motion
+      if (isFlying && airplaneGroup) {
+        airplaneGroup.position.y = Math.sin(time * 2.6) * 0.35 + 0.2;
+        airplaneGroup.rotation.z = Math.sin(time * 1.6) * 0.14; // Banking
+        airplaneGroup.rotation.x = Math.sin(time * 2.0) * 0.07; // Pitch
+        airplaneGroup.rotation.y += 0.007; // Smooth orbit
+      } else if (!isARActive && airplaneGroup) {
+        airplaneGroup.position.y = Math.sin(time * 1.2) * 0.06;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // ==========================================================
+    // 4. MASK-BASED TEXTURE EXTRACTION & SHARPENING
+    // Separates Wing, Fuselage, Tail, and Spinner via exact masks!
+    // ==========================================================
+
+    // Exact Polygonal Mask Coordinates on 1024 x 576 canvas
+    const WING_LEFT_POLY = [
+      { x: 370, y: 292 },
+      { x: 135, y: 168 },
+      { x: 145, y: 142 },
+      { x: 215, y: 110 },
+      { x: 238, y: 130 },
+      { x: 455, y: 240 },
+      { x: 515, y: 275 },
+      { x: 370, y: 292 }
+    ];
+
+    const WING_RIGHT_POLY = [
+      { x: 510, y: 320 },
+      { x: 515, y: 275 },
+      { x: 620, y: 310 },
+      { x: 865, y: 418 },
+      { x: 885, y: 432 },
+      { x: 735, y: 485 },
+      { x: 510, y: 320 }
+    ];
+
+    const FUSELAGE_POLY = [
+      { x: 290, y: 425 },
+      { x: 320, y: 385 },
+      { x: 380, y: 345 },
+      { x: 430, y: 360 },
+      { x: 500, y: 360 },
+      { x: 640, y: 245 },
+      { x: 710, y: 205 },
+      { x: 720, y: 220 },
+      { x: 675, y: 260 },
+      { x: 500, y: 395 },
+      { x: 420, y: 450 },
+      { x: 345, y: 485 },
+      { x: 305, y: 460 },
+      { x: 290, y: 425 }
+    ];
+
+    const TAIL_POLY = [
+      { x: 620, y: 105 },
+      { x: 665, y: 88 },
+      { x: 725, y: 125 },
+      { x: 758, y: 75 },
+      { x: 775, y: 185 },
+      { x: 870, y: 165 },
+      { x: 855, y: 195 },
+      { x: 740, y: 205 },
+      { x: 710, y: 230 },
+      { x: 660, y: 200 },
+      { x: 620, y: 105 }
+    ];
+
+    const SPINNER_POLY = [
+      { x: 290, y: 425 },
+      { x: 278, y: 410 },
+      { x: 255, y: 365 },
+      { x: 270, y: 365 },
+      { x: 290, y: 415 },
+      { x: 276, y: 440 },
+      { x: 290, y: 455 },
+      { x: 335, y: 500 },
+      { x: 350, y: 490 },
+      { x: 305, y: 445 },
+      { x: 290, y: 425 }
+    ];
+
+    function processAndApplyMaskedTextures(sourceImgOrCanvas) {
+      // 1. Normalize input to 1024 x 576 canvas
+      const srcCanvas = document.createElement('canvas');
+      srcCanvas.width = 1024;
+      srcCanvas.height = 576;
+      const sCtx = srcCanvas.getContext('2d');
+      sCtx.drawImage(sourceImgOrCanvas, 0, 0, 1024, 576);
+
+      // ------------------------------------------------------
+      // MASK 1: WING TEXTURE (Isolates and unwarps Left & Right wings)
+      // ------------------------------------------------------
+      const wingCanvas = document.createElement('canvas');
+      wingCanvas.width = 1024;
+      wingCanvas.height = 256;
+      const wCtx = wingCanvas.getContext('2d');
+      wCtx.fillStyle = '#ffffff';
+      wCtx.fillRect(0, 0, 1024, 256);
+
+      // Clip and unwarp Left Wing
+      wCtx.save();
+      warpQuadToRect(
+        sCtx,
+        { x: 238, y: 130 }, // Tip Trail
+        { x: 515, y: 275 }, // Root Trail
+        { x: 370, y: 292 }, // Root Lead
+        { x: 135, y: 168 }, // Tip Lead
+        wCtx,
+        0, 0, 512, 256
+      );
+      wCtx.restore();
+
+      // Clip and unwarp Right Wing
+      wCtx.save();
+      warpQuadToRect(
+        sCtx,
+        { x: 515, y: 275 }, // Root Trail
+        { x: 865, y: 418 }, // Tip Trail
+        { x: 735, y: 485 }, // Tip Lead
+        { x: 510, y: 320 }, // Root Lead
+        wCtx,
+        512, 0, 512, 256
+      );
+      wCtx.restore();
+
+      // Sharpen and enhance pattern lines
+      sharpenCanvas(wCtx, 1024, 256);
+
+      // Apply to 3D Wing Material
+      const wingTex = new THREE.CanvasTexture(wingCanvas);
+      wingTex.wrapS = THREE.ClampToEdgeWrapping;
+      wingTex.wrapT = THREE.ClampToEdgeWrapping;
+      wingTex.anisotropy = 8;
+      wingTex.needsUpdate = true;
+      wingMaterial.map = wingTex;
+      wingMaterial.color.setHex(0xffffff);
+      wingMaterial.needsUpdate = true;
+
+      // ------------------------------------------------------
+      // MASK 2: FUSELAGE TEXTURE (Clipped to Fuselage Mask)
+      // ------------------------------------------------------
+      const fuseCanvas = document.createElement('canvas');
+      fuseCanvas.width = 512;
+      fuseCanvas.height = 128;
+      const fCtx = fuseCanvas.getContext('2d');
+      fCtx.fillStyle = '#ffffff';
+      fCtx.fillRect(0, 0, 512, 128);
+
+      warpQuadToRect(
+        sCtx,
+        { x: 380, y: 345 },
+        { x: 640, y: 245 },
+        { x: 500, y: 395 },
+        { x: 290, y: 425 },
+        fCtx,
+        0, 0, 512, 128
+      );
+      sharpenCanvas(fCtx, 512, 128);
+
+      const fuseTex = new THREE.CanvasTexture(fuseCanvas);
+      fuseTex.anisotropy = 8;
+      fuseTex.needsUpdate = true;
+      fuselageMaterial.map = fuseTex;
+      fuselageMaterial.color.setHex(0xffffff);
+      fuselageMaterial.needsUpdate = true;
+
+      // ------------------------------------------------------
+      // MASK 3: TAIL TEXTURE (Clipped to Tail Mask)
+      // ------------------------------------------------------
+      const tailCanvas = document.createElement('canvas');
+      tailCanvas.width = 256;
+      tailCanvas.height = 256;
+      const tCtx = tailCanvas.getContext('2d');
+      tCtx.fillStyle = '#ffffff';
+      tCtx.fillRect(0, 0, 256, 256);
+
+      tCtx.drawImage(srcCanvas, 620, 75, 250, 155, 0, 0, 256, 256);
+      sharpenCanvas(tCtx, 256, 256);
+
+      const tailTex = new THREE.CanvasTexture(tailCanvas);
+      tailTex.anisotropy = 8;
+      tailTex.needsUpdate = true;
+      tailMaterial.map = tailTex;
+      tailMaterial.color.setHex(0xffffff);
+      tailMaterial.needsUpdate = true;
+
+      // ------------------------------------------------------
+      // MASK 4: SPINNER & NOSE ACCENT COLOR
+      // ------------------------------------------------------
+      const spinnerColor = extractPolygonAverageColor(sCtx, SPINNER_POLY);
+      if (spinnerColor) {
+        spinnerMaterial.color.set(spinnerColor);
+      } else {
+        const wingAccent = extractPolygonAverageColor(sCtx, WING_LEFT_POLY);
+        if (wingAccent) spinnerMaterial.color.set(wingAccent);
+      }
+
+      document.getElementById('status-text').textContent = 'Maskelenmiş Boyama 3D Uçakta! ✨';
+    }
+
+    // High-quality bilinear quadrilateral unwarp
+    function warpQuadToRect(sCtx, p0, p1, p2, p3, dCtx, dx, dy, dw, dh) {
+      const stepsX = 24;
+      const stepsY = 12;
+      const patchW = dw / stepsX;
+      const patchH = dh / stepsY;
+
+      for (let y = 0; y < stepsY; y++) {
+        const v0 = y / stepsY;
+        const v1 = (y + 1) / stepsY;
+
+        for (let x = 0; x < stepsX; x++) {
+          const u0 = x / stepsX;
+          const u1 = (x + 1) / stepsX;
+
+          const sX0 = (1 - u0) * (1 - v0) * p0.x + u0 * (1 - v0) * p1.x + u0 * v0 * p2.x + (1 - u0) * v0 * p3.x;
+          const sY0 = (1 - u0) * (1 - v0) * p0.y + u0 * (1 - v0) * p1.y + u0 * v0 * p2.y + (1 - u0) * v0 * p3.y;
+          const sX1 = (1 - u1) * (1 - v1) * p0.x + u1 * (1 - v1) * p1.x + u1 * v1 * p2.x + (1 - u1) * v1 * p3.x;
+          const sY1 = (1 - u1) * (1 - v1) * p0.y + u1 * (1 - v1) * p1.y + u1 * v1 * p2.y + (1 - u1) * v1 * p3.y;
+
+          const sw = Math.max(1, Math.abs(sX1 - sX0));
+          const sh = Math.max(1, Math.abs(sY1 - sY0));
+
+          dCtx.drawImage(
+            sCtx.canvas,
+            Math.min(sX0, sX1), Math.min(sY0, sY1), sw, sh,
+            dx + x * patchW, dy + y * patchH, patchW + 0.6, patchH + 0.6
+          );
+        }
+      }
+    }
+
+    // Sharpen and boost crayon/marker pattern clarity
+    function sharpenCanvas(ctx, w, h) {
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const d = imgData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i+1], b = d[i+2];
+        const isWhite = r > 242 && g > 242 && b > 242;
+        if (!isWhite) {
+          // Increase vibrance & contrast of drawn lines/colors
+          for (let c = 0; c < 3; c++) {
+            let val = d[i + c];
+            val = ((val / 255 - 0.5) * 1.45 + 0.5) * 255;
+            d[i + c] = Math.max(0, Math.min(255, val));
+          }
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    // Extract average color inside a polygon
+    function extractPolygonAverageColor(ctx, poly) {
+      const imgData = ctx.getImageData(0, 0, 1024, 576).data;
+      let sumR = 0, sumG = 0, sumB = 0, count = 0;
+
+      // Sample bounding box of poly
+      let minX = 1024, maxX = 0, minY = 576, maxY = 0;
+      poly.forEach(pt => {
+        if (pt.x < minX) minX = pt.x;
+        if (pt.x > maxX) maxX = pt.x;
+        if (pt.y < minY) minY = pt.y;
+        if (pt.y > maxY) maxY = pt.y;
+      });
+
+      for (let y = minY; y < maxY; y += 4) {
+        for (let x = minX; x < maxX; x += 4) {
+          if (pointInPolygon(x, y, poly)) {
+            const idx = (y * 1024 + x) * 4;
+            const r = imgData[idx], g = imgData[idx+1], b = imgData[idx+2];
+            // Filter out plain white background and pure black lines
+            if (!(r > 225 && g > 225 && b > 225) && !(r < 30 && g < 30 && b < 30)) {
+              sumR += r; sumG += g; sumB += b;
+              count++;
+            }
+          }
+        }
+      }
+
+      if (count > 25) {
+        return `rgb(${Math.round(sumR/count)}, ${Math.round(sumG/count)}, ${Math.round(sumB/count)})`;
+      }
+      return null;
+    }
+
+    function pointInPolygon(x, y, vs) {
+      let inside = false;
+      for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+        const xi = vs[i].x, yi = vs[i].y;
+        const xj = vs[j].x, yj = vs[j].y;
+        const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    // Default template texture load
+    function loadDefaultDrawingTexture() {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        processAndApplyMaskedTextures(img);
+      };
+      img.src = 'images/ucak_boyama.jpg';
+      closeScanner();
+    }
+
+    // ==========================================================
+    // 5. SCANNER & LIVE CAMERA
+    // ==========================================================
+    let scannerStream = null;
+
+    async function openScanner() {
+      const modal = document.getElementById('scanner-modal');
+      modal.classList.remove('hidden');
+
+      const video = document.getElementById('scanner-video');
+      try {
+        scannerStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = scannerStream;
+      } catch (err) {
+        showToast("⚠️ Kamera açılamadı. Lütfen 'Fotoğraf Yükle' seçeneğini kullanın.");
+      }
+    }
+
+    function closeScanner() {
+      const modal = document.getElementById('scanner-modal');
+      modal.classList.add('hidden');
+      if (scannerStream) {
+        scannerStream.getTracks().forEach(t => t.stop());
+        scannerStream = null;
+      }
+    }
+
+    function captureAndExtractMaskedTextures() {
+      const video = document.getElementById('scanner-video');
+      if (!video || !video.videoWidth) {
+        showToast("Lütfen kamerayı sayfadaki kılavuza denk getirin!");
+        return;
+      }
+
+      // Capture frame
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+
+      // Process and extract to 3D model!
+      processAndApplyMaskedTextures(canvas);
+
+      closeScanner();
+      showToast("🎉 Harika! Kanat, gövde ve pervane desenleri net olarak aktarıldı!");
+      playSuccessSound();
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          processAndApplyMaskedTextures(img);
+          closeScanner();
+          showToast("🎉 Fotoğraf yüklendi ve maskelerle ayrıştırıldı!");
+          playSuccessSound();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ==========================================================
+    // 6. COLOR PALETTE MANUAL TWEAKS
+    // ==========================================================
+    function togglePaletteDrawer() {
+      const drawer = document.getElementById('palette-drawer');
+      drawer.classList.toggle('show');
+    }
+
+    function setPartColor(part, hexColor) {
+      if (part === 'wing') {
+        wingMaterial.map = null;
+        wingMaterial.color.setHex(hexColor);
+        wingMaterial.needsUpdate = true;
+      } else if (part === 'fuse') {
+        fuselageMaterial.map = null;
+        fuselageMaterial.color.setHex(hexColor);
+        fuselageMaterial.needsUpdate = true;
+      } else if (part === 'spinner') {
+        spinnerMaterial.color.setHex(hexColor);
+        spinnerMaterial.needsUpdate = true;
+      }
+      showToast("Renk güncellendi ✨");
+    }
+
+    // ==========================================================
+    // 7. AUGMENTED REALITY (AR) CANLI ODA MODU
+    // ==========================================================
+    let arStream = null;
+
+    async function toggleARMode() {
+      const btn = document.getElementById('btn-toggle-ar');
+      const arVideo = document.getElementById('ar-camera-video');
+      const banner = document.getElementById('ar-active-banner');
+
+      if (!isARActive) {
+        try {
+          arStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+          });
+          arVideo.srcObject = arStream;
+          arVideo.style.display = 'block';
+          scene.background = null; // Transparent canvas
+          isARActive = true;
+          banner.style.display = 'block';
+          btn.innerHTML = '<span>🏠</span> 3D Stüdyoya Dön';
+          btn.style.background = 'var(--candy-red)';
+          showToast("🥽 AR Canlı Oda Modu Aktif!");
+
+          if (airplaneGroup) {
+            airplaneGroup.position.set(0, -0.3, 0);
+            camera.position.set(0, 1.6, 4.0);
+            controls.target.set(0, -0.3, 0);
+          }
+        } catch (err) {
+          showToast("⚠️ Kamera izni verilemedi.");
+        }
+      } else {
+        if (arStream) {
+          arStream.getTracks().forEach(t => t.stop());
+          arStream = null;
+        }
+        arVideo.style.display = 'none';
+        scene.background = new THREE.Color(0x070b14);
+        isARActive = false;
+        banner.style.display = 'none';
+        btn.innerHTML = '<span>🥽</span> Masamda Gör (AR)';
+        btn.style.background = '';
+        resetView();
+        showToast("🏠 3D Stüdyo Moduna dönüldü.");
+      }
+    }
+
+    // ==========================================================
+    // 8. AUDIO & SOUND FX
+    // ==========================================================
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleEngineSound() {
+      isSoundOn = !isSoundOn;
+      const btn = document.getElementById('btn-sound-toggle');
+      btn.textContent = isSoundOn ? '🔊' : '🔇';
+      if (!isSoundOn && engineGain) {
+        engineGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      } else if (isSoundOn && isFlying) {
+        startEngineSound();
+      }
+    }
+
+    function startEngineSound() {
+      if (!isSoundOn) return;
+      initAudio();
+      try {
+        if (!engineOsc) {
+          engineOsc = audioCtx.createOscillator();
+          engineGain = audioCtx.createGain();
+          engineOsc.type = 'sawtooth';
+          engineOsc.frequency.setValueAtTime(90, audioCtx.currentTime); // Realistic RC plane motor drone
+          engineGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+          engineOsc.connect(engineGain);
+          engineGain.connect(audioCtx.destination);
+          engineOsc.start();
+        } else {
+          engineGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        }
+      } catch (e) {}
+    }
+
+    function stopEngineSound() {
+      if (engineGain && audioCtx) {
+        engineGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      }
+    }
+
+    function playSuccessSound() {
+      if (!isSoundOn) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+        gain.gain.setValueAtTime(0.18, now + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + idx * 0.1);
+        osc.stop(now + idx * 0.1 + 0.35);
+      });
+    }
+
+    function toggleFlightMode() {
+      isFlying = !isFlying;
+      const btn = document.getElementById('btn-spin');
+      btn.classList.toggle('active', isFlying);
+      if (isFlying) {
+        startEngineSound();
+        showToast("🚀 Motorlar çalıştı! Uçuş testi başladı!");
+      } else {
+        stopEngineSound();
+        showToast("🛑 Uçak piste indi.");
+      }
+    }
+
+    function resetView() {
+      camera.position.set(4.5, 3.2, 5.5);
+      controls.target.set(0, 0, -0.2);
+      controls.update();
+      if (airplaneGroup) {
+        airplaneGroup.position.set(0, 0, 0);
+        airplaneGroup.rotation.set(0, 0, 0);
+      }
+    }
+
+    function takeSnapshot() {
+      showToast("📸 Hatıra fotoğrafı kaydediliyor...");
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.download = 'Loom_Akademi_Craycle_Stick_Ucak.png';
+        link.href = renderer.domElement.toDataURL('image/png');
+        link.click();
+        playSuccessSound();
+      }, 150);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      init3D();
+    });
+  </script>
+</body>
+</html>
