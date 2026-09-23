@@ -739,7 +739,7 @@
               Tüm pilotlarımız el izlerini panoya mühürledi! Artık hepimiz resmi bir havacılık ekibiyiz. Şimdi uçuş öncesi dikkat ve reflekslerimizi test edelim!
             </p>
             <button class="nav-btn primary" style="font-size: 17px; padding: 14px 32px;" onclick="nextSlide()">
-              Kule Oyununa Başla ➔
+              Uçuş Kuralları & Oyuna Başla ➔
             </button>
           </div>
 
@@ -747,38 +747,158 @@
       </section>
 
       
-      <!-- SLIDE 5: Kule'den Pilot'a (Simon Says) Oyunu -->
+            <!-- SLIDE 5: Kule'den Pilot'a Kuralları & Hareket Rehberi -->
       <section class="slide" data-slide="5">
-        <div class="slide-badge">🎮 REFLEKS & DİKKAT TESTİ</div>
-        <h1 class="slide-title">Kule'den Pilot'a: Dikkat ve Refleks Testi! 🎧</h1>
-        <p class="slide-subtitle">Tahtada çıkan komutları öğretmeniniz okuyacak. Sadece başında KULE DİYOR Kİ olan komutları uygulayın!</p>
+        <div class="slide-badge">📋 UÇUŞ BRİFİNGİ & KURALLAR</div>
+        <h1 class="slide-title">Kaptan Diyor ki: Kurallar & Hareket Rehberi! ✈️🎧</h1>
+        <p class="slide-subtitle">Dikkatini topla pilot! Kaptanın sesini çok iyi dinle ve hareketleri eksiksiz ezberle!</p>
+        
+        <div class="slide-content" style="flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 1100px;">
+          
+          <!-- Altın Kurallar Banner -->
+          <div style="width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            <div style="background: rgba(34, 197, 94, 0.15); border: 2px solid rgba(34, 197, 94, 0.45); border-radius: 16px; padding: 14px 20px; display: flex; align-items: center; gap: 14px;">
+              <span style="font-size: 32px;">✅</span>
+              <div>
+                <strong style="color: #4ade80; font-size: 16px; display: block;">ALTIN KURAL:</strong>
+                <span style="font-size: 14px; color: #f1f5f9;">Başında <strong>"Kaptan diyor ki:"</strong> olan her komutu hemen yerine getir!</span>
+              </div>
+            </div>
+
+            <div style="background: rgba(239, 68, 68, 0.15); border: 2px solid rgba(239, 68, 68, 0.45); border-radius: 16px; padding: 14px 20px; display: flex; align-items: center; gap: 14px;">
+              <span style="font-size: 32px;">🛑</span>
+              <div>
+                <strong style="color: #f87171; font-size: 16px; display: block;">TUZAKLARA DİKKAT:</strong>
+                <span style="font-size: 14px; color: #f1f5f9;">Eğer "Kaptan diyor ki" <strong>DEMEZSE</strong>, heykel gibi dur, <strong>ASLA KIPIRDAMA!</strong></span>
+              </div>
+            </div>
+
+            <div style="background: rgba(56, 189, 248, 0.15); border: 2px solid rgba(56, 189, 248, 0.45); border-radius: 16px; padding: 14px 20px; display: flex; align-items: center; gap: 14px;">
+              <span style="font-size: 32px;">⚡</span>
+              <div>
+                <strong style="color: var(--sky-blue); font-size: 16px; display: block;">ELENME KURALI:</strong>
+                <span style="font-size: 14px; color: #f1f5f9;">Tuzağa düşen pilot hangara çekilir (sessizce sandalyesine oturur)!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hareket Rehberi Kartları Grid -->
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%;">
+            <div class="card" style="padding: 14px; text-align: center; background: rgba(255,255,255,0.06); border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
+              <div style="font-size: 28px; margin-bottom: 4px;">🔄</div>
+              <strong style="color: var(--sunny-yellow); font-size: 14px; display: block; margin-bottom: 4px;">Motorları Çalıştır</strong>
+              <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Kollarını pervane gibi hızlıca döndür!</p>
+            </div>
+
+            <div class="card" style="padding: 14px; text-align: center; background: rgba(255,255,255,0.06); border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
+              <div style="font-size: 28px; margin-bottom: 4px;">💺</div>
+              <strong style="color: var(--sunny-yellow); font-size: 14px; display: block; margin-bottom: 4px;">Kemerleri Bağla</strong>
+              <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Ellerini göbeğinde kenetle ve "tık" de!</p>
+            </div>
+
+            <div class="card" style="padding: 14px; text-align: center; background: rgba(255,255,255,0.06); border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
+              <div style="font-size: 28px; margin-bottom: 4px;">🛬</div>
+              <strong style="color: var(--sunny-yellow); font-size: 14px; display: block; margin-bottom: 4px;">İniş Takımlarını Aç</strong>
+              <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Olduğun yere hızla çömel ve bekle!</p>
+            </div>
+
+            <div class="card" style="padding: 14px; text-align: center; background: rgba(255,255,255,0.06); border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
+              <div style="font-size: 28px; margin-bottom: 4px;">🛫</div>
+              <strong style="color: var(--sunny-yellow); font-size: 14px; display: block; margin-bottom: 4px;">İniş Tamam / Kalk</strong>
+              <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Çömeldiğin yerden hızla ayağa fırla!</p>
+            </div>
+
+            <div class="card" style="padding: 14px; text-align: center; background: rgba(255,255,255,0.06); border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
+              <div style="font-size: 28px; margin-bottom: 4px;">✈️</div>
+              <strong style="color: var(--sunny-yellow); font-size: 14px; display: block; margin-bottom: 4px;">Sağa / Sola Dönüş</strong>
+              <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Kollar kanat gibi yana açık sağa/sola yat!</p>
+            </div>
+
+            <div class="card" style="padding: 14px; text-align: center; background: rgba(255,255,255,0.06); border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
+              <div style="font-size: 28px; margin-bottom: 4px;">🫡</div>
+              <strong style="color: var(--sunny-yellow); font-size: 14px; display: block; margin-bottom: 4px;">Kaptan Selamı Ver</strong>
+              <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Sağ elinle dimdik pilot selamı dur!</p>
+            </div>
+
+            <div class="card" style="padding: 14px; text-align: center; background: rgba(255,255,255,0.06); border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
+              <div style="font-size: 28px; margin-bottom: 4px;">🌪️</div>
+              <strong style="color: var(--sunny-yellow); font-size: 14px; display: block; margin-bottom: 4px;">Türbülansa Girdik</strong>
+              <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Olduğun yerde hafifçe titre ve dengede dur!</p>
+            </div>
+
+            <div class="card" style="padding: 14px; text-align: center; background: rgba(255,255,255,0.06); border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
+              <div style="font-size: 28px; margin-bottom: 4px;">📡</div>
+              <strong style="color: var(--sunny-yellow); font-size: 14px; display: block; margin-bottom: 4px;">Radarı & Pisti Tara</strong>
+              <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Elini alnına siper et ve etrafı gözle!</p>
+            </div>
+          </div>
+
+          <!-- Başla Butonu -->
+          <button class="nav-btn primary" style="font-size: 18px; padding: 14px 44px; border-radius: 999px; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4);" onclick="nextSlide()">
+            🎮 Kuralları Anladık, Oyuna Başla! ➔
+          </button>
+
+        </div>
+      </section>
+
+      <!-- SLIDE 6: Kule'den Pilot'a (Simon Says) Oyunu -->
+      <section class="slide" data-slide="6">
+        <div class="slide-badge">🎮 CANLI REFLEKS OYUNU</div>
+        <h1 class="slide-title">Kule'den Pilot'a: Kaptan Diyor ki! 🎧</h1>
+        <p class="slide-subtitle">Kaptanın sesine kulak ver! Sadece başında "KAPTAN DİYOR Kİ" dediğinde uygula!</p>
         
         <div class="slide-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
-          <div class="fun-box" style="width: 100%; max-width: 950px; min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px; text-align: center; border: 3px solid rgba(56, 189, 248, 0.45); background: radial-gradient(circle at center, rgba(16, 24, 44, 0.9) 0%, rgba(7, 11, 20, 0.98) 100%); box-shadow: 0 16px 45px rgba(0, 0, 0, 0.55); border-radius: 24px;">
+          <div class="fun-box" style="width: 100%; max-width: 960px; min-height: 440px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 34px 40px; text-align: center; border: 3px solid rgba(56, 189, 248, 0.45); background: radial-gradient(circle at center, rgba(16, 24, 44, 0.95) 0%, rgba(7, 11, 20, 0.98) 100%); box-shadow: 0 16px 45px rgba(0, 0, 0, 0.6); border-radius: 24px; position: relative;">
             
-            <div style="display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; color: var(--sky-blue); text-transform: uppercase; letter-spacing: 1px; background: rgba(56, 189, 248, 0.15); padding: 8px 24px; border-radius: 999px; border: 1px solid rgba(56, 189, 248, 0.35);">
-              📡 HAVA TRAFİK KONTROL KULESİ YAYINDA
+            <!-- Canlı Kule Durum Çubuğu -->
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 760px;">
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: var(--sky-blue); text-transform: uppercase; letter-spacing: 1px; background: rgba(56, 189, 248, 0.15); padding: 6px 18px; border-radius: 999px; border: 1px solid rgba(56, 189, 248, 0.35);">
+                <span style="width: 10px; height: 10px; background: #22c55e; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #22c55e;"></span>
+                📡 HAVA TRAFİK KONTROL KULESİ YAYINDA
+              </div>
+              <div id="kule-voice-status" style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #cbd5e1; background: rgba(255,255,255,0.08); padding: 6px 14px; border-radius: 999px;">
+                <span>🔊 Kaptan Sesi: Aktif</span>
+              </div>
             </div>
 
-            <!-- Metin Kutusu (id='kule-komut-ekrani') -->
-            <div id="kule-komut-ekrani" style="width: 100%; min-height: 160px; display: flex; align-items: center; justify-content: center; font-size: clamp(24px, 3.2vw, 40px); font-weight: 900; line-height: 1.35; color: var(--sunny-yellow); text-shadow: 0 4px 16px rgba(0,0,0,0.6); padding: 28px 32px; background: rgba(0, 0, 0, 0.4); border-radius: 20px; border: 2.5px dashed rgba(251, 191, 36, 0.5); transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, border-color 0.2s;">
-              Kule hazır! İlk komutu göndermek için aşağıdaki butona basın... 🛫
+            <!-- Metin Kutusu (id='kule-komut-ekrani') - Tamamen Nötr Stil (Tuzak belli olmaz) -->
+            <div id="kule-komut-ekrani" style="width: 100%; min-height: 160px; display: flex; align-items: center; justify-content: center; font-size: clamp(24px, 3.2vw, 38px); font-weight: 900; line-height: 1.35; color: var(--sunny-yellow); text-shadow: 0 4px 18px rgba(0,0,0,0.7); padding: 26px 32px; background: rgba(0, 0, 0, 0.45); border-radius: 20px; border: 2.5px dashed rgba(251, 191, 36, 0.55); transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s, background 0.2s;">
+              Kule hazır! Komut göndermek veya otomatik başlatmak için aşağıdaki butonları kullanın... 🛫
             </div>
 
-            <!-- Buton (id='btn-yeni-komut') -->
-            <button id="btn-yeni-komut" onclick="yeniKuleKomutu()" class="nav-btn primary" style="font-size: clamp(20px, 2.2vw, 26px); font-weight: 800; padding: 18px 48px; border-radius: 20px; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.45); cursor: pointer;">
-              🎲 Yeni Komut Gönder
-            </button>
+            <!-- Geri Sayım Süre Barı (Auto-Play için) -->
+            <div id="kule-progress-container" style="width: 100%; max-width: 600px; height: 8px; background: rgba(255,255,255,0.12); border-radius: 999px; overflow: hidden; display: none;">
+              <div id="kule-progress-bar" style="width: 100%; height: 100%; background: linear-gradient(90deg, #38bdf8, #f59e0b); transition: width 0.05s linear;"></div>
+            </div>
 
-            <div style="font-size: 15px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; font-weight: 600;">
-              <span>🚨 <strong>Önemli Kural:</strong> Başında <em>"Kule diyor ki"</em> olmayan bir komutu yaparsanız elenirsiniz!</span>
+            <!-- Butonlar Grubu -->
+            <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center;">
+              <!-- Buton (Manuel Komut) -->
+              <button id="btn-yeni-komut" onclick="yeniKuleKomutu()" class="nav-btn primary" style="font-size: clamp(18px, 1.8vw, 22px); font-weight: 800; padding: 15px 36px; border-radius: 18px; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4); cursor: pointer;">
+                🎲 Manuel Komut Gönder
+              </button>
+
+              <!-- Buton (Otomatik Oynat) -->
+              <button id="btn-oto-komut" onclick="toggleKuleAutoPlay()" class="nav-btn" style="font-size: clamp(18px, 1.8vw, 22px); font-weight: 800; padding: 15px 36px; border-radius: 18px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); cursor: pointer;">
+                ▶️ Otomatik Oynat (5 sn)
+              </button>
+            </div>
+
+            <!-- Tuzak Uyarısı Dinamik Rozeti (Seslendirme bittikten 1.8 sn sonra açılır) -->
+            <div id="kule-trap-toast" style="opacity: 0; transform: translateY(10px); transition: opacity 0.25s, transform 0.25s; font-size: 15px; font-weight: 800; color: #f87171; background: rgba(239, 68, 68, 0.2); border: 1.5px solid rgba(239, 68, 68, 0.5); padding: 8px 24px; border-radius: 999px;">
+              🚨 KAPTAN DEMEDİ! Hareket eden veya erken davranan pilotlar elendi!
+            </div>
+
+            <!-- Kural Hatırlatması -->
+            <div style="font-size: 14px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; font-weight: 600;">
+              <span>💡 <strong>Hatırlatma:</strong> Başında <em>"Kaptan diyor ki"</em> denmeden yapılan her hareket elenme sebebidir!</span>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 6: HAVACILIK VE TAYYARENİN TARİHSEL GELİŞİMİ (TEKER TEKER SIRAYLA KEŞİF) -->
-      <section class="slide" data-slide="6">
+      <!-- SLIDE 7: HAVACILIK VE TAYYARENİN TARİHSEL GELİŞİMİ (TEKER TEKER SIRAYLA KEŞİF) -->
+      <section class="slide" data-slide="7">
         <div class="slide-badge">📜 MÜFREDAT KAZANIMI</div>
         <h1 class="slide-title">İnsanlığın Büyük Rüyası: Havacılığın Tarihi 🦅➔✈️</h1>
         <p class="slide-subtitle">Dikkatin dağılmasın diye adımları teker teker keşfedelim! Kuşlardan Hezarfen'e, Wright Kardeşler'den günümüze!</p>
@@ -1033,7 +1153,7 @@
       </section>
 
       <!-- SLIDE 7: HAVACILIK TARİHİ SÜRÜKLE-BIRAK OYUNU (KARIŞTIRILMIŞ SIRALAMA) -->
-      <section class="slide" data-slide="7">
+      <section class="slide" data-slide="8">
         <div class="slide-badge">🧩 AKILLI TAHTA OYUNU</div>
         <h1 class="slide-title">Havacılık Tarihini Eşleştir! (Sürükle-Bırak) 🎮</h1>
         <p class="slide-subtitle">Sol taraftaki kartları tutup sağdaki doğru kutulara sürükleyin veya önce karta sonra kutuya dokunun! (Cevaplar tam karşıda değil, dikkatli oku!)</p>
@@ -1157,7 +1277,7 @@
       </section>
 
       <!-- SLIDE 8: Kimlik Kartı & Uçak Boyama A4 -->
-      <section class="slide" data-slide="8">
+      <section class="slide" data-slide="9">
         <div class="slide-badge">🎫 RESMİ MÜHENDİSLİK KİMLİĞİ</div>
         <h1 class="slide-title">Gökyüzü Mühendisi Kimlik Kartı & Hayalimdeki Uçak 🎨</h1>
         <p class="slide-subtitle">Öğretmeninizden aldığınız A4 kağıdını doldurarak ilk mühendislik belgenizi oluşturun!</p>
@@ -1240,7 +1360,7 @@
       </section>
 
             <!-- SLIDE 9 [YENİ]: 1. Dönem Yıldızımız: Meteor75 Pro II Drone ile Uçuş! -->
-      <section class="slide" data-slide="9">
+      <section class="slide" data-slide="10">
         <div class="slide-badge">🛸 1. DÖNEM VİDEO ZAMANI & İLHAM</div>
         <h1 class="slide-title">1. Dönem Yıldızımız: Meteor75 Pro II FPV Drone! 💨</h1>
         <p class="slide-subtitle">Önümüzdeki hafta kutusunu açacağımız yarış dronunun gerçek FPV uçuş anı ve gücü!</p>
@@ -1292,7 +1412,7 @@
       </section>
 
       <!-- SLIDE 10: 3D Uçak Nasıl Doğuyor? (Montaj Videosu) -->
-      <section class="slide" data-slide="10">
+      <section class="slide" data-slide="11">
         <div class="slide-badge">🎬 VİDEO ZAMANI & İLHAM</div>
         <h1 class="slide-title">3D Uçağımız Nasıl Üretiliyor ve Nasıl Uçuyor? 🛩️</h1>
         <p class="slide-subtitle">2. Dönem Hangarda Kendi Ellerimizle Üreteceğimiz Craycle Stick Uçağının Gerçek Hikayesi!</p>
@@ -1344,7 +1464,7 @@
       </section>
 
             <!-- SLIDE 11 [YENİ]: Craycle Stick Gökyüzünde: Gerçek Uçuş Testi! -->
-      <section class="slide" data-slide="11">
+      <section class="slide" data-slide="12">
         <div class="slide-badge">🛩️ 2. DÖNEM VİDEO ZAMANI & İLHAM</div>
         <h1 class="slide-title">Craycle Stick Gökyüzünde: Gerçek Uçuş Testi! ✈️💨</h1>
         <p class="slide-subtitle">2. Dönem Hangarda kendi ellerimizle monte edeceğimiz 3D uçağın gökyüzünde süzülüşü ve akrobasisi!</p>
@@ -1396,7 +1516,7 @@
       </section>
 
       <!-- SLIDE 12: Kağıttan Uçak Katlama (Ekrana Tam Sığan Glider #2 + Shorts) -->
-      <section class="slide" data-slide="12">
+      <section class="slide" data-slide="13">
         <div class="slide-badge">📐 İLK MÜHENDİSLİK GÖREVİ</div>
         <h1 class="slide-title">Hangar Atölyesi: Süzülen Glider Kağıt Uçak ✈️</h1>
         <p class="slide-subtitle">Katlaması çok kolay, havada süzülüşü muhteşem tek ve efsane modelimiz!</p>
@@ -1452,7 +1572,7 @@
       </section>
 
       <!-- SLIDE 13: Test Uçuşları & Haftanın Kapanışı -->
-      <section class="slide" data-slide="13">
+      <section class="slide" data-slide="14">
         <div class="slide-badge">🏁 BÜYÜK UÇUŞ TESTİ & VEDA</div>
         <h1 class="slide-title">Uçuş Test Pisti: 3, 2, 1... Fırlat! 🎯</h1>
         <p class="slide-subtitle">Katladığınız uçakları sırayla fırlatma çizgisine getirin ve aerodinamik dengesini test edin!</p>
@@ -1513,7 +1633,7 @@
   <footer>
     <div class="footer-left">
       <div class="slide-counter" onclick="toggleOverview()" title="Tüm Slaytları Gör">
-        SLAYT <span class="current" id="current-slide-num">1</span> / 13
+        SLAYT <span class="current" id="current-slide-num">1</span> / 14
       </div>
       <div style="font-size: 14px; color: var(--text-muted);">
         İpucu: <strong>Boşluk / Sağ Ok</strong> ile ilerle, <strong>N</strong> ile öğretmen notlarını aç
@@ -1545,21 +1665,22 @@
       <div class="overview-card" onclick="goToSlide(2)"><strong>2.</strong> Sırayla Mikrofon Sende (Tanışma)</div>
       <div class="overview-card" onclick="goToSlide(3)"><strong>3.</strong> Dönem Tanıtımı (Drone & 3D Uçak)</div>
       <div class="overview-card" onclick="goToSlide(4)"><strong>4.</strong> Sınıf Sözleşmesi (İmza Duvarı)</div>
-      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> Kule'den Pilot'a Oyunu 🎧</div>
-      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Havacılığın Tarihsel Gelişimi (Adım Adım)</div>
-      <div class="overview-card" onclick="goToSlide(7)"><strong>7.</strong> Sürükle-Bırak Tarih Oyunu 🎲</div>
-      <div class="overview-card" onclick="goToSlide(8)"><strong>8.</strong> Kimlik Kartı & Uçak Boyama A4</div>
-      <div class="overview-card" onclick="goToSlide(9)"><strong>9.</strong> Meteor75 Pro II Drone Uçuş Videosu 🛸</div>
-      <div class="overview-card" onclick="goToSlide(10)"><strong>10.</strong> 3D Uçak Nasıl Üretiliyor? (Montaj) 🛠️</div>
-      <div class="overview-card" onclick="goToSlide(11)"><strong>11.</strong> Craycle Stick Gökyüzünde! (Uçuş) ✈️</div>
-      <div class="overview-card" onclick="goToSlide(12)"><strong>12.</strong> Glider Kağıt Uçak & Shorts</div>
-      <div class="overview-card" onclick="goToSlide(13)"><strong>13.</strong> Uçuş Test Pisti & Kapanış</div>
+      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> Uçuş Kuralları & Hareket Rehberi 📋</div>
+      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Kule'den Pilot'a: Kaptan Diyor ki 🎧</div>
+      <div class="overview-card" onclick="goToSlide(7)"><strong>7.</strong> Havacılığın Tarihsel Gelişimi (Adım Adım)</div>
+      <div class="overview-card" onclick="goToSlide(8)"><strong>8.</strong> Sürükle-Bırak Tarih Oyunu 🎲</div>
+      <div class="overview-card" onclick="goToSlide(9)"><strong>9.</strong> Kimlik Kartı & Uçak Boyama A4</div>
+      <div class="overview-card" onclick="goToSlide(10)"><strong>10.</strong> Meteor75 Pro II Drone Uçuş Videosu 🛸</div>
+      <div class="overview-card" onclick="goToSlide(11)"><strong>11.</strong> 3D Uçak Nasıl Üretiliyor? (Montaj) 🛠️</div>
+      <div class="overview-card" onclick="goToSlide(12)"><strong>12.</strong> Craycle Stick Gökyüzünde! (Uçuş) ✈️</div>
+      <div class="overview-card" onclick="goToSlide(13)"><strong>13.</strong> Glider Kağıt Uçak & Shorts</div>
+      <div class="overview-card" onclick="goToSlide(14)"><strong>14.</strong> Uçuş Test Pisti & Kapanış</div>
     </div>
   </div>
 
   <script>
     let currentSlide = 1;
-    const totalSlides = 13;
+    const totalSlides = 14;
     let stampCounter = 0;
     const stampElements = [];
     let audioCtx = null;
@@ -1575,15 +1696,16 @@
       "2": "<h4>2. Tanışma Çemberi (10 Dk)</h4><p>Öğrenciler sırayla isimlerini ve sevdikleri rengi söylesin. Tahtadaki mikrofona basarak rastgele neşeli sorular açın.</p>",
       "3": "<h4>3. Dönem Tanıtımı (8 Dk)</h4><p>1. Dönem Meteor75 Drone ile simülatör ve uçuşu, 2. Dönem Craycle Stick 3D uçağıyla uçuş şenliğini hedefe koyun.</p>",
       "4": "<h4>4. Sınıf Sözleşmesi (8 Dk)</h4><p>5 altın kuralı okuyun. Öğrenciler sırayla tahtaya gelip sağdaki panoya dokunarak el izi bıraksın. Sınıfça alkışlayın.</p>",
-      "5": "<h4>5. Kule'den Pilot'a Oyunu (7 Dk)</h4><p>Öğrenciler ayağa kalkmadan sıralarında oynasın. Komutları heyecanlı bir ses tonuyla, bir kule görevlisi gibi okuyun. Kule diyor ki olmayan komutu yapan pilotlar elenip yerine oturur.</p>",
-      "6": "<h4>6. Havacılığın Tarihi Gelişimi (8 Dk)</h4><p>Dikkatin dağılmaması için 4 adımı teker teker açın: Hezarfen (1632) ➔ Sıcak Hava Balonu (1783) ➔ Wright Kardeşler (1903) ➔ Vecihi Hürkuş (1924) & 3D Uçaklar. Her görseli ve hikayeyi ilgiyle anlatın.</p>",
-      "7": "<h4>7. Akıllı Tahta Sürükle-Bırak Etkinliği (8 Dk)</h4><p>Öğrencileri tahtaya davet edin. Kartlar ve hedefler karışıktır. Önce karta sonra doğru kutuya dokunarak eşleştirmelerini sağlayın.</p>",
-      "8": "<h4>8. Kimlik Kartı & Uçak Boyama (10 Dk)</h4><p>A4 kağıtlarını dağıtın. 10 dakikalık sayacı başlatın. Öğrenciler kimliklerini doldursun ve Craycle Stick uçağına isim versin.</p>",
-      "9": "<h4>9. 1. Dönem Yıldızımız: Meteor75 Pro II Drone Uçuşu (5 Dk)</h4><p>Önümüzdeki hafta kutularını açacağımız yarış dronunun FPV gözlükle uçuş videosunu izletin. 4 motorun çevikliğine ve gözlükten görünen pilot açısına dikkat çekin.</p>",
-      "10": "<h4>10. 2. Dönem Projemiz: 3D Uçak Montajı (5 Dk)</h4><p>Craycle Stick uçağının 3D yazıcıdan nasıl basıldığını, fırçasız motorunun ve plastik parçalarının nasıl monte edildiğini gösterin.</p>",
-      "11": "<h4>11. Craycle Stick Gökyüzünde! (Gerçek Uçuş Videosu) (5 Dk)</h4><p>3D uçağımızın çim pistten kalkışını, havada süzülüşünü ve takla atışını izletin. 32. haftadaki büyük Uçuş Pikniği hedefini hatırlatın.</p>",
-      "12": "<h4>12. Glider Kağıt Uçak & Shorts (8 Dk)</h4><p>Glider #2 şeması ve Shorts videosu eşliğinde adım adım katlama yaptırın. Kilit üçgenini iyice bastırsınlar.</p>",
-      "13": "<h4>13. Uçuş Test Pisti & Kapanış (5 Dk)</h4><p>Fırlatma çizgisine 3'erli filolarla geçip uçakları fırlatın. Gelecek hafta ilk drone kutularını açacağımızı duyurun!</p>"
+      "5": "<h4>5. Uçuş Kuralları & Hareket Rehberi (5 Dk)</h4><p>Pilotlarımıza komutları ve hareketleri gösterin. 'Kaptan diyor ki' ifadesinin önemini anlatın; bu ifade olmadan verilen komutları yapan pilotların hangara çekilip oturacağını açıklayın.</p>",
+      "6": "<h4>6. Kule'den Pilot'a Oyunu (7 Dk)</h4><p>Öğrenciler sıralarında veya ayakta oynasın. İster 'Manuel Komut' ile kendiniz ilerleyin, ister '▶️ Otomatik Oynat'a basarak 5 saniyede bir komutların akmasını sağlayın. Hoparlörden kaptanın sesini dinleyin, tuzak komutlarda seslendirme bittikten sonra çalan uyarı ziliyle elenenleri tespit edin.</p>",
+      "7": "<h4>7. Havacılığın Tarihi Gelişimi (8 Dk)</h4><p>Dikkatin dağılmaması için 4 adımı teker teker açın: Hezarfen (1632) ➔ Sıcak Hava Balonu (1783) ➔ Wright Kardeşler (1903) ➔ Vecihi Hürkuş (1924) & 3D Uçaklar. Her görseli ve hikayeyi ilgiyle anlatın.</p>",
+      "8": "<h4>8. Akıllı Tahta Sürükle-Bırak Etkinliği (8 Dk)</h4><p>Öğrencileri tahtaya davet edin. Kartlar ve hedefler karışıktır. Önce karta sonra doğru kutuya dokunarak eşleştirmelerini sağlayın.</p>",
+      "9": "<h4>9. Kimlik Kartı & Uçak Boyama (10 Dk)</h4><p>A4 kağıtlarını dağıtın. 10 dakikalık sayacı başlatın. Öğrenciler kimliklerini doldursun ve Craycle Stick uçağına isim versin.</p>",
+      "10": "<h4>10. 1. Dönem Yıldızımız: Meteor75 Pro II Drone Uçuşu (5 Dk)</h4><p>Önümüzdeki hafta kutularını açacağımız yarış dronunun FPV gözlükle uçuş videosunu izletin. 4 motorun çevikliğine ve gözlükten görünen pilot açısına dikkat çekin.</p>",
+      "11": "<h4>11. 2. Dönem Projemiz: 3D Uçak Montajı (5 Dk)</h4><p>Craycle Stick uçağının 3D yazıcıdan nasıl basıldığını, fırçasız motorunun ve plastik parçalarının nasıl monte edildiğini gösterin.</p>",
+      "12": "<h4>12. Craycle Stick Gökyüzünde! (Gerçek Uçuş Videosu) (5 Dk)</h4><p>3D uçağımızın çim pistten kalkışını, havada süzülüşünü ve takla atışını izletin. 32. haftadaki büyük Uçuş Pikniği hedefini hatırlatın.</p>",
+      "13": "<h4>13. Glider Kağıt Uçak & Shorts (8 Dk)</h4><p>Glider #2 şeması ve Shorts videosu eşliğinde adım adım katlama yaptırın. Kilit üçgenini iyice bastırsınlar.</p>",
+      "14": "<h4>14. Uçuş Test Pisti & Kapanış (5 Dk)</h4><p>Fırlatma çizgisine 3'erli filolarla geçip uçakları fırlatın. Gelecek hafta ilk drone kutularını açacağımızı duyurun!</p>"
     };
     const funSpeakerTasks = ["En sevdiğin renk hangisi? Uçağımızı o renge boyayabiliriz! 🎨", "Göklerde süzülen bir kuş olsaydın hangi sevimli kuş olurdun? 🐦", "En sevdiğin çizgi film veya süper kahraman kim? 🦸", "Uçakla tatile gidecek olsan yanına en sevdiğin hangi oyuncağını alırdın? 🧸", "Bir uçağın olsa ilk kimi gezdirmek isterdin? (Anne, baba veya arkadaş) 👨‍👩‍👧", "Gökyüzünde bir buluta dokunsan sence neye benzerdi? (Pamuk şeker mi?) ☁️", "Uçağının gövdesine hangi resmi çizmek isterdin? (Yıldız, güneş veya kalp) ☀️", "En çok hangi mevsimde gökyüzüne bakmayı seversin? (Güneşli yaz mı, karlı kış mı?) 🌈", "Uçaklar sence gökyüzünde kuşlara el sallar mı? ✈️", "En sevdiğin meyve veya dondurma hangisi? 🍓"];
 
@@ -1714,14 +1836,17 @@
 
       document.getElementById('slide-notes-content').innerHTML = slideNotes[currentSlide] || '<p>Bu slayt için özel not bulunmuyor.</p>';
 
-      if (currentSlide === 7) {
+      if (currentSlide !== 6) {
+        stopKuleAutoPlay();
+      }
+      if (currentSlide === 8) {
         shuffleDropTargets();
       }
     }
 
     function nextSlide() {
       // Special check for Slide 6: advance history steps first!
-      if (currentSlide === 6 && !isHistoryGridView && currentHistoryStep < totalHistorySteps) {
+      if (currentSlide === 7 && !isHistoryGridView && currentHistoryStep < totalHistorySteps) {
         setHistoryStep(currentHistoryStep + 1);
         return;
       }
@@ -1735,7 +1860,7 @@
 
     function prevSlide() {
       // Special check for Slide 6: go back history steps first!
-      if (currentSlide === 6 && !isHistoryGridView && currentHistoryStep > 1) {
+      if (currentSlide === 7 && !isHistoryGridView && currentHistoryStep > 1) {
         setHistoryStep(currentHistoryStep - 1);
         return;
       }
@@ -1756,65 +1881,366 @@
 
     
     // ===================================================
-    // SLIDE 5: KULE'DEN PİLOT'A (SIMON SAYS) OYUN MANTIĞI
+    // SLIDE 6: KULE'DEN PİLOT'A (KAPTAN DİYOR Kİ) OYUN MANTIĞI
     // ===================================================
-    const kuleKomutHavuzu = [
-      // Doğru Komutlar (Uygulanacak):
-      "Kule diyor ki: Motorları çalıştır! (Kollar pervane gibi döner)",
-      "Kule diyor ki: Kemerleri bağla! (Göbekte eller birleşir)",
-      "Kule diyor ki: İniş takımlarını aç! (Olduğun yerde çömel)",
-      "Kule diyor ki: Türbülansa girdik! (Olduğun yerde titreme)",
-      "Kule diyor ki: Sağa dönüş yap! (Sandalyede sağa yat)",
-      "Kule diyor ki: Kaptan selamı ver! (Asker selamı verilir)",
-      // Tuzak Komutlar (Uygulanmayacak - Yapan Yanar):
-      "Fren yap! (Tuzak!)",
-      "Ayağa kalk! (Tuzak!)",
-      "Motorları durdur! (Tuzak!)",
-      "Kollarını havaya kaldır! (Tuzak!)"
+    const kuleKomutlar = [
+      // Doğru Komutlar (Valid - Kaptan diyor ki)
+      { id: 'v_motor', text: 'Kaptan diyor ki: Motorları çalıştır!', isTrap: false, audio: 'audio/cmd_v_motor.mp3', type: 'general' },
+      { id: 'v_kemer', text: 'Kaptan diyor ki: Kemerleri bağla!', isTrap: false, audio: 'audio/cmd_v_kemer.mp3', type: 'general' },
+      { id: 'v_inis_ac', text: 'Kaptan diyor ki: İniş takımlarını aç!', isTrap: false, audio: 'audio/cmd_v_inis_ac.mp3', type: 'crouch_down' },
+      { id: 'v_inis_kalk', text: 'Kaptan diyor ki: İniş tamam, ayağa kalk!', isTrap: false, audio: 'audio/cmd_v_inis_kalk.mp3', type: 'crouch_up' },
+      { id: 'v_sag', text: 'Kaptan diyor ki: Sağa dönüş yap!', isTrap: false, audio: 'audio/cmd_v_sag.mp3', type: 'bank_right' },
+      { id: 'v_sol', text: 'Kaptan diyor ki: Sola dönüş yap!', isTrap: false, audio: 'audio/cmd_v_sol.mp3', type: 'bank_left' },
+      { id: 'v_selam', text: 'Kaptan diyor ki: Kaptan selamı ver!', isTrap: false, audio: 'audio/cmd_v_selam.mp3', type: 'general' },
+      { id: 'v_turbulans', text: 'Kaptan diyor ki: Türbülansa girdik!', isTrap: false, audio: 'audio/cmd_v_turbulans.mp3', type: 'general' },
+      { id: 'v_radar', text: 'Kaptan diyor ki: Radarı tara!', isTrap: false, audio: 'audio/cmd_v_radar.mp3', type: 'general' },
+      { id: 'v_pist', text: 'Kaptan diyor ki: Piste bak!', isTrap: false, audio: 'audio/cmd_v_pist.mp3', type: 'general' },
+      { id: 'v_kol_kaldir', text: 'Kaptan diyor ki: Kollarını havaya kaldır!', isTrap: false, audio: 'audio/cmd_v_kol_kaldir.mp3', type: 'arms_up' },
+      { id: 'v_kol_indir', text: 'Kaptan diyor ki: Kollarını indir!', isTrap: false, audio: 'audio/cmd_v_kol_indir.mp3', type: 'arms_down' },
+
+      // Tuzak Komutlar (Trap - Sadece komut adı, 'Kaptan diyor ki' YOK)
+      { id: 't_fren', text: 'Fren yap!', isTrap: true, audio: 'audio/cmd_t_fren.mp3', type: 'general' },
+      { id: 't_kalk', text: 'Ayağa kalk!', isTrap: true, audio: 'audio/cmd_t_kalk.mp3', type: 'crouch_up' },
+      { id: 't_durdur', text: 'Motorları durdur!', isTrap: true, audio: 'audio/cmd_t_durdur.mp3', type: 'general' },
+      { id: 't_kol_kaldir', text: 'Kollarını havaya kaldır!', isTrap: true, audio: 'audio/cmd_t_kol_kaldir.mp3', type: 'arms_up' },
+      { id: 't_kemer_coz', text: 'Kemerleri çöz!', isTrap: true, audio: 'audio/cmd_t_kemer_coz.mp3', type: 'general' },
+      { id: 't_sag', text: 'Sağa dönüş yap!', isTrap: true, audio: 'audio/cmd_t_sag.mp3', type: 'bank_right' },
+      { id: 't_sol', text: 'Sola dönüş yap!', isTrap: true, audio: 'audio/cmd_t_sol.mp3', type: 'bank_left' },
+      { id: 't_inis_ac', text: 'İniş takımlarını aç!', isTrap: true, audio: 'audio/cmd_t_inis_ac.mp3', type: 'crouch_down' },
+      { id: 't_selam', text: 'Kaptan selamı ver!', isTrap: true, audio: 'audio/cmd_t_selam.mp3', type: 'general' },
+      { id: 't_turbulans', text: 'Türbülansa girdik!', isTrap: true, audio: 'audio/cmd_t_turbulans.mp3', type: 'general' }
     ];
 
-    let aktifKuleKomutlari = [...kuleKomutHavuzu];
+let kuleState = {
+      isCrouched: false,
+      armsUp: false,
+      lastBank: 'center',
+      lastCmdId: null,
+      lastWasTrap: false,
+      trapStreak: 0,
+      audioPlayer: new Audio(),
+      alertPlayer: new Audio('audio/trap_alert.mp3'),
+      autoPlayTimeout: null,
+      autoPlayProgressInterval: null,
+      trapTimeout: null,
+      isAutoPlaying: false
+    };
 
-    function yeniKuleKomutu() {
-      // 3. Komut ekrana yazdırılırken playClickSound() fonksiyonunu çağır
-      playClickSound();
-
-      // 2. Geçici dizi boşaldığında orijinal diziyi tekrar kopyalasın (arka arkaya tekrarı engelleme)
-      if (aktifKuleKomutlari.length === 0) {
-        aktifKuleKomutlari = [...kuleKomutHavuzu];
+    function stopAllKuleAudio() {
+      // 1. Bekleyen zamanlayıcıları temizle
+      if (kuleState.autoPlayTimeout) {
+        clearTimeout(kuleState.autoPlayTimeout);
+        kuleState.autoPlayTimeout = null;
+      }
+      if (kuleState.trapTimeout) {
+        clearTimeout(kuleState.trapTimeout);
+        kuleState.trapTimeout = null;
+      }
+      if (kuleState.autoPlayProgressInterval) {
+        clearInterval(kuleState.autoPlayProgressInterval);
+        kuleState.autoPlayProgressInterval = null;
       }
 
-      // Rastgele bir komut seç ve splice ile çıkar
-      const randIdx = Math.floor(Math.random() * aktifKuleKomutlari.length);
-      const secilenKomut = aktifKuleKomutlari.splice(randIdx, 1)[0];
+      // 2. Çalan sesleri durdur ve sıfırla
+      try {
+        kuleState.audioPlayer.pause();
+        kuleState.audioPlayer.currentTime = 0;
+        kuleState.audioPlayer.onended = null;
+        kuleState.audioPlayer.onerror = null;
+      } catch(e) {}
 
+      try {
+        kuleState.alertPlayer.pause();
+        kuleState.alertPlayer.currentTime = 0;
+        kuleState.alertPlayer.onended = null;
+        kuleState.alertPlayer.onerror = null;
+      } catch(e) {}
+
+      // 3. Web Speech API iptal et
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      // 4. Tuzak rozetini gizle
+      const toast = document.getElementById('kule-trap-toast');
+      if (toast) {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+      }
+    }
+
+    function playBuzzerSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.setValueAtTime(120, now + 0.18);
+        gain.gain.setValueAtTime(0.28, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.45);
+      } catch(e) {}
+    }
+
+    function playCaptainVoice(audioSrc, textFallback, onEnd) {
+      if (!soundEnabled) {
+        if (onEnd) setTimeout(onEnd, 1200);
+        return;
+      }
+      try {
+        kuleState.audioPlayer.pause();
+        kuleState.audioPlayer.src = audioSrc;
+        kuleState.audioPlayer.onended = () => {
+          kuleState.audioPlayer.onended = null;
+          if (onEnd) onEnd();
+        };
+        kuleState.audioPlayer.onerror = () => {
+          if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(textFallback);
+            utter.lang = 'tr-TR';
+            utter.rate = 1.05;
+            utter.onend = () => { if (onEnd) onEnd(); };
+            window.speechSynthesis.speak(utter);
+          } else {
+            if (onEnd) setTimeout(onEnd, 1500);
+          }
+        };
+        kuleState.audioPlayer.play().catch(e => {
+          if (onEnd) setTimeout(onEnd, 1500);
+        });
+      } catch(e) {
+        if (onEnd) setTimeout(onEnd, 1500);
+      }
+    }
+
+    function pickSmartCommand() {
+      const candidates = kuleKomutlar.filter(cmd => {
+        // Asla üst üste aynı komut gelmesin
+        if (cmd.id === kuleState.lastCmdId) return false;
+
+        // Çömelme mantığı
+        if (kuleState.isCrouched) {
+          if (cmd.type === 'crouch_down') return false;
+        } else {
+          if (cmd.type === 'crouch_up') return false;
+        }
+
+        // Kol mantığı
+        if (kuleState.armsUp && cmd.type === 'arms_up') return false;
+        if (!kuleState.armsUp && cmd.type === 'arms_down') return false;
+
+        // Yana yatma mantığı
+        if (cmd.type === 'bank_right' && kuleState.lastBank === 'right') return false;
+        if (cmd.type === 'bank_left' && kuleState.lastBank === 'left') return false;
+
+        // Üst üste en fazla 2 tuzak gelebilir
+        if (cmd.isTrap && kuleState.trapStreak >= 2) return false;
+
+        return true;
+      });
+
+      // Öğrenci çömelmişse %60 ihtimalle ayağa kalkma komutu/tuzağı önceliklendir (yorulmasınlar ve tuzağa düşsünler)
+      let pool = candidates;
+      if (kuleState.isCrouched && Math.random() < 0.6) {
+        const standPool = candidates.filter(c => c.type === 'crouch_up');
+        if (standPool.length > 0) pool = standPool;
+      }
+
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+
+      // Fiziksel durum güncellemesi (Sadece geçerli komutlarda pozisyon değişir)
+      if (chosen.type === 'crouch_down' && !chosen.isTrap) {
+        kuleState.isCrouched = true;
+      } else if (chosen.type === 'crouch_up' && !chosen.isTrap) {
+        kuleState.isCrouched = false;
+      } else if (chosen.type === 'arms_up' && !chosen.isTrap) {
+        kuleState.armsUp = true;
+      } else if (chosen.type === 'arms_down' && !chosen.isTrap) {
+        kuleState.armsUp = false;
+      } else if (chosen.type === 'bank_right' && !chosen.isTrap) {
+        kuleState.lastBank = 'right';
+      } else if (chosen.type === 'bank_left' && !chosen.isTrap) {
+        kuleState.lastBank = 'left';
+      } else if (!chosen.isTrap) {
+        kuleState.lastBank = 'center';
+      }
+
+      if (chosen.isTrap) {
+        kuleState.trapStreak++;
+      } else {
+        kuleState.trapStreak = 0;
+      }
+      kuleState.lastCmdId = chosen.id;
+      kuleState.lastWasTrap = chosen.isTrap;
+
+      return chosen;
+    }
+
+    function triggerTrapAlert(onFinished) {
+      playBuzzerSound();
+      const toast = document.getElementById('kule-trap-toast');
+      if (toast) {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      }
+
+      const finishAlert = () => {
+        setTimeout(() => {
+          if (toast) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+          }
+        }, 1200);
+        if (onFinished) onFinished();
+      };
+
+      if (!soundEnabled) {
+        setTimeout(finishAlert, 1800);
+        return;
+      }
+
+      try {
+        kuleState.alertPlayer.currentTime = 0;
+        kuleState.alertPlayer.onended = () => {
+          kuleState.alertPlayer.onended = null;
+          finishAlert();
+        };
+        kuleState.alertPlayer.onerror = () => {
+          setTimeout(finishAlert, 1500);
+        };
+        kuleState.alertPlayer.play().catch(e => {
+          setTimeout(finishAlert, 1500);
+        });
+      } catch(e) {
+        setTimeout(finishAlert, 1500);
+      }
+    }
+
+    function runAutoPlayProgressBar(durationMs) {
+      if (kuleState.autoPlayProgressInterval) {
+        clearInterval(kuleState.autoPlayProgressInterval);
+      }
+      const pBar = document.getElementById('kule-progress-bar');
+      if (!pBar) return;
+
+      const startTime = Date.now();
+      pBar.style.width = '100%';
+
+      kuleState.autoPlayProgressInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 1 - (elapsed / durationMs));
+        pBar.style.width = (remaining * 100) + '%';
+        if (remaining <= 0) {
+          clearInterval(kuleState.autoPlayProgressInterval);
+          kuleState.autoPlayProgressInterval = null;
+        }
+      }, 40);
+    }
+
+    function scheduleNextAutoCommand(waitDurationMs) {
+      if (!kuleState.isAutoPlaying) return;
+
+      runAutoPlayProgressBar(waitDurationMs);
+
+      kuleState.autoPlayTimeout = setTimeout(() => {
+        if (!kuleState.isAutoPlaying) return;
+        yeniKuleKomutu();
+      }, waitDurationMs);
+    }
+
+    function yeniKuleKomutu() {
+      // 1. Önceki tüm sesleri ve zamanlayıcıları tamamen durdur (üst üste binmeyi engelle)
+      stopAllKuleAudio();
+      playClickSound();
+
+      const cmd = pickSmartCommand();
       const ekran = document.getElementById('kule-komut-ekrani');
       if (!ekran) return;
 
-      // 3. Komut kutusuna hafif bir büyüme/küçülme animasyonu (CSS scale) ekle
-      ekran.style.transform = 'scale(1.08)';
-      ekran.style.transition = 'transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, border-color 0.2s';
+      ekran.style.transform = 'scale(1.06)';
+      ekran.style.transition = 'transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1)';
 
-      const isTrap = secilenKomut.includes('(Tuzak!)');
-      if (isTrap) {
-        ekran.style.color = 'var(--candy-red)';
-        ekran.style.borderColor = 'var(--candy-red)';
-        ekran.style.background = 'rgba(244, 63, 94, 0.18)';
-      } else {
-        ekran.style.color = 'var(--sunny-yellow)';
-        ekran.style.borderColor = 'rgba(251, 191, 36, 0.6)';
-        ekran.style.background = 'rgba(56, 189, 248, 0.12)';
-      }
-
-      ekran.textContent = secilenKomut;
+      // Daima nötr stil - Kırmızı renk yok, tuzak ibaresi yok!
+      ekran.style.color = 'var(--sunny-yellow)';
+      ekran.style.borderColor = 'rgba(251, 191, 36, 0.65)';
+      ekran.style.background = 'rgba(0, 0, 0, 0.45)';
+      ekran.textContent = cmd.text;
 
       setTimeout(() => {
         ekran.style.transform = 'scale(1)';
       }, 160);
+
+      // Kaptan sesini çal
+      playCaptainVoice(cmd.audio, cmd.text, () => {
+        // Ses çalması tamamen bittiğinde:
+        if (cmd.isTrap) {
+          // TUZAK KOMUTU:
+          // 1. Öğrencilerin tuzağa düşüp hareket etmesi için 1.5 sn bekle
+          kuleState.trapTimeout = setTimeout(() => {
+            // 2. Uyarı zili ve "Kaptan demedi!" alarmını çal
+            triggerTrapAlert(() => {
+              // 3. Alarm bittikten sonra sınıfa ve öğretmene elenenleri görmesi için 3 saniye pay ver
+              if (kuleState.isAutoPlaying) {
+                scheduleNextAutoCommand(3200);
+              }
+            });
+          }, 1500);
+        } else {
+          // GEÇERLİ KOMUT:
+          // Çocukların hareketi yapması için 3.5 sn bekle, sonra sonraki komuta geç
+          if (kuleState.isAutoPlaying) {
+            scheduleNextAutoCommand(3500);
+          }
+        }
+      });
+    }
+
+    function toggleKuleAutoPlay() {
+      if (kuleState.isAutoPlaying) {
+        stopKuleAutoPlay();
+      } else {
+        startKuleAutoPlay();
+      }
+    }
+
+    function startKuleAutoPlay() {
+      kuleState.isAutoPlaying = true;
+      const btn = document.getElementById('btn-oto-komut');
+      if (btn) {
+        btn.innerHTML = '⏸️ Otomatik Oynatmayı Durdur';
+        btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        btn.style.boxShadow = '0 10px 25px rgba(239, 68, 68, 0.4)';
+      }
+      const pContainer = document.getElementById('kule-progress-container');
+      if (pContainer) pContainer.style.display = 'block';
+
+      // İlk komutu gönder, döngü komut bittikçe zincirleme (sequential) devam edecek
+      yeniKuleKomutu();
+    }
+
+    function stopKuleAutoPlay() {
+      kuleState.isAutoPlaying = false;
+      stopAllKuleAudio();
+
+      const btn = document.getElementById('btn-oto-komut');
+      if (btn) {
+        btn.innerHTML = '▶️ Otomatik Oynat (5 sn)';
+        btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        btn.style.boxShadow = '0 10px 25px rgba(16, 185, 129, 0.4)';
+      }
+      const pContainer = document.getElementById('kule-progress-container');
+      if (pContainer) pContainer.style.display = 'none';
     }
 
     // ===================================================
-    // SLIDE 6: STEPPER FUNCTIONS
+    // SLIDE 7: STEPPER FUNCTIONS
     // ===================================================
     function setHistoryStep(stepNum) {
       playClickSound();
