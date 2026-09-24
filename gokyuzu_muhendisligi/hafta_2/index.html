@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loom Akademi • Gökyüzü Mühendisliği - 2. Hafta: Drone Kumandası ve İlk Simülasyon</title>
+  <style>
+    :root {
+      --primary: #38bdf8;
+      --primary-light: #7dd3fc;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --bg-dark: #090e1a;
+      --bg-card: rgba(22, 31, 54, 0.94);
+      --border-card: rgba(255, 255, 255, 0.18);
+      --sunny-yellow: #fbbf24;
+      --emerald-green: #34d399;
+      --candy-red: #fb7185;
+      --cute-purple: #c084fc;
+      --text-white: #ffffff;
+      --text-muted: #cbd5e1;
+      --font-main: 'Segoe UI', 'Trebuchet MS', Arial, -apple-system, sans-serif;
+      --slide-w: 1280px;
+      --slide-h: 720px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body {
+      background: radial-gradient(circle at top right, #1a2542 0%, #0c1322 60%, #060911 100%);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      overflow: hidden;
+      width: 100vw; height: 100vh;
+      display: flex; flex-direction: column;
+      user-select: none;
+    }
+
+    /* Top Progress Bar */
+    #progress-track {
+      position: fixed; top: 0; left: 0; width: 100%; height: 6px;
+      background: rgba(255, 255, 255, 0.08); z-index: 1000;
+    }
+    #progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #f43f5e, #fbbf24, #34d399, var(--primary), #c084fc);
+      box-shadow: 0 0 12px var(--primary-light);
+      transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Header */
+    header {
+      position: fixed; top: 6px; left: 0; width: 100%; height: 62px;
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(12, 19, 34, 0.96); backdrop-filter: blur(14px);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.14); z-index: 900;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .grade-badge {
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #042f2e; font-size: 15px; font-weight: 800;
+      padding: 6px 14px; border-radius: 12px; letter-spacing: 0.5px;
+    }
+    .brand-title {
+      font-size: 19px; font-weight: 800; letter-spacing: 0.5px;
+      color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .brand-title span { color: var(--sunny-yellow); font-weight: 700; font-size: 16px; }
+    .header-tools { display: flex; align-items: center; gap: 10px; }
+    .tool-btn {
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1; width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; font-size: 16px;
+    }
+    .tool-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; transform: scale(1.05); }
+    .tool-btn.active { background: var(--primary); color: #042f2e; border-color: var(--primary); }
+
+    /* Main Container */
+    main {
+      flex: 1; margin-top: 68px; margin-bottom: 68px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px 20px; overflow: hidden; position: relative;
+    }
+    #slide-viewport {
+      width: 100%; max-width: var(--slide-w); height: 100%; max-height: var(--slide-h);
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Slide Box */
+    .slide {
+      position: absolute; inset: 0;
+      opacity: 0; pointer-events: none; visibility: hidden;
+      display: flex; flex-direction: column;
+      padding: 20px 36px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transform: translateY(16px) scale(0.985);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    }
+    .slide.active {
+      opacity: 1; pointer-events: auto; visibility: visible;
+      transform: translateY(0) scale(1); z-index: 10;
+    }
+
+    /* Slide Titles */
+    .slide-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--primary); margin-bottom: 4px;
+    }
+    .slide-title {
+      font-size: 34px; font-weight: 800; line-height: 1.2;
+      color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      margin-bottom: 2px;
+    }
+    .slide-subtitle {
+      font-size: 17px; color: var(--text-muted); line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    /* Slide Layouts */
+    .slide-content { flex: 1; display: flex; gap: 24px; min-height: 0; overflow: hidden; }
+    .col-half { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .col-full { width: 100%; height: 100%; display: flex; flex-direction: column; }
+    .col-60 { flex: 1.35; display: flex; flex-direction: column; min-height: 0; }
+    .col-40 { flex: 0.95; display: flex; flex-direction: column; min-height: 0; }
+
+    /* Fun Box */
+    .fun-box {
+      background: rgba(30, 41, 65, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Speaker Wheel */
+    .speaker-box {
+      background: radial-gradient(circle at center, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%);
+      border: 2px dashed var(--primary);
+      border-radius: var(--radius-md);
+      padding: 16px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      height: 100%; gap: 12px;
+    }
+    .mic-btn {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: linear-gradient(135deg, #f43f5e, #fb7185);
+      border: 4px solid rgba(255,255,255,0.8);
+      font-size: 44px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: 0 8px 25px rgba(244, 63, 94, 0.6);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .mic-btn:hover { transform: scale(1.1) rotate(5deg); }
+    .mic-btn:active { transform: scale(0.92); }
+
+    /* 5 New Rules */
+    .rule-item {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-md); padding: 8px 16px;
+      transition: all 0.2s ease;
+    }
+    .rule-item:hover {
+      background: rgba(56, 189, 248, 0.15); border-color: var(--primary);
+      transform: translateX(6px);
+    }
+    .rule-icon {
+      font-size: 26px; width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .rule-text h4 { font-size: 16.5px; font-weight: 800; color: #fff; line-height: 1.25; }
+    .rule-text p { font-size: 13.5px; color: #cbd5e1; margin-top: 2px; line-height: 1.35; }
+
+    /* Board Stamp Marks */
+    .board-stamp-mark {
+      position: absolute; width: 54px; height: 54px; pointer-events: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      animation: stampPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes stampPop {
+      0% { transform: scale(3.5); opacity: 0; }
+      70% { transform: scale(0.85); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Celebration Banner */
+    #celebration-banner {
+      position: absolute; inset: 0;
+      background: rgba(12, 19, 34, 0.95);
+      border-radius: var(--radius-lg);
+      z-index: 100;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; text-align: center; padding: 28px;
+    }
+    #celebration-banner.show { display: flex; }
+
+    /* ===================================================
+       SLIDE 5: HAVACILIK TARİHİ (TEKER TEKER SIRAYLA KEŞİF)
+       =================================================== */
+    .history-stepper-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 12px; padding: 6px 12px;
+      background: rgba(15, 23, 42, 0.85); border-radius: 14px;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+    }
+    .h-step-tabs {
+      display: flex; align-items: center; gap: 8px; flex: 1;
+    }
+    .h-step-btn {
+      display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+      border-radius: 10px; background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.15); color: #cbd5e1;
+      font-family: var(--font-main); font-size: 14px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .h-step-btn:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+    .h-step-btn.active {
+      background: rgba(56, 189, 248, 0.25); border-color: var(--primary);
+      color: #fff; box-shadow: 0 0 12px var(--primary-glow);
+    }
+    .h-step-btn.completed {
+      border-color: var(--emerald-green); color: #a7f3d0;
+    }
+    .h-step-num {
+      width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 12px;
+    }
+    .h-step-btn.active .h-step-num { background: var(--primary); color: #042f2e; font-weight: 800; }
+    .h-step-btn.completed .h-step-num { background: var(--emerald-green); color: #064e3b; font-weight: 800; }
+    .h-step-connector {
+      width: 14px; height: 2px; background: rgba(255, 255, 255, 0.2); border-radius: 1px;
+    }
+
+    .view-toggle-btn {
+      background: rgba(251, 191, 36, 0.15); border: 1.5px solid var(--sunny-yellow);
+      color: var(--sunny-yellow); font-family: var(--font-main); font-size: 13px; font-weight: 800;
+      padding: 6px 14px; border-radius: 10px; cursor: pointer; transition: all 0.2s;
+    }
+    .view-toggle-btn:hover { background: var(--sunny-yellow); color: #000; }
+
+    /* History Step Panels (Single Era Focus Mode) */
+    .history-stepper-viewport {
+      flex: 1; position: relative; width: 100%; height: 100%; display: flex;
+    }
+    .history-step-panel {
+      position: absolute; inset: 0; display: none; gap: 24px;
+      background: rgba(22, 31, 54, 0.94); border: 2px solid rgba(255, 255, 255, 0.18);
+      border-radius: 18px; padding: 18px 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      animation: fadeInScale 0.25s ease forwards;
+    }
+    .history-step-panel.active { display: flex; }
+
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .history-step-media {
+      flex: 1.1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 10px; min-height: 0;
+    }
+    .history-step-img {
+      width: 100%; max-height: 290px; height: auto; object-fit: cover;
+      border-radius: 14px; border: 2.5px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+    .history-step-caption {
+      font-size: 14px; font-weight: 700; color: var(--sunny-yellow); text-align: center;
+    }
+
+    .history-step-info {
+      flex: 1.25; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .history-step-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
+    }
+    .h-era-badge {
+      font-size: 13px; font-weight: 800; padding: 4px 14px; border-radius: 14px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .history-step-info h2 {
+      font-size: 27px; color: #fff; font-weight: 800; line-height: 1.25; margin-bottom: 8px;
+    }
+    .history-step-points {
+      display: flex; flex-direction: column; gap: 10px; font-size: 16px; color: #cbd5e1; line-height: 1.5;
+    }
+    .history-step-points li {
+      list-style: none; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .history-step-points li span.bullet {
+      color: var(--primary); font-size: 18px; font-weight: 800; line-height: 1;
+    }
+    .fun-fact-box {
+      background: rgba(255, 255, 255, 0.07); border-left: 4px solid var(--sunny-yellow);
+      padding: 10px 14px; border-radius: 0 12px 12px 0; font-size: 14.5px; color: #fef08a; line-height: 1.45;
+    }
+
+    .history-step-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1.5px solid rgba(255, 255, 255, 0.12); padding-top: 10px; margin-top: 10px;
+    }
+
+    /* Overview Grid Mode (Optional Toggle) */
+    .history-grid-container {
+      display: none; grid-template-columns: repeat(4, 1fr); gap: 14px; height: 100%; width: 100%;
+    }
+    .history-grid-container.show { display: grid; }
+    .h-mini-card {
+      background: rgba(30, 41, 65, 0.9); border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px; padding: 12px; display: flex; flex-direction: column;
+      justify-content: space-between; cursor: pointer; transition: all 0.2s;
+    }
+    .h-mini-card:hover {
+      transform: translateY(-4px); border-color: var(--sunny-yellow);
+      box-shadow: 0 8px 20px rgba(251, 191, 36, 0.2);
+    }
+    .h-mini-img {
+      width: 100%; height: 110px; object-fit: cover; border-radius: 10px; margin-bottom: 8px;
+    }
+
+    /* ===================================================
+       SLIDE 6: SÜRÜKLE-BIRAK TARİH OYUNU (KARIŞIK HEDEFLER)
+       =================================================== */
+    .drag-game-container {
+      display: flex; gap: 20px; height: 100%; width: 100%;
+    }
+    .drag-items-col {
+      flex: 1; display: flex; flex-direction: column; gap: 10px; justify-content: space-between;
+    }
+    .drop-targets-col {
+      flex: 1.45; display: flex; flex-direction: column; gap: 10px; justify-content: space-between;
+    }
+    .draggable-card {
+      background: linear-gradient(135deg, rgba(30, 41, 65, 0.95), rgba(15, 23, 42, 0.95));
+      border: 2.5px solid var(--primary); border-radius: 14px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 12px; cursor: grab;
+      font-size: 16px; font-weight: 800; color: #fff;
+      transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .draggable-card:hover {
+      transform: scale(1.03); background: rgba(56, 189, 248, 0.2); border-color: var(--sunny-yellow);
+    }
+    .draggable-card.dragging { opacity: 0.4; }
+    .draggable-card.selected {
+      border-color: var(--sunny-yellow); background: rgba(251, 191, 36, 0.25);
+      box-shadow: 0 0 16px var(--sunny-yellow); transform: scale(1.04);
+    }
+    .draggable-card.matched {
+      opacity: 0.22; pointer-events: none; border-color: #64748b;
+    }
+    .card-thumb {
+      width: 54px; height: 38px; object-fit: cover; border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.25); flex-shrink: 0;
+    }
+
+    .drop-target-box {
+      background: rgba(15, 23, 42, 0.82); border: 2.5px dashed rgba(255, 255, 255, 0.25);
+      border-radius: 14px; padding: 8px 16px; display: flex;
+      align-items: center; justify-content: space-between; gap: 12px;
+      transition: all 0.25s ease; min-height: 74px; cursor: pointer;
+    }
+    .drop-target-box:hover {
+      border-color: var(--primary); background: rgba(56, 189, 248, 0.1);
+    }
+    .drop-target-box.drag-over {
+      border-color: var(--sunny-yellow); background: rgba(251, 191, 36, 0.2);
+      transform: scale(1.02);
+    }
+    .drop-target-box.matched {
+      border-style: solid; border-color: var(--emerald-green);
+      background: rgba(52, 211, 153, 0.2);
+    }
+    .drop-target-text strong { font-size: 15.5px; color: #fff; display: block; }
+    .drop-target-text p { font-size: 13px; color: #cbd5e1; margin-top: 2px; }
+    .match-slot-badge {
+      background: rgba(255, 255, 255, 0.1); border-radius: 10px;
+      padding: 5px 12px; font-size: 13px; font-weight: 800; color: #cbd5e1;
+      white-space: nowrap; display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Paper Airplane Glider Box */
+    .glider-display-box {
+      flex: 1; height: 100%; max-height: 520px; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      background: #ffffff; border-radius: var(--radius-lg); padding: 8px;
+      border: 3px solid var(--primary); box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    }
+    .glider-display-box img {
+      max-height: 500px; max-width: 100%; width: auto; height: auto;
+      object-fit: contain; border-radius: 8px;
+    }
+
+    /* Video Frame */
+    .video-container {
+      width: 100%; height: 100%; border-radius: var(--radius-lg);
+      overflow: hidden; border: 3px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6); background: #000;
+      display: flex; flex-direction: column;
+    }
+    .video-container iframe { flex: 1; width: 100%; height: 100%; border: none; }
+
+    /* Footer */
+    footer {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 68px;
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(12, 19, 34, 0.96); backdrop-filter: blur(14px);
+      border-top: 2px solid rgba(255, 255, 255, 0.14); z-index: 900;
+    }
+    .footer-left { display: flex; align-items: center; gap: 18px; }
+    .slide-counter {
+      font-family: 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: 800;
+      color: #cbd5e1; cursor: pointer; padding: 8px 18px; border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+    }
+    .slide-counter span.current { color: var(--sunny-yellow); font-size: 20px; }
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2);
+      color: #fff; padding: 10px 24px; border-radius: 14px;
+      font-family: var(--font-main); font-size: 16px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;
+    }
+    .nav-btn:hover { background: rgba(255, 255, 255, 0.22); transform: scale(1.04); }
+    .nav-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #042f2e; border: none; font-weight: 800;
+    }
+
+    /* Notes Drawer & Overview Modal */
+    #notes-drawer {
+      position: fixed; right: 0; top: 62px; bottom: 68px; width: 420px;
+      background: rgba(12, 19, 34, 0.98); border-left: 2px solid var(--primary);
+      z-index: 1200; padding: 24px; display: flex; flex-direction: column; gap: 14px;
+      transform: translateX(100%); transition: transform 0.3s ease;
+    }
+    #notes-drawer.open { transform: translateX(0); }
+    .notes-body { font-size: 15.5px; line-height: 1.6; color: #cbd5e1; overflow-y: auto; flex: 1; }
+    .notes-body h4 { color: var(--sunny-yellow); margin: 12px 0 4px; font-size: 16px; }
+
+    #overview-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(10, 15, 28, 0.96); backdrop-filter: blur(20px);
+      z-index: 2000; display: flex; flex-direction: column; padding: 36px;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    #overview-modal.open { opacity: 1; visibility: visible; }
+    .overview-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px; overflow-y: auto; margin-top: 18px;
+    }
+    .overview-card {
+      background: rgba(30, 41, 65, 0.85); border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-md); padding: 16px; cursor: pointer; transition: all 0.2s;
+      font-size: 15.5px; font-weight: 700;
+    }
+    .overview-card:hover { border-color: var(--sunny-yellow); transform: translateY(-3px); }
+    .overview-card.active { border-color: var(--primary); background: rgba(56, 189, 248, 0.22); }
+
+    @media (max-width: 1280px) or (max-height: 720px) {
+      :root { --slide-w: 1024px; --slide-h: 576px; }
+      .slide { padding: 14px 24px; }
+      .slide-title { font-size: 28px; }
+      .slide-subtitle { font-size: 14px; margin-bottom: 6px; }
+      .rule-item { padding: 6px 12px; }
+      .rule-text h4 { font-size: 15px; }
+      .rule-text p { font-size: 13px; }
+      .history-step-img { max-height: 220px; }
+      .history-step-info h2 { font-size: 22px; }
+      .history-step-points { font-size: 14px; gap: 6px; }
+      .glider-display-box img { max-height: 380px; }
+    }
+
+    
+    @keyframes bounce-up { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes bounce-down { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+    /* ===== HAFTA 2 EXTRA CSS ===== */
+    @keyframes pulse-highlight {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+      50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.4; }
+    }
+    .pulse-ring {
+      position: absolute; border-radius: 50%;
+      animation: pulse-highlight 1.5s infinite;
+      pointer-events: none; z-index: 5;
+    }
+
+    /* Simulation */
+    .sim-sky {
+      width: 100%; height: 340px; border-radius: 12px;
+      background: linear-gradient(to bottom, #87CEEB 0%, #c8e6f8 70%, #e8f4fd 100%);
+      position: relative; overflow: hidden;
+      border: 3px solid rgba(255,255,255,0.2);
+    }
+    .sim-cloud {
+      position: absolute; background: rgba(255,255,255,0.85);
+      border-radius: 50px; filter: blur(1px);
+    }
+    .sim-cloud::before, .sim-cloud::after {
+      content: ''; position: absolute; background: inherit; border-radius: 50%;
+    }
+    .sim-c1 { width: 100px; height: 30px; top: 15%; animation: cloud-drift 30s linear infinite; }
+    .sim-c1::before { width: 50px; height: 50px; top: -25px; left: 10px; }
+    .sim-c1::after { width: 35px; height: 35px; top: -15px; left: 50px; }
+    .sim-c2 { width: 70px; height: 20px; top: 35%; animation: cloud-drift 45s linear infinite 8s; }
+    .sim-c2::before { width: 30px; height: 30px; top: -15px; left: 8px; }
+    .sim-c2::after { width: 25px; height: 25px; top: -10px; left: 35px; }
+    .sim-c3 { width: 120px; height: 35px; top: 8%; animation: cloud-drift 55s linear infinite 15s; }
+    .sim-c3::before { width: 60px; height: 55px; top: -30px; left: 15px; }
+    .sim-c3::after { width: 45px; height: 45px; top: -20px; left: 60px; }
+    @keyframes cloud-drift { from { left: -160px; } to { left: 110%; } }
+    .sim-ground { position: absolute; bottom: 0; width: 100%; height: 40px; background: linear-gradient(to bottom, #4ade80, #16a34a); }
+
+    .sim-drone-wrap {
+      position: absolute; transition: top 0.15s ease, left 0.15s ease;
+      filter: drop-shadow(0 12px 8px rgba(0,0,0,0.35));
+      z-index: 10;
+    }
+    @keyframes prop-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .prop-blade { transform-origin: center; }
+
+    .sim-ctrl {
+      width: 480px; height: 190px; background: linear-gradient(145deg, #e8ecf0, #d1d5db);
+      border-radius: 28px 28px 20px 20px; position: relative;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.6);
+      border: 3px solid #9ca3af;
+    }
+    .sim-ctrl-grip-l, .sim-ctrl-grip-r {
+      position: absolute; bottom: -8px; width: 70px; height: 50px;
+      background: linear-gradient(145deg, #d1d5db, #b8bcc2);
+      border-radius: 0 0 18px 18px;
+    }
+    .sim-ctrl-grip-l { left: 30px; }
+    .sim-ctrl-grip-r { right: 30px; }
+    .sim-stick-base {
+      width: 100px; height: 100px; background: radial-gradient(circle, #374151, #1f2937);
+      border-radius: 50%; position: absolute; top: 42px;
+      border: 2.5px solid #4b5563;
+    }
+    .sim-stick-knob {
+      width: 36px; height: 36px;
+      background: radial-gradient(circle at 40% 35%, #e5e7eb, #9ca3af);
+      border-radius: 50%; position: absolute;
+      top: 32px; left: 32px; cursor: grab;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      z-index: 20;
+    }
+    .sim-stick-knob:active { cursor: grabbing; }
+    .sim-pwr-btn {
+      position: absolute; left: 50%; top: 55%; transform: translate(-50%, -50%);
+      width: 24px; height: 24px; background: #1f2937; border-radius: 50%;
+      border: 2px solid #4b5563; display: flex; align-items: center; justify-content: center;
+    }
+    .sim-pwr-led {
+      width: 8px; height: 8px; background: #22c55e; border-radius: 50%;
+      box-shadow: 0 0 6px #22c55e;
+    }
+    .sim-switch {
+      position: absolute; top: 4px; width: 10px; height: 22px;
+      background: linear-gradient(to bottom, #9ca3af, #6b7280);
+      border-radius: 3px; border: 1px solid #4b5563;
+    }
+    .sim-label {
+      position: absolute; font-size: 11px; font-weight: 800; text-align: center;
+    }
+    .sim-betafpv {
+      position: absolute; left: 50%; top: 28%; transform: translateX(-50%);
+      font-size: 12px; font-weight: 800; color: #6b7280; letter-spacing: 2px;
+    }
+    .sim-active-label {
+      position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+      background: var(--primary); color: #042f2e; padding: 4px 14px;
+      border-radius: 12px; font-size: 12px; font-weight: 800;
+      opacity: 0; transition: opacity 0.2s; white-space: nowrap;
+    }
+
+    /* Kumanda İşlevleri Drag-Drop (Slide 10) */
+    .ctrl-game-board {
+      position: relative; display: flex; justify-content: center; align-items: center;
+      flex: 1; min-height: 0; width: 100%;
+    }
+    .ctrl-stage {
+      position: relative;
+      height: 100%;
+      max-height: 420px;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+    .ctrl-game-img {
+      width: 100%; height: 100%; object-fit: contain; border-radius: 18px;
+      display: block;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(56, 189, 248, 0.35);
+      background: #fbfafc;
+      opacity: 1 !important;
+    }
+    .ctrl-pin {
+      position: absolute; width: 10px; height: 10px; border-radius: 50%;
+      background: var(--primary); border: 2px solid #ffffff;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.9);
+      transform: translate(-50%, -50%); z-index: 3; pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .ctrl-pin.matched {
+      background: var(--emerald-green); border-color: #fff;
+      transform: translate(-50%, -50%) scale(1.3);
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.9);
+    }
+    .ctrl-drop-zone {
+      position: absolute; min-width: 130px; height: 38px; padding: 6px 12px;
+      border: 2px dashed rgba(56, 189, 248, 0.65); border-radius: 12px;
+      background: rgba(12, 19, 34, 0.94); backdrop-filter: blur(8px);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 12.5px; font-weight: 700; color: #cbd5e1; text-align: center;
+      white-space: nowrap; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      cursor: pointer; user-select: none;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 4;
+    }
+    .ctrl-drop-zone:hover {
+      border-color: var(--sunny-yellow);
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: 0 6px 18px rgba(251, 191, 36, 0.35);
+    }
+    .ctrl-drop-zone[data-target="power"]:hover {
+      transform: translateX(-50%) scale(1.05);
+    }
+    .ctrl-drop-zone.drag-over {
+      border-style: solid; border-color: var(--sunny-yellow);
+      background: rgba(251, 191, 36, 0.25);
+      transform: translateY(-50%) scale(1.08);
+      box-shadow: 0 0 18px rgba(251, 191, 36, 0.6);
+    }
+    .ctrl-drop-zone[data-target="power"].drag-over {
+      transform: translateX(-50%) scale(1.08);
+    }
+    .ctrl-drop-zone.matched {
+      border-style: solid; border-color: var(--emerald-green);
+      background: rgba(6, 78, 59, 0.92); color: #ffffff;
+      font-weight: 800; font-size: 13px;
+      box-shadow: 0 4px 15px rgba(52, 211, 153, 0.45);
+      cursor: default; pointer-events: none;
+    }
+    .ctrl-drop-zone.wrong {
+      border-color: var(--candy-red); background: rgba(159, 18, 57, 0.85);
+      animation: shake-zone 0.4s ease;
+    }
+    @keyframes shake-zone {
+      0%, 100% { transform: translateY(-50%) translateX(0); }
+      25% { transform: translateY(-50%) translateX(-6px); }
+      75% { transform: translateY(-50%) translateX(6px); }
+    }
+    @keyframes shake-zone-power {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      25% { transform: translateX(calc(-50% - 6px)); }
+      75% { transform: translateX(calc(-50% + 6px)); }
+    }
+    .ctrl-drop-zone[data-target="power"].wrong {
+      animation: shake-zone-power 0.4s ease;
+    }
+    .ctrl-drag-card {
+      background: linear-gradient(135deg, rgba(30, 41, 65, 0.95), rgba(15, 23, 42, 0.95));
+      border: 2px solid rgba(56, 189, 248, 0.7); border-radius: 10px; padding: 6px 14px;
+      font-size: 12.5px; font-weight: 800; color: #ffffff; cursor: grab;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3); user-select: none; white-space: nowrap;
+    }
+    .ctrl-drag-card:hover { transform: translateY(-2px) scale(1.04); border-color: var(--sunny-yellow); box-shadow: 0 6px 14px rgba(251, 191, 36, 0.35); }
+    .ctrl-drag-card.selected { border-color: var(--sunny-yellow); background: rgba(251, 191, 36, 0.25); box-shadow: 0 0 14px rgba(251, 191, 36, 0.6); transform: scale(1.05); }
+    .ctrl-drag-card.matched { opacity: 0.22; pointer-events: none; filter: grayscale(1); }
+
+    /* Puzzle improvements */
+    .puzzle-workspace { display: flex; gap: 24px; width: 100%; justify-content: center; align-items: flex-start; }
+    .puzzle-pieces-area {
+      width: 380px; min-height: 380px; border: 2px dashed rgba(255,255,255,0.25);
+      background: rgba(0,0,0,0.2); border-radius: 12px;
+      display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px; padding: 8px;
+    }
+    .puzzle-board-area {
+      width: 380px; height: 380px; border: 3px solid var(--primary);
+      background: rgba(0,0,0,0.4); border-radius: 12px;
+      display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <header>
+    <div class="brand">
+      <div class="grade-badge">✈️ 2. HAFTA</div>
+      <div class="brand-title">LOOM AKADEMİ • GÖKYÜZÜ MÜHENDİSLERİ <span>• 2. HAFTA: DRONE KUMANDASI</span></div>
+    </div>
+    <div class="header-tools">
+      <button class="tool-btn" id="btn-sound" onclick="toggleSound()" title="Sesi Aç/Kapat">🔊</button>
+      <button class="tool-btn" id="btn-notes" onclick="toggleNotes()" title="Öğretmen Notları (N)">📋</button>
+      <button class="tool-btn" id="btn-overview" onclick="toggleOverview()" title="Tüm Slaytlar (O)">📑</button>
+      <button class="tool-btn" onclick="toggleFullscreen()" title="Tam Ekran (F)">⛶</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="slide-viewport">
+
+      <!-- SLIDE 1: Geçen Haftanın Özeti -->
+      <section class="slide active" data-slide="1">
+        <div class="slide-badge">🔄 GEÇMİŞE YOLCULUK</div>
+        <h1 class="slide-title">Geçen Hafta Neler Yapmıştık? 🤔</h1>
+        <p class="slide-subtitle">Birlikte tanıştık, kurallarımızı imzaladık ve harika etkinlikler yaptık!</p>
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; border-color: var(--primary);">
+              <h3 style="font-size: 24px; color: var(--sunny-yellow); font-weight: 800;">Geçen Haftanın Özeti</h3>
+              <ul style="font-size: 17px; color: #cbd5e1; list-style: none; display: flex; flex-direction: column; gap: 12px;">
+                <li><span style="font-size: 22px; margin-right: 10px;">👋</span> Birbirimizle tanıştık ve kaynaştık</li>
+                <li><span style="font-size: 22px; margin-right: 10px;">📖</span> Dönem boyunca neler yapacağımızı öğrendik</li>
+                <li><span style="font-size: 22px; margin-right: 10px;">📜</span> Gökyüzü Mühendisleri sözleşmemizi imzaladık</li>
+                <li><span style="font-size: 22px; margin-right: 10px;">🛸</span> Kullanacağımız drone ve uçağı yakından tanıdık</li>
+                <li><span style="font-size: 22px; margin-right: 10px;">🎨</span> Kendi uçağımızı tasarlayıp boyama etkinliği yaptık</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="speaker-box" style="border-color: var(--emerald-green);">
+              <div style="font-size: 20px; font-weight: 800; color: var(--emerald-green);">SÖZ SİZDE!</div>
+              <button class="mic-btn" id="mic-trigger-btn" onclick="spinPilotTask()" style="background: linear-gradient(135deg, #34d399, #10b981); box-shadow: 0 8px 25px rgba(52, 211, 153, 0.6);" title="Mikrofonu Al!">🎙️</button>
+              <div id="random-task-display" style="min-height: 70px; font-size: 18px; color: #fff; font-weight: 700; padding: 14px 20px; background: rgba(0,0,0,0.4); border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.25); width: 100%; display: flex; align-items: center; justify-content: center;">
+                Mikrofona dokun ve geçen haftayı hatırla!
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: Beyin Fırtınası -->
+      <section class="slide" data-slide="2">
+        <div class="slide-badge">🧠 BEYİN FIRTINASI</div>
+        <h1 class="slide-title">Sizce İnsanlar Neden Uçmak İstemiş Olabilir? ☁️</h1>
+        <p class="slide-subtitle">Kuşlara bakıp iç çeken atalarımız sence ne düşünüyordu?</p>
+        <div class="slide-content">
+          <div class="col-full">
+            <div class="drag-game-container" style="flex-direction: column; align-items: center; gap: 20px;">
+              <div style="font-size: 22px; color: var(--sunny-yellow); font-weight: 800; text-align: center; margin-top: 20px;">
+                Cevaplarınızı bekliyoruz! Kutuya tıklayarak gizli cevapları açın!
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 80%; margin-top: 10px;">
+                <div class="drop-target-box" onclick="this.innerHTML='<div style=\'font-size: 32px; text-align: center; width: 100%; color: #fff;\'>🦅 Kuşları Gördüler</div>'; this.style.background='rgba(56,189,248,0.3)'; this.style.borderColor='#38bdf8';" style="height: 120px; display: flex; justify-content: center; cursor: pointer;">
+                  <strong style="font-size: 24px; color: #cbd5e1;">Cevap 1 (?)</strong>
+                </div>
+                <div class="drop-target-box" onclick="this.innerHTML='<div style=\'font-size: 32px; text-align: center; width: 100%; color: #fff;\'>☁️ Gökyüzüne Çıkmak İstediler</div>'; this.style.background='rgba(251,191,36,0.3)'; this.style.borderColor='#fbbf24';" style="height: 120px; display: flex; justify-content: center; cursor: pointer;">
+                  <strong style="font-size: 24px; color: #cbd5e1;">Cevap 2 (?)</strong>
+                </div>
+                <div class="drop-target-box" onclick="this.innerHTML='<div style=\'font-size: 32px; text-align: center; width: 100%; color: #fff;\'>🚀 Ulaşım İçin (Daha Hızlı Gitmek)</div>'; this.style.background='rgba(52,211,153,0.3)'; this.style.borderColor='#34d399';" style="height: 120px; display: flex; justify-content: center; cursor: pointer;">
+                  <strong style="font-size: 24px; color: #cbd5e1;">Cevap 3 (?)</strong>
+                </div>
+                <div class="drop-target-box" onclick="this.innerHTML='<div style=\'font-size: 32px; text-align: center; width: 100%; color: #fff;\'>🧐 Sadece Merak Ettikleri İçin!</div>'; this.style.background='rgba(251,113,133,0.3)'; this.style.borderColor='#fb7185';" style="height: 120px; display: flex; justify-content: center; cursor: pointer;">
+                  <strong style="font-size: 24px; color: #cbd5e1;">Cevap 4 (?)</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: Mühendislik Felsefesi -->
+      <section class="slide" data-slide="3">
+        <div class="slide-badge">💡 MÜHENDİSLİK FELSEFESİ</div>
+        <h1 class="slide-title">Peki Sizce İlk Uçak Yapıldığında Hemen Uçtu mu? 🛠️</h1>
+        <p class="slide-subtitle">Öğretmeninizin bir sorusu var. Bakalım doğru bilecek misiniz?</p>
+        <div class="slide-content">
+          <div class="col-full" style="align-items: center; justify-content: center;">
+            <div id="first-flight-question" style="text-align: center;">
+              <h2 style="font-size: 36px; color: #fff; margin-bottom: 30px;">İlk uçak ilk denemede mükemmel uçtu mu?</h2>
+              <div style="display: flex; gap: 20px; justify-content: center;">
+                <button class="nav-btn" style="font-size: 24px; padding: 15px 40px; background: rgba(52,211,153,0.2); border-color: var(--emerald-green);" onclick="document.getElementById('first-flight-answer').style.display='flex'; document.getElementById('first-flight-question').style.display='none'; playApplauseSound();">EVET 🌟</button>
+                <button class="nav-btn" style="font-size: 24px; padding: 15px 40px; background: rgba(244,63,94,0.2); border-color: var(--candy-red);" onclick="document.getElementById('first-flight-answer').style.display='flex'; document.getElementById('first-flight-question').style.display='none'; playApplauseSound();">HAYIR! 💥</button>
+              </div>
+            </div>
+            <div id="first-flight-answer" style="display: none; flex-direction: column; align-items: center; text-align: center; gap: 20px; background: rgba(244,63,94,0.15); border: 3px solid var(--candy-red); padding: 40px; border-radius: 20px; max-width: 900px; animation: stampPop 0.5s ease forwards;">
+              <h1 style="font-size: 64px; color: var(--candy-red); font-weight: 900; margin: 0;">HAYIR! 💥</h1>
+              <h3 style="font-size: 28px; color: #fff; line-height: 1.4;">İşte bugün siz de birer mühendis olacaksınız. İlk yaptığınız uçuş mükemmel olmak zorunda değil.</h3>
+              <p style="font-size: 22px; color: var(--sunny-yellow); font-weight: 800;">Mühendisler ilk denemede her zaman mükemmel sonuç alamaz. Hata yaparız, hatalarımızdan öğreniriz ve tekrar deneriz! 🛠️</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: Dronelar Nasıl Uçar? (YENİ) -->
+      <section class="slide" data-slide="4">
+        <div class="slide-badge">🚁 UÇUŞ BİLİMİ</div>
+        <h1 class="slide-title">Dronelar Nasıl Uçar? 🤔</h1>
+        <p class="slide-subtitle">Pervaneler döner, hava aşağı itilir, drone yukarı kalkar!</p>
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
+              <img alt="LiteRadio 2 SIM" src="images/ucan_drone.gif" style="width: 100%; max-height: 350px; object-fit: fill; border-radius: 12px; border: 2px solid var(--primary);">
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 10px;">
+              <h3 style="font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 800;">Uçuşun Sırrı: Pervaneler!</h3>
+              <ul style="font-size: 17px; color: #cbd5e1; list-style: none; display: flex; flex-direction: column; gap: 10px;">
+                <li style="background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px;"><span style="font-size: 20px; margin-right: 8px;">🌀</span> <strong>4 pervane</strong> çok hızlı dönerek havayı aşağı iter</li>
+                <li style="background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px;"><span style="font-size: 20px; margin-right: 8px;">⬆️</span> Aşağı iten hava drone'u <strong>yukarı kaldırır</strong> (kaldırma kuvveti)</li>
+                <li style="background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px;"><span style="font-size: 20px; margin-right: 8px;">🔄</span> Pervanelerin hızını değiştirerek <strong>yön ve yükseklik</strong> kontrol edilir</li>
+                <li style="background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px;"><span style="font-size: 20px; margin-right: 8px;">🛸</span> <strong>Bizim drone:</strong> Meteor75 Pro II – korumalı whoop tipi</li>
+              </ul>
+              <div style="background: rgba(251,191,36,0.15); border: 2px solid var(--sunny-yellow); padding: 14px; border-radius: 12px; text-align: center; margin-top: 6px;">
+                <p style="font-size: 18px; color: var(--sunny-yellow); font-weight: 800;">🎯 Drone'umuzu uçurmak için kumandaya çok iyi hakim olmalıyız!</p>
+                <p style="font-size: 16px; color: #fff; margin-top: 4px;">Haydi kumandamızı tanıyalım...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 5: LiteRadio 2 SIM Kumanda Tanıtımı -->
+      <section class="slide" data-slide="5">
+        <div class="slide-badge">🎮 EKİPMAN TANITIMI</div>
+        <h1 class="slide-title">Pilotun Direksiyonu: LiteRadio 2 SIM 🛸</h1>
+        <p class="slide-subtitle">Drone'u uçurmak için bu harika kumandayı kullanacağız!</p>
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
+              <img alt="LiteRadio 2 SIM" src="images/kumanda.jpg" style="width: 100%; max-height: 350px; object-fit: fill; border-radius: 12px; border: 2px solid var(--primary);">
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+              <h3 style="font-size: 28px; color: var(--primary); margin-bottom: 16px; font-weight: 800;">LiteRadio 2 SIM</h3>
+              <ul style="font-size: 17px; color: #cbd5e1; list-style: none; display: flex; flex-direction: column; gap: 12px;">
+                <li style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">🎮 <strong>Oyun Kolu Gibi:</strong> Alışması çok kolay, tıpkı bir oyun konsolu kumandası gibi.</li>
+                <li style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">🔌 <strong>Type-C Bağlantısı:</strong> Bilgisayara takıp uçuş simülasyonlarında kendimizi geliştirebiliriz!</li>
+                <li style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">🕹️ <strong>Çift Kol:</strong> İki hassas joystick ile drone'u milimetrik yönlendirebiliriz.</li>
+                <li style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">🔘 <strong>4 Adet Şalter:</strong> SA, SB, SC, SD – uçuş modları ve güvenlik kontrolü.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 6: Güç Tuşu -->
+      <section class="slide" data-slide="6">
+        <div class="slide-badge">⚡ GÜÇ KONTROLÜ</div>
+        <h1 class="slide-title">1. Açma / Kapama (Power) Tuşu 🔴</h1>
+        <p class="slide-subtitle">Her şeyden önce motorları başlatmak gerek!</p>
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <img alt="LiteRadio 2 SIM" src="images/kumanda_tuslari.jpg" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 12px;">
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+              <h3 style="font-size: 28px; color: var(--candy-red); margin-bottom: 16px; font-weight: 800;">Güç Tuşu Ne İşe Yarar?</h3>
+              <p style="font-size: 18px; color: #cbd5e1; line-height: 1.6; margin-bottom: 15px;">Kumandanın tam ortasında, joystick'lerin arasında bulunur. Üzerinde güç simgesi (⏻) vardır.</p>
+              <div style="background: rgba(244,63,94,0.15); border: 2px solid var(--candy-red); padding: 16px; border-radius: 12px; font-size: 18px; color: #fff;">
+                <strong>Nasıl Açılır?</strong><br>
+                Kumandayı açmak için bu tuşa <strong>uzun basılı</strong> tutarız. Işık yandığında uçmaya hazırız demektir!<br><br>
+                <strong>Nasıl Kapanır?</strong><br>
+                Uçuş bittiğinde yine uzun basılı tutarak kapatırız ki şarjımız bitmesin.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 7: Sağ Kol (Pitch/Roll) -->
+      <section class="slide" data-slide="7">
+        <div class="slide-badge">👉 SAĞ KOL YÖNLENDİRMESİ</div>
+        <h1 class="slide-title">2. Sağ Kol (Yön ve Eğim) 🕹️</h1>
+        <p class="slide-subtitle">Sağ elimizle drone'un nereye gideceğini seçiyoruz.</p>
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <img alt="LiteRadio 2 SIM" src="images/kumanda_tuslari.jpg" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 12px;">
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+              <h3 style="font-size: 24px; color: var(--sunny-yellow); margin-bottom: 12px; font-weight: 800;">İleri, Geri, Sağa, Sola!</h3>
+              <div style="background: rgba(251,191,36,0.12); border: 2px solid var(--sunny-yellow); padding: 12px; border-radius: 12px; font-size: 16px; color: #fff; margin-bottom: 8px;">
+                <strong>İleri İtince (Yukarı):</strong> Drone burnunu eğer ve ileri uçar!<br>
+                <span style="font-size: 14px; color: var(--primary);">📐 <strong>Pitch (Yunuslama):</strong> Drone'un burnunu aşağı/yukarı eğerek ileri veya geri gitmesini sağlar.</span>
+              </div>
+              <div style="background: rgba(251,191,36,0.12); border: 2px solid var(--sunny-yellow); padding: 12px; border-radius: 12px; font-size: 16px; color: #fff; margin-bottom: 8px;">
+                <strong>Geri Çekince (Aşağı):</strong> Drone geriye doğru gelir.
+              </div>
+              <div style="background: rgba(251,191,36,0.12); border: 2px solid var(--sunny-yellow); padding: 12px; border-radius: 12px; font-size: 16px; color: #fff;">
+                <strong>Sağa/Sola İtince:</strong> Drone yan yatıp sağa veya sola kayar!<br>
+                <span style="font-size: 14px; color: var(--primary);">📐 <strong>Roll (Yatış):</strong> Drone'un sağa veya sola yatarak o yöne kaymasını sağlar.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 8: Sol Kol (Throttle/Yaw) -->
+      <section class="slide" data-slide="8">
+        <div class="slide-badge">👈 SOL KOL YÖNLENDİRMESİ</div>
+        <h1 class="slide-title">3. Sol Kol (Gaz ve Dönüş) 🕹️</h1>
+        <p class="slide-subtitle">Sol elimizle drone'un yüksekliğini ayarlıyoruz.</p>
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <img alt="LiteRadio 2 SIM" src="images/kumanda_tuslari.jpg" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 12px;">
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+              <h3 style="font-size: 24px; color: var(--emerald-green); margin-bottom: 12px; font-weight: 800;">Havalanma Zamanı!</h3>
+              <div style="background: rgba(52,211,153,0.12); border: 2px solid var(--emerald-green); padding: 12px; border-radius: 12px; font-size: 16px; color: #fff; margin-bottom: 8px;">
+                <strong>İleri İtince (Yukarı):</strong> Motorlara gaz verir ve drone gökyüzüne yükselir! <span style="color: var(--emerald-green); font-weight: 800;">(Throttle)</span>
+              </div>
+              <div style="background: rgba(52,211,153,0.12); border: 2px solid var(--emerald-green); padding: 12px; border-radius: 12px; font-size: 16px; color: #fff; margin-bottom: 8px;">
+                <strong>Geri Çekince (Aşağı):</strong> Gaz kesilir, drone alçalır ve yere iner.
+              </div>
+              <div style="background: rgba(52,211,153,0.12); border: 2px solid var(--emerald-green); padding: 12px; border-radius: 12px; font-size: 16px; color: #fff;">
+                <strong>Sağa/Sola İtince:</strong> Drone olduğu yerde kendi etrafında fırıldak gibi döner! <span style="color: var(--emerald-green); font-weight: 800;">(Yaw)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 9: Şalterler SA, SB, SC, SD -->
+      <section class="slide" data-slide="9">
+        <div class="slide-badge">🎚️ ÜST KONTROLLER</div>
+        <h1 class="slide-title">4. Özel Fonksiyon Şalterleri (SA, SB, SC, SD) 🔘</h1>
+        <p class="slide-subtitle">Kumandanın omuzlarında yer alan bu şalterler ne işe yarıyor?</p>
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <img alt="LiteRadio 2 SIM" src="images/kumanda_tuslari.jpg" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 12px;">
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; overflow-y: auto;">
+              <div style="background: rgba(251,113,133,0.1); border: 1.5px solid var(--candy-red); padding: 10px 14px; border-radius: 10px;">
+                <h4 style="font-size: 16px; color: var(--candy-red); font-weight: 800;">🔴 Switch A (SA) – Sol Dış Omuz | 2 Kademeli</h4>
+                <p style="font-size: 14px; color: #cbd5e1; margin-top: 4px;"><strong>Arm/Disarm (Güvenlik Kilidi):</strong> Bu şalteri açmadan gaza bassanız bile motorlar dönmez! Uçuşa başlamak için mutlaka açılmalı.</p>
+              </div>
+              <div style="background: rgba(251,191,36,0.1); border: 1.5px solid var(--sunny-yellow); padding: 10px 14px; border-radius: 10px;">
+                <h4 style="font-size: 16px; color: var(--sunny-yellow); font-weight: 800;">🟡 Switch B (SB) – Sol İç Omuz | 3 Kademeli</h4>
+                <p style="font-size: 14px; color: #cbd5e1; margin-top: 4px;"><strong>Uçuş Modu Seçimi:</strong> Angle (yeni başlayan), Horizon (orta seviye) ve Acro (profesyonel) modları arasında geçiş.</p>
+              </div>
+              <div style="background: rgba(52,211,153,0.1); border: 1.5px solid var(--emerald-green); padding: 10px 14px; border-radius: 10px;">
+                <h4 style="font-size: 16px; color: var(--emerald-green); font-weight: 800;">🟢 Switch C (SC) – Sağ İç Omuz | 3 Kademeli</h4>
+                <p style="font-size: 14px; color: #cbd5e1; margin-top: 4px;"><strong>Hız Seviyesi Ayarı:</strong> Yavaş 🐢, Orta 🚗, Hızlı 🏎️ gibi hız kademelerini ayarlar.</p>
+              </div>
+              <div style="background: rgba(192,132,252,0.1); border: 1.5px solid var(--cute-purple); padding: 10px 14px; border-radius: 10px;">
+                <h4 style="font-size: 16px; color: var(--cute-purple); font-weight: 800;">🟣 Switch D (SD) – Sağ Dış Omuz | 2 Kademeli</h4>
+                <p style="font-size: 14px; color: #cbd5e1; margin-top: 4px;"><strong>Turtle Mode & Buzzer:</strong> Drone ters düşerse çevirir 🐢 veya kayıp drone'u bulmak için ses çıkarır 🔔.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 10: Sürükle-Bırak Kumanda İşlevleri -->
+      <section class="slide" data-slide="10">
+        <div class="slide-badge">🎯 BİLGİ TESTİ</div>
+        <h1 class="slide-title">Kumanda Tuşlarını Tanıyalım! (Sürükle & Bırak) 🎮</h1>
+        <p class="slide-subtitle">Yukarıdaki işlev kartlarını tıklayıp doğru kumanda bölgesine sürükleyin!</p>
+        <div class="slide-content">
+          <div class="col-full" style="gap: 10px;">
+            <!-- Draggable cards pool -->
+            <div id="ctrl-cards-pool" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 8px 14px; background: rgba(0,0,0,0.3); border-radius: 12px;">
+              <div class="ctrl-drag-card" draggable="true" data-id="sa" ondragstart="handleCtrlDragStart(event, 'sa')" onclick="selectCtrlCard('sa')">🔴 Güvenlik Kilidi (Arm/Disarm)</div>
+              <div class="ctrl-drag-card" draggable="true" data-id="sb" ondragstart="handleCtrlDragStart(event, 'sb')" onclick="selectCtrlCard('sb')">🟡 Uçuş Modu Seçimi</div>
+              <div class="ctrl-drag-card" draggable="true" data-id="sc" ondragstart="handleCtrlDragStart(event, 'sc')" onclick="selectCtrlCard('sc')">🟢 Hız Seviyesi Ayarı</div>
+              <div class="ctrl-drag-card" draggable="true" data-id="sd" ondragstart="handleCtrlDragStart(event, 'sd')" onclick="selectCtrlCard('sd')">🟣 Kaplumbağa Modu & Buzzer</div>
+              <div class="ctrl-drag-card" draggable="true" data-id="left" ondragstart="handleCtrlDragStart(event, 'left')" onclick="selectCtrlCard('left')">⬆️ Gaz & Yön Döndürme (Throttle/Yaw)</div>
+              <div class="ctrl-drag-card" draggable="true" data-id="right" ondragstart="handleCtrlDragStart(event, 'right')" onclick="selectCtrlCard('right')">➡️ İleri-Geri & Yana Kayma (Pitch/Roll)</div>
+              <div class="ctrl-drag-card" draggable="true" data-id="power" ondragstart="handleCtrlDragStart(event, 'power')" onclick="selectCtrlCard('power')">⏻ Kumandayı Aç / Kapat</div>
+            </div>
+            <!-- Game board with controller diagram -->
+            <div class="ctrl-game-board">
+              <!-- Score Badge -->
+              <div style="position: absolute; top: 0; right: 12px; background: rgba(16, 185, 129, 0.2); border: 1.5px solid var(--emerald-green); color: var(--emerald-green); padding: 5px 14px; border-radius: 14px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px; z-index: 10;">
+                <span>🎯</span> Eşleşen: <span id="ctrl-match-count" style="color: #fff; font-size: 15px;">0</span> / 7
+              </div>
+
+              <!-- Interactive Controller Stage -->
+              <div class="ctrl-stage">
+                <img src="images/kumanda_bosluk_doldurma.jpg" class="ctrl-game-img" alt="BetaFPV Drone Kumandası">
+
+                <!-- Glowing Pin Dots At Line Tips -->
+                <div class="ctrl-pin" data-pin="sb" style="top: 20.70%; left: 14.75%;"></div>
+                <div class="ctrl-pin" data-pin="sa" style="top: 42.09%; left: 18.36%;"></div>
+                <div class="ctrl-pin" data-pin="left" style="top: 61.72%; left: 16.99%;"></div>
+                <div class="ctrl-pin" data-pin="sc" style="top: 20.70%; left: 85.40%;"></div>
+                <div class="ctrl-pin" data-pin="sd" style="top: 42.14%; left: 81.64%;"></div>
+                <div class="ctrl-pin" data-pin="right" style="top: 61.72%; left: 82.91%;"></div>
+                <div class="ctrl-pin" data-pin="power" style="top: 80.96%; left: 50.00%;"></div>
+
+                <!-- Drop Zones At Line Tips -->
+                <div class="ctrl-drop-zone" data-target="sb" onclick="dropCtrlCard('sb')" ondragover="handleCtrlDragOver(event)" ondragleave="handleCtrlDragLeave(event)" ondrop="handleCtrlDrop(event, 'sb')" style="right: calc(100% - 14.75% + 8px); top: 20.70%; transform: translateY(-50%);">
+                  🟡 SB: ?
+                </div>
+                <div class="ctrl-drop-zone" data-target="sa" onclick="dropCtrlCard('sa')" ondragover="handleCtrlDragOver(event)" ondragleave="handleCtrlDragLeave(event)" ondrop="handleCtrlDrop(event, 'sa')" style="right: calc(100% - 18.36% + 8px); top: 42.09%; transform: translateY(-50%);">
+                  🔴 SA: ?
+                </div>
+                <div class="ctrl-drop-zone" data-target="left" onclick="dropCtrlCard('left')" ondragover="handleCtrlDragOver(event)" ondragleave="handleCtrlDragLeave(event)" ondrop="handleCtrlDrop(event, 'left')" style="right: calc(100% - 16.99% + 8px); top: 61.72%; transform: translateY(-50%);">
+                  ⬆️ Sol Kol: ?
+                </div>
+                <div class="ctrl-drop-zone" data-target="sc" onclick="dropCtrlCard('sc')" ondragover="handleCtrlDragOver(event)" ondragleave="handleCtrlDragLeave(event)" ondrop="handleCtrlDrop(event, 'sc')" style="left: calc(85.40% + 8px); top: 20.70%; transform: translateY(-50%);">
+                  🟢 SC: ?
+                </div>
+                <div class="ctrl-drop-zone" data-target="sd" onclick="dropCtrlCard('sd')" ondragover="handleCtrlDragOver(event)" ondragleave="handleCtrlDragLeave(event)" ondrop="handleCtrlDrop(event, 'sd')" style="left: calc(81.64% + 8px); top: 42.14%; transform: translateY(-50%);">
+                  🟣 SD: ?
+                </div>
+                <div class="ctrl-drop-zone" data-target="right" onclick="dropCtrlCard('right')" ondragover="handleCtrlDragOver(event)" ondragleave="handleCtrlDragLeave(event)" ondrop="handleCtrlDrop(event, 'right')" style="left: calc(82.91% + 8px); top: 61.72%; transform: translateY(-50%);">
+                  ➡️ Sağ Kol: ?
+                </div>
+                <div class="ctrl-drop-zone" data-target="power" onclick="dropCtrlCard('power')" ondragover="handleCtrlDragOver(event)" ondragleave="handleCtrlDragLeave(event)" ondrop="handleCtrlDrop(event, 'power')" style="left: 50.00%; top: calc(80.96% + 8px); transform: translateX(-50%);">
+                  ⏻ Power: ?
+                </div>
+              </div>
+            </div>
+            <!-- Celebration -->
+            <div id="ctrl-celebration" style="position: absolute; inset: 0; background: rgba(12,19,34,0.96); border-radius: var(--radius-lg); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px;">
+              <div style="font-size: 64px;">🎮🏆</div>
+              <h2 style="font-size: 32px; color: var(--sunny-yellow); font-weight: 800;">HARİKA! KUMANDAYI ÖĞRENDİN!</h2>
+              <p style="font-size: 18px; color: #e2e8f0; max-width: 650px; line-height: 1.5;">Artık drone kumandasındaki tüm tuşların ne işe yaradığını biliyorsun. Şimdi simülasyona geçelim!</p>
+              <button class="nav-btn primary" onclick="nextSlide()">Simülasyona Geç ➔</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 11: İnteraktif Drone Simülasyonu -->
+      <section class="slide" data-slide="11">
+        <div class="slide-badge">🚁 İNTERAKTİF SİMÜLASYON</div>
+        <h1 class="slide-title">Hadi Drone Uçuralım! (Simülasyon Testi) 🕹️</h1>
+        <p class="slide-subtitle">Kumandanın kollarını farenizle sürükleyerek drone'u kontrol edin!</p>
+        <div class="slide-content">
+          <div class="col-full" style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+            <!-- Sky Area -->
+            <div class="sim-sky" id="sim-sky">
+              <div class="sim-cloud sim-c1"></div>
+              <div class="sim-cloud sim-c2"></div>
+              <div class="sim-cloud sim-c3"></div>
+              <div class="sim-ground"></div>
+              <!-- SVG Drone -->
+              <div class="sim-drone-wrap" id="sim-drone" style="top: 120px; left: calc(50% - 70px);">
+                <svg viewBox="0 0 200 140" width="140" height="98">
+                  <!-- Prop Guards (whoop style) -->
+                  <circle cx="40" cy="35" r="28" fill="none" stroke="#6ee7b7" stroke-width="3" opacity="0.8"/>
+                  <circle cx="160" cy="35" r="28" fill="none" stroke="#6ee7b7" stroke-width="3" opacity="0.8"/>
+                  <circle cx="40" cy="105" r="28" fill="none" stroke="#6ee7b7" stroke-width="3" opacity="0.8"/>
+                  <circle cx="160" cy="105" r="28" fill="none" stroke="#6ee7b7" stroke-width="3" opacity="0.8"/>
+                  <!-- Arms -->
+                  <line x1="65" y1="55" x2="40" y2="35" stroke="#4b5563" stroke-width="5" stroke-linecap="round"/>
+                  <line x1="135" y1="55" x2="160" y2="35" stroke="#4b5563" stroke-width="5" stroke-linecap="round"/>
+                  <line x1="65" y1="85" x2="40" y2="105" stroke="#4b5563" stroke-width="5" stroke-linecap="round"/>
+                  <line x1="135" y1="85" x2="160" y2="105" stroke="#4b5563" stroke-width="5" stroke-linecap="round"/>
+                  <!-- Body -->
+                  <rect x="60" y="50" width="80" height="40" rx="12" fill="#334155" stroke="#475569" stroke-width="1.5"/>
+                  <!-- Camera -->
+                  <circle cx="100" cy="52" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+                  <circle cx="100" cy="52" r="3" fill="#38bdf8"/>
+                  <!-- LED -->
+                  <rect x="93" y="82" width="14" height="4" rx="2" fill="#22c55e" opacity="0.9">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite"/>
+                  </rect>
+                  <!-- Propellers -->
+                  <g class="prop-blade" id="prop1" style="transform-origin: 40px 35px; animation: prop-spin 0.15s linear infinite;">
+                    <ellipse cx="40" cy="35" rx="22" ry="4" fill="rgba(110,231,183,0.55)"/>
+                    <ellipse cx="40" cy="35" rx="4" ry="22" fill="rgba(110,231,183,0.55)"/>
+                  </g>
+                  <g class="prop-blade" id="prop2" style="transform-origin: 160px 35px; animation: prop-spin 0.15s linear infinite reverse;">
+                    <ellipse cx="160" cy="35" rx="22" ry="4" fill="rgba(110,231,183,0.55)"/>
+                    <ellipse cx="160" cy="35" rx="4" ry="22" fill="rgba(110,231,183,0.55)"/>
+                  </g>
+                  <g class="prop-blade" id="prop3" style="transform-origin: 40px 105px; animation: prop-spin 0.15s linear infinite reverse;">
+                    <ellipse cx="40" cy="105" rx="22" ry="4" fill="rgba(110,231,183,0.55)"/>
+                    <ellipse cx="40" cy="105" rx="4" ry="22" fill="rgba(110,231,183,0.55)"/>
+                  </g>
+                  <g class="prop-blade" id="prop4" style="transform-origin: 160px 105px; animation: prop-spin 0.15s linear infinite;">
+                    <ellipse cx="160" cy="105" rx="22" ry="4" fill="rgba(110,231,183,0.55)"/>
+                    <ellipse cx="160" cy="105" rx="4" ry="22" fill="rgba(110,231,183,0.55)"/>
+                  </g>
+                </svg>
+              </div>
+            </div>
+            <!-- Controller -->
+            <div style="position: relative;">
+              <div class="sim-active-label" id="sim-active-label"></div>
+              <div class="sim-ctrl">
+                <div class="sim-ctrl-grip-l"></div>
+                <div class="sim-ctrl-grip-r"></div>
+                <!-- Switches -->
+                <div class="sim-switch" style="left: 90px;" title="SA"></div>
+                <div class="sim-switch" style="left: 130px; height: 26px;" title="SB"></div>
+                <div class="sim-switch" style="right: 130px; height: 26px;" title="SC"></div>
+                <div class="sim-switch" style="right: 90px;" title="SD"></div>
+                <!-- BETAFPV label -->
+                <div class="sim-betafpv">BETAFPV</div>
+                <!-- Left stick -->
+                <div class="sim-stick-base" style="left: 65px;">
+                  <div class="sim-stick-knob" id="stick-left"></div>
+                </div>
+                <!-- Power -->
+                <div class="sim-pwr-btn"><div class="sim-pwr-led"></div></div>
+                <!-- Right stick -->
+                <div class="sim-stick-base" style="right: 65px;">
+                  <div class="sim-stick-knob" id="stick-right"></div>
+                </div>
+                <!-- Labels -->
+                <div class="sim-label" style="bottom: 8px; left: 95px; color: var(--emerald-green);">SOL KOL</div>
+                <div class="sim-label" style="bottom: 8px; right: 95px; color: var(--sunny-yellow);">SAĞ KOL</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 12: Görsel Puzzle -->
+      <section class="slide" data-slide="12">
+        <div class="slide-badge">🧩 İNTERAKTİF GÖRSEL PUZZLE</div>
+        <h1 class="slide-title">Parçaları Birleştir! (Görsel Puzzle) 🖼️</h1>
+        <p class="slide-subtitle">Sınıfça ayağa kalkalım! Karışmış görsel parçalarını sürükleyip doğru yerlerine bırakın.</p>
+        <div class="slide-content">
+          <div class="col-full" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+              <button class="nav-btn primary" onclick="initPuzzle('images/LiteRadio_2_SIM_Controller_-_your_ultimate_sim_companion.jpg')">🎮 Kumanda Puzzle</button>
+              <button class="nav-btn primary" onclick="initPuzzle('images/drone.jpg')">🛸 Drone Puzzle</button>
+            </div>
+            <div class="puzzle-workspace">
+              <div class="puzzle-pieces-area" id="puzzle-pieces-area"></div>
+              <div class="puzzle-board-area" id="puzzle-board-area"></div>
+            </div>
+            <div id="puzzle-win-message" style="display: none; font-size: 24px; font-weight: 800; color: var(--emerald-green); margin-top: 10px;">
+              🎉 TEBRİKLER! GÖRSELİ TAMAMLADINIZ! 🎉
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 13: A4 Boyama Etkinliği -->
+      <section class="slide" data-slide="13">
+        <div class="slide-badge">🎫 MÜHENDİSLİK ETKİNLİĞİ</div>
+        <h1 class="slide-title">Günün Görevi: Drone ve Kumanda Boyama Sayfası 🖍️</h1>
+        <p class="slide-subtitle">Öğretmeninizden A4 kağıtlarınızı alın, boşlukları doldurun ve tasarıma başlayın.</p>
+        <div class="slide-content">
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <h3 style="font-size: 22px; color: var(--sunny-yellow); margin-bottom: 6px; font-weight: 800;">📋 A4 Sayfasında Neler Yapacağız?</h3>
+              <div style="display: flex; flex-direction: column; gap: 14px; font-size: 16px;">
+                <div style="background: rgba(255,255,255,0.06); padding: 14px 18px; border-radius: 12px; border-left: 5px solid var(--primary);">
+                  <strong style="color: #fff; font-size: 18px;">1. Drone & Doğa Boyaması 🎨</strong>
+                  <p style="color: #cbd5e1; margin-top: 4px; line-height: 1.45;">Gökyüzünde uçan drone'u, piknik sepetini ve doğayı hayalindeki renklere boya!</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); padding: 14px 18px; border-radius: 12px; border-left: 5px solid var(--emerald-green);">
+                  <strong style="color: #fff; font-size: 18px;">2. Kumanda Tuşlarını Doldur ✏️</strong>
+                  <p style="color: #cbd5e1; margin-top: 4px; line-height: 1.45;">Alttaki kelime havuzundaki görevleri (Arm, Uçuş Modu, Hız, Gaz/Yön vb.) doğru kutucuklara yaz.</p>
+                </div>
+              </div>
+              <div style="background: rgba(15,23,42,0.8); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div><div style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Çizim & Yazma Süresi</div><div id="countdown-timer" style="font-size: 30px; font-weight: 800; color: var(--sunny-yellow); font-family: monospace;">15:00</div></div>
+                <div style="display: flex; gap: 10px;"><button class="nav-btn" onclick="startTimer()">▶ Başlat</button><button class="nav-btn" onclick="pauseTimer()">⏸</button><button class="nav-btn" onclick="resetTimer()">↺</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 16px; background: rgba(15,23,42,0.92); border-color: var(--sunny-yellow);">
+              <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 8px;">
+                <div style="font-weight: 800; font-size: 16px; color: var(--sunny-yellow); display: flex; align-items: center; gap: 8px;">
+                  <span>📄</span> A4 Çalışma & Boyama Sayfası
+                </div>
+                <span style="font-size: 12px; background: rgba(52,211,153,0.2); color: var(--emerald-green); padding: 3px 10px; border-radius: 12px; font-weight: 800;">Baskıya Hazır</span>
+              </div>
+              
+              <div style="flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; padding: 6px 0; min-height: 0;">
+                <a href="Drone_Kumanda_Bosluk_Doldurma_Boyama_A4.html" target="_blank" style="height: 100%; max-height: 310px; display: block; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.25); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                  <img src="images/Boyama.jpg" alt="Drone Kumandası Boşluk Doldurma ve Boyama Sayfası" style="height: 100%; max-height: 310px; width: auto; object-fit: contain; display: block; background: #fff;">
+                </a>
+              </div>
+
+              <div style="width: 100%; display: flex; gap: 10px;">
+                <a href="Drone_Kumanda_Bosluk_Doldurma_Boyama_A4.html" target="_blank" class="nav-btn primary" style="flex: 1; text-decoration: none; justify-content: center; font-size: 15px; font-weight: 800;">
+                  🖨️ A4 Sayfasını Aç & Yazdır ➔
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+    </div>
+  </main>
+
+
+  <!-- Footer Navigation -->
+  <footer>
+    <div class="footer-left">
+      <div class="slide-counter" onclick="toggleOverview()" title="Tüm Slaytları Gör">
+        SLAYT <span class="current" id="current-slide-num">1</span> / 13
+      </div>
+      <div style="font-size: 14px; color: var(--text-muted);">
+        İpucu: <strong>Boşluk / Sağ Ok</strong> ile ilerle, <strong>N</strong> ile öğretmen notlarını aç
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button class="nav-btn" onclick="prevSlide()">◀ Önceki</button>
+      <button class="nav-btn primary" onclick="nextSlide()">Sonraki ▶</button>
+    </div>
+  </footer>
+
+  <!-- Teacher Notes Drawer -->
+  <aside id="notes-drawer">
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 10px;">
+      <h3 style="font-size: 18px; color: var(--sunny-yellow); display: flex; align-items: center; gap: 6px; font-weight: 800;">📋 Öğretmen Ders Notu</h3>
+      <button class="tool-btn" style="width: 32px; height: 32px; font-size: 14px;" onclick="toggleNotes()">✕</button>
+    </div>
+    <div class="notes-body" id="slide-notes-content"></div>
+  </aside>
+
+  <!-- Overview Modal -->
+  <div id="overview-modal" onclick="if(event.target===this) toggleOverview()">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1200px; margin: 0 auto;">
+      <h2 style="font-size: 28px; color: var(--sunny-yellow); font-weight: 800;">📑 Slayt Gezgini (2. Hafta)</h2>
+      <button class="tool-btn" style="width: 40px; height: 40px;" onclick="toggleOverview()">✕</button>
+    </div>
+    <div class="overview-grid" style="max-width: 1200px; width: 100%; margin: 20px auto 0;"><div class="overview-card" onclick="goToSlide(1)"><strong>1.</strong> Geçen Haftanın Özeti</div>
+      <div class="overview-card" onclick="goToSlide(2)"><strong>2.</strong> İnsanlar Neden Uçmak İstedi?</div>
+      <div class="overview-card" onclick="goToSlide(3)"><strong>3.</strong> İlk Uçak Hemen Uçtu mu?</div>
+      <div class="overview-card" onclick="goToSlide(4)"><strong>4.</strong> Dronelar Nasıl Uçar?</div>
+      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> Kumanda Tanıtımı</div>
+      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Güç Tuşu</div>
+      <div class="overview-card" onclick="goToSlide(7)"><strong>7.</strong> Sağ Kol (Pitch/Roll)</div>
+      <div class="overview-card" onclick="goToSlide(8)"><strong>8.</strong> Sol Kol (Throttle/Yaw)</div>
+      <div class="overview-card" onclick="goToSlide(9)"><strong>9.</strong> Şalterler (SA, SB, SC, SD)</div>
+      <div class="overview-card" onclick="goToSlide(10)"><strong>10.</strong> Kumanda İşlev Oyunu</div>
+      <div class="overview-card" onclick="goToSlide(11)"><strong>11.</strong> Drone Simülasyonu</div>
+      <div class="overview-card" onclick="goToSlide(12)"><strong>12.</strong> Görsel Puzzle</div>
+      <div class="overview-card" onclick="goToSlide(13)"><strong>13.</strong> A4 Boyama Etkinliği</div></div>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 13;
+    let stampCounter = 0;
+    const stampElements = [];
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    const slideNotes = {
+      "1": "<h4>1. Geçen Haftaya Bakış (5 Dk)</h4><p>Çocuklarla geçen hafta yaptıklarını hatırlatın: tanışma, kurallar, drone tanıma, boyama etkinliği.</p>",
+      "2": "<h4>2. Beyin Fırtınası (5 Dk)</h4><p>İnsanların neden uçmak istediğini tartışın. Kutuları tıklayarak cevapları açın.</p>",
+      "3": "<h4>3. Mühendislik Felsefesi (5 Dk)</h4><p>'HAYIR' cevabını vurgulu verin. Hatalardan öğrenmenin önemini anlatın.</p>",
+      "4": "<h4>4. Dronelar Nasıl Uçar? (5 Dk)</h4><p>Pervanelerin havayı aşağı iterek drone'u kaldırdığını basitçe anlatın. Meteor75 Pro II'yi gösterin.</p>",
+      "5": "<h4>5. Kumanda Tanıtımı (5 Dk)</h4><p>LiteRadio 2 SIM'i tanıtın. Gerçek kumandayı elinize alıp gösterin.</p>",
+      "6": "<h4>6. Güç Tuşu (3 Dk)</h4><p>Kumandanın ortasındaki tuşla nasıl açılıp kapandığını gösterin.</p>",
+      "7": "<h4>7. Sağ Kol - Pitch/Roll (5 Dk)</h4><p>Sağ elin yön kontrolü olduğunu vücut diliyle göstererek anlatın. Pitch ve Roll kavramlarını basitçe açıklayın.</p>",
+      "8": "<h4>8. Sol Kol - Throttle/Yaw (5 Dk)</h4><p>Sol elin yükselme ve dönme kontrolü olduğunu anlatın.</p>",
+      "9": "<h4>9. Şalterler SA-SD (5 Dk)</h4><p>Her şalterin görevini kısaca açıklayın. Arm/Disarm güvenlik kilidini vurgulayın.</p>",
+      "10": "<h4>10. Sürükle-Bırak Oyunu (10 Dk)</h4><p>Öğrencileri sırayla tahtaya çağırın. İşlev kartlarını doğru yerlere sürüklemelerini isteyin.</p>",
+      "11": "<h4>11. İnteraktif Simülasyon (10 Dk)</h4><p>Tahtada sanal kolları farenizle oynatarak drone'un nasıl tepki verdiğini gösterin. Öğrencileri de tahtaya çağırın.</p>",
+      "12": "<h4>12. Görsel Puzzle (10 Dk)</h4><p>Sırayla öğrencileri tahtaya çağırın ve puzzle parçalarını doğru yerlere sürüklemelerini isteyin.</p>",
+      "13": "<h4>13. A4 Etkinliği (15 Dk)</h4><p>Dağıttığınız kağıtları boyayıp tuşların görevlerini yazmaları için süre verin.</p>"
+    };
+
+    const funSpeakerTasks = [
+      "Geçen hafta en çok hangi etkinlik hoşuna gitti?",
+      "Drone'u ilk uçurduğunda nereye uçurmak istersin?",
+      "Sence uzaya giden ilk astronot uçmadan önce ne hissetmiştir?",
+      "En sevdiğin uçan hayvan hangisi?",
+      "Sence gelecekte uçan arabalar olacak mı?",
+      "Bugün kendini bulutlar kadar hafif mi yoksa roket kadar enerjik mi hissediyorsun?",
+      "Gökyüzünde süzülen bir pilot olsan hangi şarkıyı dinlerdin?",
+      "Drone'un 4 pervanesi yerine 100 pervanesi olsaydı ne olurdu?"
+    ];
+
+    /* ===== AUDIO FUNCTIONS ===== */
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    function playClickSound() {
+      if (!soundEnabled) return; initAudio();
+      try {
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(650, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e) {}
+    }
+    function playSuccessChime() {
+      if (!soundEnabled) return; initAudio(); const now = audioCtx.currentTime;
+      [659.25, 880.00, 1046.50].forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+        gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.35);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now + idx * 0.1); osc.stop(now + idx * 0.1 + 0.35);
+      });
+    }
+    function playErrorBeep() {
+      if (!soundEnabled) return; initAudio(); const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(160, now + 0.15);
+      gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.15);
+    }
+    function playApplauseSound() {
+      if (!soundEnabled) return; initAudio(); const now = audioCtx.currentTime;
+      for (let i = 0; i < 28; i++) {
+        const time = now + Math.random() * 1.4; const dur = 0.04 + Math.random() * 0.03;
+        const bufSize = Math.floor(audioCtx.sampleRate * dur);
+        const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let j = 0; j < bufSize; j++) data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (bufSize * 0.35));
+        const noise = audioCtx.createBufferSource(); noise.buffer = buf;
+        const filt = audioCtx.createBiquadFilter(); filt.type = 'bandpass';
+        filt.frequency.setValueAtTime(900 + Math.random() * 1100, time); filt.Q.setValueAtTime(3.0, time);
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.16 + Math.random() * 0.12, time);
+        g.gain.exponentialRampToValueAtTime(0.001, time + dur);
+        noise.connect(filt); filt.connect(g); g.connect(audioCtx.destination); noise.start(time); noise.stop(time + dur);
+      }
+      [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+        const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(f, now + idx * 0.12);
+        g.gain.setValueAtTime(0.2, now + idx * 0.12); g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.45);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(now + idx * 0.12); osc.stop(now + idx * 0.12 + 0.45);
+      });
+    }
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('btn-sound');
+      btn.textContent = soundEnabled ? '🔊' : '🔇';
+      btn.classList.toggle('active', !soundEnabled);
+    }
+
+    /* ===== NAVIGATION ===== */
+    function updateSlide() {
+      document.querySelectorAll('.slide').forEach((s, idx) => s.classList.toggle('active', idx + 1 === currentSlide));
+      document.getElementById('current-slide-num').textContent = currentSlide;
+      document.getElementById('progress-fill').style.width = ((currentSlide - 1) / (totalSlides - 1) * 100) + '%';
+      document.querySelectorAll('.overview-card').forEach((card, idx) => card.classList.toggle('active', idx + 1 === currentSlide));
+      const notesEl = document.getElementById('slide-notes-content');
+      if (notesEl) notesEl.innerHTML = slideNotes[currentSlide] || '<p>Bu slayt için özel not bulunmuyor.</p>';
+    }
+    function nextSlide() {
+      if (currentSlide < totalSlides) { currentSlide++; playClickSound(); updateSlide(); }
+    }
+    function prevSlide() {
+      if (currentSlide > 1) { currentSlide--; playClickSound(); updateSlide(); }
+    }
+    function goToSlide(n) { currentSlide = n; playClickSound(); updateSlide(); toggleOverview(false); }
+
+    /* ===== SPEAKER RANDOMIZER ===== */
+    let lastTaskIdx = -1;
+    function spinPilotTask() {
+      playClickSound();
+      const display = document.getElementById('random-task-display');
+      display.style.transform = 'scale(1.08)'; display.style.transition = 'transform 0.15s ease';
+      let newIdx;
+      do { newIdx = Math.floor(Math.random() * funSpeakerTasks.length); } while (newIdx === lastTaskIdx && funSpeakerTasks.length > 1);
+      lastTaskIdx = newIdx; display.textContent = funSpeakerTasks[newIdx];
+      setTimeout(() => { display.style.transform = 'scale(1)'; }, 180);
+    }
+
+    /* ===== CTRL DRAG-DROP GAME (Slide 10) ===== */
+    let selectedCtrlCard = null;
+    let ctrlMatched = 0;
+    const ctrlLabels = {
+      'sa': '🔴 SA: Güvenlik Kilidi (Arm)',
+      'sb': '🟡 SB: Uçuş Modu',
+      'sc': '🟢 SC: Hız Seviyesi',
+      'sd': '🟣 SD: Turtle & Buzzer',
+      'left': '⬆️ Sol Kol: Throttle/Yaw',
+      'right': '➡️ Sağ Kol: Pitch/Roll',
+      'power': '⏻ Power: Aç / Kapat'
+    };
+    function selectCtrlCard(id) {
+      playClickSound();
+      const card = document.querySelector(`.ctrl-drag-card[data-id="${id}"]`);
+      if (card.classList.contains('matched')) return;
+      document.querySelectorAll('.ctrl-drag-card').forEach(c => c.classList.remove('selected'));
+      if (selectedCtrlCard === id) { selectedCtrlCard = null; } else { selectedCtrlCard = id; card.classList.add('selected'); }
+    }
+    function handleCtrlDragStart(e, id) {
+      selectedCtrlCard = id;
+      e.dataTransfer.setData('text/plain', id);
+      const card = document.querySelector(`.ctrl-drag-card[data-id="${id}"]`);
+      document.querySelectorAll('.ctrl-drag-card').forEach(c => c.classList.remove('selected'));
+      if (card) card.classList.add('selected');
+    }
+    function handleCtrlDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('drag-over');
+    }
+    function handleCtrlDragLeave(e) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+    function handleCtrlDrop(e, targetId) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+      const id = e.dataTransfer.getData('text/plain') || selectedCtrlCard;
+      if (id) {
+        selectedCtrlCard = id;
+        dropCtrlCard(targetId);
+      }
+    }
+    function dropCtrlCard(targetId) {
+      if (!selectedCtrlCard) return;
+      const zone = document.querySelector(`.ctrl-drop-zone[data-target="${targetId}"]`);
+      const card = document.querySelector(`.ctrl-drag-card[data-id="${selectedCtrlCard}"]`);
+      const pin = document.querySelector(`.ctrl-pin[data-pin="${targetId}"]`);
+      if (selectedCtrlCard === targetId) {
+        playSuccessChime();
+        card.classList.remove('selected');
+        card.classList.add('matched');
+        zone.classList.add('matched');
+        zone.textContent = ctrlLabels[targetId];
+        zone.style.pointerEvents = 'none';
+        if (pin) pin.classList.add('matched');
+        ctrlMatched++;
+        document.getElementById('ctrl-match-count').textContent = ctrlMatched;
+        selectedCtrlCard = null;
+        if (ctrlMatched >= 7) {
+          setTimeout(() => {
+            document.getElementById('ctrl-celebration').style.display = 'flex';
+            playApplauseSound();
+          }, 500);
+        }
+      } else {
+        playErrorBeep();
+        zone.classList.add('wrong');
+        setTimeout(() => zone.classList.remove('wrong'), 600);
+      }
+    }
+
+    /* ===== DRONE SIMULATION (Slide 11) ===== */
+    let droneY = 120, droneX = 0, droneRot = 0, droneScale = 1, dronePitch = 0;
+    function updateDrone() {
+      const drone = document.getElementById('sim-drone');
+      if (!drone) return;
+      drone.style.top = droneY + 'px';
+      drone.style.left = 'calc(50% - 70px + ' + droneX + 'px)';
+      drone.style.transform = 'rotate(' + droneRot + 'deg) perspective(300px) rotateX(' + dronePitch + 'deg)';
+    }
+    function setPropSpeed(dur) {
+      ['prop1','prop2','prop3','prop4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.animationDuration = dur + 's';
+      });
+    }
+    function attachSimStick(stick, isLeft) {
+      let active = false, startX = 0, startY = 0;
+      const label = document.getElementById('sim-active-label');
+      stick.addEventListener('mousedown', e => { active = true; startX = e.clientX; startY = e.clientY; stick.style.cursor = 'grabbing'; e.preventDefault(); });
+      window.addEventListener('mouseup', () => {
+        if (!active) return; active = false; stick.style.top = '32px'; stick.style.left = '32px'; stick.style.cursor = 'grab';
+        if (label) label.style.opacity = '0';
+        if (!isLeft) { droneRot = 0; dronePitch = 0; updateDrone(); }
+      });
+      window.addEventListener('mousemove', e => {
+        if (!active) return;
+        let dx = Math.max(-32, Math.min(32, e.clientX - startX));
+        let dy = Math.max(-32, Math.min(32, e.clientY - startY));
+        stick.style.left = (32 + dx) + 'px'; stick.style.top = (32 + dy) + 'px';
+        if (isLeft) {
+          droneY = Math.max(10, Math.min(260, droneY + dy * 0.08));
+          droneX += dx * 0.08;
+          const throttle = Math.max(0, -dy / 32);
+          setPropSpeed(0.05 + (1 - throttle) * 0.25);
+          if (label) { label.textContent = dy < -5 ? '⬆️ GAZ (Throttle)' : dx > 5 ? '↻ YAW Sağ' : dx < -5 ? '↺ YAW Sol' : ''; label.style.opacity = (Math.abs(dx) > 5 || Math.abs(dy) > 5) ? '1' : '0'; }
+        } else {
+          dronePitch = dy * 0.4;
+          droneRot = dx * 0.5;
+          droneX += dx * 0.1;
+          droneY += dy * 0.05;
+          if (label) { label.textContent = dy < -5 ? '↗️ PITCH İleri' : dy > 5 ? '↙️ PITCH Geri' : dx > 5 ? '➡️ ROLL Sağ' : dx < -5 ? '⬅️ ROLL Sol' : ''; label.style.opacity = (Math.abs(dx) > 5 || Math.abs(dy) > 5) ? '1' : '0'; }
+        }
+        droneX = Math.max(-250, Math.min(250, droneX));
+        droneY = Math.max(5, Math.min(270, droneY));
+        updateDrone();
+      });
+    }
+
+    /* ===== TIMER ===== */
+    let timerInterval = null, timerSeconds = 900;
+    function updateTimerDisplay() {
+      const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+      const s = (timerSeconds % 60).toString().padStart(2, '0');
+      const el = document.getElementById('countdown-timer');
+      if (el) el.textContent = m + ':' + s;
+    }
+    function startTimer() { playClickSound(); if (timerInterval) return; timerInterval = setInterval(() => { if (timerSeconds > 0) { timerSeconds--; updateTimerDisplay(); } else { clearInterval(timerInterval); timerInterval = null; playApplauseSound(); alert('Süre doldu! Harika çizimlerinizi havaya kaldırın! 🎨✈️'); } }, 1000); }
+    function pauseTimer() { playClickSound(); if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+    function resetTimer() { playClickSound(); pauseTimer(); timerSeconds = 900; updateTimerDisplay(); }
+
+    /* ===== PUZZLE ===== */
+    let puzzleSize = 3, pieceW, pieceH, draggedPiece = null;
+    function initPuzzle(imageUrl) {
+      document.getElementById('puzzle-win-message').style.display = 'none';
+      const board = document.getElementById('puzzle-board-area');
+      const pieces = document.getElementById('puzzle-pieces-area');
+      board.innerHTML = ''; pieces.innerHTML = '';
+      pieceW = 380 / puzzleSize; pieceH = 380 / puzzleSize;
+      let allPieces = [];
+      for (let r = 0; r < puzzleSize; r++) for (let c = 0; c < puzzleSize; c++) {
+        let slot = document.createElement('div');
+        slot.style.cssText = 'width:100%;height:100%;border:1px dashed rgba(255,255,255,0.15);';
+        slot.dataset.row = r; slot.dataset.col = c;
+        slot.ondragover = e => e.preventDefault();
+        slot.ondrop = dropPuzzlePiece;
+        board.appendChild(slot);
+        let piece = document.createElement('div');
+        piece.style.cssText = 'width:' + (pieceW-4) + 'px;height:' + (pieceH-4) + 'px;background-image:url(' + imageUrl + ');background-size:380px 380px;background-position:-' + (c*pieceW) + 'px -' + (r*pieceH) + 'px;border:2px solid rgba(255,255,255,0.4);border-radius:4px;cursor:grab;';
+        piece.draggable = true; piece.dataset.row = r; piece.dataset.col = c;
+        piece.ondragstart = e => { draggedPiece = e.target; };
+        allPieces.push(piece);
+      }
+      allPieces.sort(() => Math.random() - 0.5);
+      allPieces.forEach(p => pieces.appendChild(p));
+    }
+    function dropPuzzlePiece(e) {
+      e.preventDefault(); const slot = e.currentTarget;
+      if (slot.dataset.row !== undefined && slot.childElementCount === 0 && draggedPiece) {
+        slot.appendChild(draggedPiece); checkPuzzleWin();
+      }
+    }
+    function checkPuzzleWin() {
+      const board = document.getElementById('puzzle-board-area');
+      let win = true, count = 0;
+      for (let slot of board.children) {
+        if (slot.childElementCount === 1) { count++;
+          const p = slot.firstElementChild;
+          if (p.dataset.row !== slot.dataset.row || p.dataset.col !== slot.dataset.col) win = false;
+        } else win = false;
+      }
+      if (win && count === puzzleSize * puzzleSize) {
+        document.getElementById('puzzle-win-message').style.display = 'block'; playApplauseSound();
+      }
+    }
+
+    /* ===== TOGGLES ===== */
+    function toggleNotes() { playClickSound(); const d = document.getElementById('notes-drawer'); const b = document.getElementById('btn-notes'); d.classList.toggle('open'); b.classList.toggle('active', d.classList.contains('open')); }
+    function toggleOverview(forceState) { playClickSound(); const m = document.getElementById('overview-modal'); const b = document.getElementById('btn-overview'); if (forceState !== undefined) m.classList.toggle('open', forceState); else m.classList.toggle('open'); b.classList.toggle('active', m.classList.contains('open')); }
+    function toggleFullscreen() { playClickSound(); if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); else document.exitFullscreen().catch(() => {}); }
+
+    /* ===== KEYBOARD ===== */
+    window.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      switch(e.key) {
+        case 'ArrowRight': case ' ': case 'PageDown': e.preventDefault(); nextSlide(); break;
+        case 'ArrowLeft': case 'PageUp': e.preventDefault(); prevSlide(); break;
+        case 'f': case 'F': e.preventDefault(); toggleFullscreen(); break;
+        case 'n': case 'N': e.preventDefault(); toggleNotes(); break;
+        case 'o': case 'O': e.preventDefault(); toggleOverview(); break;
+        case 'm': case 'M': e.preventDefault(); toggleSound(); break;
+        case 'Escape': toggleOverview(false); document.getElementById('notes-drawer').classList.remove('open'); break;
+      }
+    });
+
+    /* ===== TOUCH ===== */
+    let touchStartX = 0;
+    window.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+    window.addEventListener('touchend', e => { const diff = e.changedTouches[0].screenX - touchStartX; if (Math.abs(diff) > 60) { if (diff < 0) nextSlide(); else prevSlide(); } }, { passive: true });
+
+    /* ===== INIT ===== */
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSlide(); updateTimerDisplay();
+      // Init simulation sticks
+      const stickL = document.getElementById('stick-left');
+      const stickR = document.getElementById('stick-right');
+      if (stickL) attachSimStick(stickL, true);
+      if (stickR) attachSimStick(stickR, false);
+    });
+  </script>
+</body>
+</html>
