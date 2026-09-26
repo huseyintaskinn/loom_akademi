@@ -843,6 +843,10 @@
       align-items: center;
       justify-content: center;
       position: relative;
+      touch-action: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      -webkit-touch-callout: none !important;
     }
     .sim-ctrl-svg {
       max-width: 530px;
@@ -850,6 +854,10 @@
       width: 100%;
       height: auto;
       filter: drop-shadow(0 14px 28px rgba(0,0,0,0.5));
+      touch-action: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      -webkit-touch-callout: none !important;
     }
     .sim-stick-action-hint {
       position: absolute;
@@ -1941,7 +1949,7 @@
 
   <!-- ================= TOP SWITCHES (SA, SB, SC, SD) ================= -->
   <!-- Switch SA (Sol Dış: Arm/Disarm - 2 pos) -->
-  <g id="svg-sw-sa" class="ctrl-sw-item" style="cursor: pointer;" onclick="toggleSimSwitch('sa')">
+  <g id="svg-sw-sa" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sa')">
     <title>Switch A (SA): Motor Kilidi (Arm / Disarm)</title>
     <ellipse cx="128" cy="92" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
     <ellipse cx="128" cy="91" rx="4.2" ry="2.2" fill="#64748b"/>
@@ -1950,11 +1958,11 @@
       <line x1="0" y1="0" x2="0" y2="-17" stroke="url(#metal-chrome)" stroke-width="3.5" stroke-linecap="round"/>
       <circle cx="0" y="-17" r="3" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
     </g>
-    <circle cx="128" cy="84" r="18" fill="transparent"/>
+    <circle cx="128" cy="84" r="28" fill="transparent" style="touch-action: none;"/>
   </g>
 
   <!-- Switch SB (Sol İç: Uçuş Modu - 3 pos) -->
-  <g id="svg-sw-sb" class="ctrl-sw-item" style="cursor: pointer;" onclick="toggleSimSwitch('sb')">
+  <g id="svg-sw-sb" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sb')">
     <title>Switch B (SB): Uçuş Modu (Angle / Horizon / Acro)</title>
     <ellipse cx="160" cy="84" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
     <ellipse cx="160" cy="83" rx="4.2" ry="2.2" fill="#64748b"/>
@@ -1963,11 +1971,11 @@
       <line x1="0" y1="0" x2="0" y2="-20" stroke="url(#metal-chrome)" stroke-width="3.8" stroke-linecap="round"/>
       <circle cx="0" y="-20" r="3.2" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
     </g>
-    <circle cx="160" cy="74" r="18" fill="transparent"/>
+    <circle cx="160" cy="74" r="28" fill="transparent" style="touch-action: none;"/>
   </g>
 
   <!-- Switch SC (Sağ İç: Hız Seviyesi - 3 pos) -->
-  <g id="svg-sw-sc" class="ctrl-sw-item" style="cursor: pointer;" onclick="toggleSimSwitch('sc')">
+  <g id="svg-sw-sc" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sc')">
     <title>Switch C (SC): Hız Kademesi (%40 / %70 / %100)</title>
     <ellipse cx="400" cy="84" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
     <ellipse cx="400" cy="83" rx="4.2" ry="2.2" fill="#64748b"/>
@@ -1976,11 +1984,11 @@
       <line x1="0" y1="0" x2="0" y2="-20" stroke="url(#metal-chrome)" stroke-width="3.8" stroke-linecap="round"/>
       <circle cx="0" y="-20" r="3.2" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
     </g>
-    <circle cx="400" cy="74" r="18" fill="transparent"/>
+    <circle cx="400" cy="74" r="28" fill="transparent" style="touch-action: none;"/>
   </g>
 
   <!-- Switch SD (Sağ Dış: Turtle & Buzzer - 2 pos) -->
-  <g id="svg-sw-sd" class="ctrl-sw-item" style="cursor: pointer;" onclick="toggleSimSwitch('sd')">
+  <g id="svg-sw-sd" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sd')">
     <title>Switch D (SD): Kaplumbağa Modu & Buzzer</title>
     <ellipse cx="432" cy="92" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
     <ellipse cx="432" cy="91" rx="4.2" ry="2.2" fill="#64748b"/>
@@ -1989,11 +1997,12 @@
       <line x1="0" y1="0" x2="0" y2="-17" stroke="url(#metal-chrome)" stroke-width="3.5" stroke-linecap="round"/>
       <circle cx="0" y="-17" r="3" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
     </g>
-    <circle cx="432" cy="84" r="18" fill="transparent"/>
+    <circle cx="432" cy="84" r="28" fill="transparent" style="touch-action: none;"/>
   </g>
 
   <!-- ================= GIMBAL LEFT (Sol Kol: Throttle / Yaw) ================= -->
-  <g id="gimbal-left-group">
+  <g id="gimbal-left-group" style="touch-action: none;">
+    <circle cx="175" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
     <circle cx="175" cy="215" r="52" fill="url(#gimbal-well-grad)" stroke="#334155" stroke-width="2"/>
     <rect x="141" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
     <rect x="146" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
@@ -2004,7 +2013,8 @@
 
     <!-- Moveable Left Stick Assembly -->
     <g id="svg-stick-left" style="cursor: grab; touch-action: none;" transform="translate(0, 0)">
-      <circle cx="175" cy="215" r="24" fill="transparent"/>
+      <circle id="stick-glow-left" cx="175" cy="215" r="26" fill="none" stroke="#00f0ff" stroke-width="2.5" opacity="0" style="transition: opacity 0.15s ease; filter: drop-shadow(0 0 10px #00f0ff); pointer-events: none;"/>
+      <circle cx="175" cy="215" r="26" fill="transparent"/>
       <circle cx="175" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
       <circle cx="175" cy="215" r="15" fill="url(#metal-chrome)" stroke="#334155" stroke-width="1"/>
       <circle cx="175" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
@@ -2016,8 +2026,9 @@
   </g>
 
   <!-- ================= CENTER POWER BUTTON ================= -->
-  <g id="svg-power-group" style="cursor: pointer;" onclick="toggleSimPower()">
+  <g id="svg-power-group" style="cursor: pointer; touch-action: none;" onclick="toggleSimPower()">
     <title>Açma / Kapama Güç Tuşu (Tıklayın)</title>
+    <circle cx="280" cy="232" r="26" fill="transparent" style="touch-action: none;"/>
     <circle cx="280" cy="232" r="19" fill="#14171e" stroke="#334155" stroke-width="1.5"/>
     <!-- Glowing Halo LED Ring -->
     <circle id="svg-pwr-led" cx="280" cy="232" r="14.5" fill="none" stroke="#475569" stroke-width="2.2" style="transition: all 0.3s ease;"/>
@@ -2029,7 +2040,8 @@
   </g>
 
   <!-- ================= GIMBAL RIGHT (Sağ Kol: Pitch / Roll) ================= -->
-  <g id="gimbal-right-group">
+  <g id="gimbal-right-group" style="touch-action: none;">
+    <circle cx="385" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
     <circle cx="385" cy="215" r="52" fill="url(#gimbal-well-grad)" stroke="#334155" stroke-width="2"/>
     <rect x="351" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
     <rect x="356" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
@@ -2040,14 +2052,14 @@
 
     <!-- Moveable Right Stick Assembly -->
     <g id="svg-stick-right" style="cursor: grab; touch-action: none;" transform="translate(0, 0)">
-      <circle cx="385" cy="215" r="24" fill="transparent"/>
+      <circle id="stick-glow-right" cx="385" cy="215" r="26" fill="none" stroke="#fbbf24" stroke-width="2.5" opacity="0" style="transition: opacity 0.15s ease; filter: drop-shadow(0 0 10px #fbbf24); pointer-events: none;"/>
+      <circle cx="385" cy="215" r="26" fill="transparent"/>
       <circle cx="385" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
       <circle cx="385" cy="215" r="15" fill="url(#metal-chrome)" stroke="#334155" stroke-width="1"/>
       <circle cx="385" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
       <circle cx="385" cy="215" r="11" fill="url(#stick-knob-top)"/>
       <circle cx="385" cy="215" r="7" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="2 1.5"/>
       <circle cx="385" cy="215" r="3" fill="#475569"/>
-    </g>
     <text x="385" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#fbbf24" letter-spacing="0.5">🕹️ SAĞ KOL (Pitch &amp; Roll)</text>
   </g>
 </svg>
@@ -2641,7 +2653,12 @@
     }
 
     /* Switch Handlers */
+    let lastPowerToggleTime = 0;
     function toggleSimPower() {
+      const now = Date.now();
+      if (now - lastPowerToggleTime < 220) return;
+      lastPowerToggleTime = now;
+
       initAudio();
       simState.power = !simState.power;
       playPowerSound(simState.power);
@@ -2681,7 +2698,12 @@
       }
     }
 
+    let lastSwitchToggleTime = {};
     function toggleSimSwitch(swId) {
+      const now = Date.now();
+      if (lastSwitchToggleTime[swId] && (now - lastSwitchToggleTime[swId] < 220)) return;
+      lastSwitchToggleTime[swId] = now;
+
       if (!simState.power) {
         showStickHint('⚠️ Önce Güç Butonuna Basın!');
         const statusMsg = document.getElementById('hud-status-msg');
@@ -2811,6 +2833,11 @@
       hint._timer = setTimeout(() => { hint.style.opacity = '0'; }, 1600);
     }
 
+    const stickState = {
+      left: { pointerId: null, active: false, dx: 0, dy: 32 },
+      right: { pointerId: null, active: false, dx: 0, dy: 0 }
+    };
+
     function resetDroneSim() {
       playSwitchClick();
       simState.droneX = 0;
@@ -2823,6 +2850,11 @@
       simState.pitch = 0;
       simState.roll = 0;
       
+      stickState.left.dx = 0;
+      stickState.left.dy = 32;
+      stickState.right.dx = 0;
+      stickState.right.dy = 0;
+
       const stickL = document.getElementById('svg-stick-left');
       const stickR = document.getElementById('svg-stick-right');
       if (stickL) stickL.setAttribute('transform', 'translate(0, 32)');
@@ -2847,62 +2879,50 @@
       const svg = document.getElementById('betafpv-svg-ctrl');
       if (!svg) return;
 
-      const gimbalLeft = document.getElementById('gimbal-left-group');
       const stickLeft = document.getElementById('svg-stick-left');
-      const gimbalRight = document.getElementById('gimbal-right-group');
       const stickRight = document.getElementById('svg-stick-right');
+      const glowLeft = document.getElementById('stick-glow-left');
+      const glowRight = document.getElementById('stick-glow-right');
 
-      let activeLeft = false;
-      let leftDx = 0, leftDy = 32;
-      stickLeft.setAttribute('transform', 'translate(0, 32)');
+      // Set initial stick positions
+      if (stickLeft) stickLeft.setAttribute('transform', 'translate(0, 32)');
+      if (stickRight) stickRight.setAttribute('transform', 'translate(0, 0)');
 
-      let activeRight = false;
+      // Multi-touch tracking for switches
+      const switchPointers = {};
 
-      gimbalLeft.addEventListener('pointerdown', e => {
-        if (!simState.power) {
-          showStickHint('⚠️ Önce Güç Butonuna Basın!');
-          return;
-        }
-        activeLeft = true;
-        gimbalLeft.setPointerCapture(e.pointerId);
-        handleLeftMove(e);
-      });
+      const GIMBAL_LEFT_CENTER = { x: 175, y: 215, radius: 75 };
+      const GIMBAL_RIGHT_CENTER = { x: 385, y: 215, radius: 75 };
+      const POWER_CENTER = { x: 280, y: 232, radius: 32 };
+      const SWITCHES = [
+        { id: 'sa', x: 128, y: 92, radius: 34 },
+        { id: 'sb', x: 160, y: 84, radius: 34 },
+        { id: 'sc', x: 400, y: 84, radius: 34 },
+        { id: 'sd', x: 432, y: 92, radius: 34 }
+      ];
 
-      gimbalLeft.addEventListener('pointermove', e => {
-        if (!activeLeft) return;
-        handleLeftMove(e);
-      });
+      function dist(x1, y1, x2, y2) {
+        return Math.hypot(x1 - x2, y1 - y2);
+      }
 
-      const handleLeftEnd = e => {
-        if (!activeLeft) return;
-        activeLeft = false;
-        try { gimbalLeft.releasePointerCapture(e.pointerId); } catch(err){}
-        leftDx = 0;
-        stickLeft.style.transition = 'transform 0.1s ease-out';
-        stickLeft.setAttribute('transform', 'translate(0, ' + leftDy + ')');
-        setTimeout(() => { stickLeft.style.transition = ''; }, 110);
-        simState.yaw = 0;
-      };
-      gimbalLeft.addEventListener('pointerup', handleLeftEnd);
-      gimbalLeft.addEventListener('pointercancel', handleLeftEnd);
-
-      function handleLeftMove(e) {
-        const pt = getSvgPoint(svg, e.clientX, e.clientY);
+      function updateLeftStick(pt) {
         let dx = pt.x - 175;
         let dy = pt.y - 215;
-        const dist = Math.hypot(dx, dy);
-        if (dist > 32) {
-          dx = (dx / dist) * 32;
-          dy = (dy / dist) * 32;
+        const d = Math.hypot(dx, dy);
+        if (d > 32) {
+          dx = (dx / d) * 32;
+          dy = (dy / d) * 32;
         }
-        leftDx = dx;
-        leftDy = dy;
+        stickState.left.dx = dx;
+        stickState.left.dy = dy;
         stickLeft.setAttribute('transform', 'translate(' + dx + ',' + dy + ')');
 
+        // Throttle (dy): -32 (top, 100%) to +32 (bottom, 0%)
         simState.throttle = Math.max(0, Math.min(1, (32 - dy) / 64));
+        // Yaw (dx): -32 (left, -1) to +32 (right, +1)
         simState.yaw = Math.max(-1, Math.min(1, dx / 32));
 
-        if (simState.armed) {
+        if (simState.armed && simState.power) {
           setPropSpeed(simState.throttle);
           updateMotorAudio(true, simState.throttle);
         }
@@ -2914,46 +2934,21 @@
         if (hint) showStickHint(hint);
       }
 
-      gimbalRight.addEventListener('pointerdown', e => {
-        if (!simState.power) {
-          showStickHint('⚠️ Önce Güç Butonuna Basın!');
-          return;
-        }
-        activeRight = true;
-        gimbalRight.setPointerCapture(e.pointerId);
-        handleRightMove(e);
-      });
-
-      gimbalRight.addEventListener('pointermove', e => {
-        if (!activeRight) return;
-        handleRightMove(e);
-      });
-
-      const handleRightEnd = e => {
-        if (!activeRight) return;
-        activeRight = false;
-        try { gimbalRight.releasePointerCapture(e.pointerId); } catch(err){}
-        stickRight.style.transition = 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        stickRight.setAttribute('transform', 'translate(0, 0)');
-        setTimeout(() => { stickRight.style.transition = ''; }, 160);
-        simState.pitch = 0;
-        simState.roll = 0;
-      };
-      gimbalRight.addEventListener('pointerup', handleRightEnd);
-      gimbalRight.addEventListener('pointercancel', handleRightEnd);
-
-      function handleRightMove(e) {
-        const pt = getSvgPoint(svg, e.clientX, e.clientY);
+      function updateRightStick(pt) {
         let dx = pt.x - 385;
         let dy = pt.y - 215;
-        const dist = Math.hypot(dx, dy);
-        if (dist > 32) {
-          dx = (dx / dist) * 32;
-          dy = (dy / dist) * 32;
+        const d = Math.hypot(dx, dy);
+        if (d > 32) {
+          dx = (dx / d) * 32;
+          dy = (dy / d) * 32;
         }
+        stickState.right.dx = dx;
+        stickState.right.dy = dy;
         stickRight.setAttribute('transform', 'translate(' + dx + ',' + dy + ')');
 
+        // Pitch (dy): pushing forward (negative dy) is positive pitch (forward)
         simState.pitch = -dy / 32;
+        // Roll (dx): right is positive roll
         simState.roll = dx / 32;
 
         let hint = '';
@@ -2963,6 +2958,149 @@
         else if (simState.roll < -0.2) hint += '⬅️ Roll Sol ';
         if (hint) showStickHint(hint);
       }
+
+      // Pointerdown on SVG
+      svg.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        try { svg.setPointerCapture(e.pointerId); } catch(err){}
+
+        const pt = getSvgPoint(svg, e.clientX, e.clientY);
+
+        // 1. Check Power Button
+        if (dist(pt.x, pt.y, POWER_CENTER.x, POWER_CENTER.y) <= POWER_CENTER.radius) {
+          toggleSimPower();
+          return;
+        }
+
+        // 2. Check Switches
+        for (const sw of SWITCHES) {
+          if (dist(pt.x, pt.y, sw.x, sw.y) <= sw.radius) {
+            switchPointers[e.pointerId] = { id: sw.id, startY: pt.y, handledDrag: false };
+            toggleSimSwitch(sw.id);
+            return;
+          }
+        }
+
+        // 3. Check Left Gimbal (Sol Kol)
+        if (dist(pt.x, pt.y, GIMBAL_LEFT_CENTER.x, GIMBAL_LEFT_CENTER.y) <= GIMBAL_LEFT_CENTER.radius) {
+          if (!simState.power) {
+            showStickHint('⚠️ Önce Güç Butonuna Basın!');
+            return;
+          }
+          stickState.left.pointerId = e.pointerId;
+          stickState.left.active = true;
+          if (glowLeft) glowLeft.style.opacity = '1';
+          updateLeftStick(pt);
+          return;
+        }
+
+        // 4. Check Right Gimbal (Sağ Kol)
+        if (dist(pt.x, pt.y, GIMBAL_RIGHT_CENTER.x, GIMBAL_RIGHT_CENTER.y) <= GIMBAL_RIGHT_CENTER.radius) {
+          if (!simState.power) {
+            showStickHint('⚠️ Önce Güç Butonuna Basın!');
+            return;
+          }
+          stickState.right.pointerId = e.pointerId;
+          stickState.right.active = true;
+          if (glowRight) glowRight.style.opacity = '1';
+          updateRightStick(pt);
+          return;
+        }
+      }, { passive: false });
+
+      // Window-level Pointer Move (smooth simultaneous multi-touch tracking)
+      window.addEventListener('pointermove', e => {
+        // Left stick dragging
+        if (stickState.left.active && e.pointerId === stickState.left.pointerId) {
+          e.preventDefault();
+          const pt = getSvgPoint(svg, e.clientX, e.clientY);
+          updateLeftStick(pt);
+        }
+
+        // Right stick dragging
+        if (stickState.right.active && e.pointerId === stickState.right.pointerId) {
+          e.preventDefault();
+          const pt = getSvgPoint(svg, e.clientX, e.clientY);
+          updateRightStick(pt);
+        }
+
+        // Switch dragging
+        if (switchPointers[e.pointerId]) {
+          const sp = switchPointers[e.pointerId];
+          const pt = getSvgPoint(svg, e.clientX, e.clientY);
+          const dy = pt.y - sp.startY;
+          if (!sp.handledDrag && Math.abs(dy) > 14) {
+            sp.handledDrag = true;
+            if (sp.id === 'sa') {
+              if (dy > 0 && !simState.armed) toggleSimSwitch('sa');
+              else if (dy < 0 && simState.armed) toggleSimSwitch('sa');
+            } else if (sp.id === 'sb') {
+              if (dy < -8) { simState.mode = 0; updateModeVisuals(); playSwitchClick(); }
+              else if (dy > 8) { simState.mode = 2; updateModeVisuals(); playSwitchClick(); }
+              else { simState.mode = 1; updateModeVisuals(); playSwitchClick(); }
+            } else if (sp.id === 'sc') {
+              if (dy < -8) { simState.rate = 0; updateRateVisuals(); playSwitchClick(); }
+              else if (dy > 8) { simState.rate = 2; updateRateVisuals(); playSwitchClick(); }
+              else { simState.rate = 1; updateRateVisuals(); playSwitchClick(); }
+            } else if (sp.id === 'sd') {
+              if (dy > 0 && !simState.buzzer) toggleSimSwitch('sd');
+              else if (dy < 0 && simState.buzzer) toggleSimSwitch('sd');
+            }
+          }
+        }
+      }, { passive: false });
+
+      function handlePointerEnd(e) {
+        if (switchPointers[e.pointerId]) {
+          delete switchPointers[e.pointerId];
+        }
+
+        // Left stick release
+        if (stickState.left.active && e.pointerId === stickState.left.pointerId) {
+          stickState.left.active = false;
+          stickState.left.pointerId = null;
+          if (glowLeft) glowLeft.style.opacity = '0';
+          try { svg.releasePointerCapture(e.pointerId); } catch(err){}
+
+          // Yaw snaps back to 0, Throttle stays where left
+          stickState.left.dx = 0;
+          stickLeft.style.transition = 'transform 0.12s ease-out';
+          stickLeft.setAttribute('transform', 'translate(0, ' + stickState.left.dy + ')');
+          setTimeout(() => { stickLeft.style.transition = ''; }, 130);
+          simState.yaw = 0;
+        }
+
+        // Right stick release
+        if (stickState.right.active && e.pointerId === stickState.right.pointerId) {
+          stickState.right.active = false;
+          stickState.right.pointerId = null;
+          if (glowRight) glowRight.style.opacity = '0';
+          try { svg.releasePointerCapture(e.pointerId); } catch(err){}
+
+          // Both Pitch and Roll snap back to center (0, 0)
+          stickState.right.dx = 0;
+          stickState.right.dy = 0;
+          stickRight.style.transition = 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)';
+          stickRight.setAttribute('transform', 'translate(0, 0)');
+          setTimeout(() => { stickRight.style.transition = ''; }, 160);
+          simState.pitch = 0;
+          simState.roll = 0;
+        }
+      }
+
+      window.addEventListener('pointerup', handlePointerEnd);
+      window.addEventListener('pointercancel', handlePointerEnd);
+
+      // Fast-touch for top pill cards as well
+      ['sa', 'sb', 'sc', 'sd'].forEach(id => {
+        const card = document.getElementById('card-sw-' + id);
+        if (card) {
+          card.addEventListener('pointerdown', e => {
+            e.preventDefault();
+            toggleSimSwitch(id);
+          });
+        }
+      });
     }
 
     let lastTime = performance.now();
