@@ -475,6 +475,95 @@
       .history-step-points { font-size: 14px; gap: 6px; }
       .glider-display-box img { max-height: 380px; }
     }
+
+    /* Portal & Lock Button Styles */
+    .portal-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.09);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      color: #f1f5f9;
+      text-decoration: none;
+      font-family: var(--font-main);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .portal-nav-btn:hover {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(2, 132, 199, 0.35));
+      border-color: var(--primary);
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
+    }
+    .portal-nav-btn .portal-icon { font-size: 16px; }
+
+    .lock-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1;
+      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      user-select: none;
+    }
+    .lock-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+    }
+    .lock-btn.locked {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      border-color: #f59e0b;
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+    }
+    .nav-btn.nav-locked {
+      opacity: 0.35;
+      filter: grayscale(0.5);
+      cursor: not-allowed;
+    }
+    .tool-btn.locked {
+      background: #d97706 !important;
+      border-color: #f59e0b !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.6);
+    }
+
+    #smartboard-toast {
+      position: fixed;
+      bottom: 84px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      border: 2px solid #f59e0b;
+      color: #fef08a;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 12px 26px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(245, 158, 11, 0.3);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #smartboard-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -483,10 +572,15 @@
 
   <header>
     <div class="brand">
+      <a href="../../index.html" class="portal-nav-btn" onclick="handlePortalClick(event)" title="Loom Akademi Portalına Dön">
+        <span class="portal-icon">🏠</span>
+        <span>Loom Portalı</span>
+      </a>
       <div class="grade-badge">✈️ 1. HAFTA</div>
       <div class="brand-title">LOOM AKADEMİ • GÖKYÜZÜ MÜHENDİSLERİ <span>• TANIŞMA, HAVACILIK TARİHİ & İLK UÇUŞ</span></div>
     </div>
     <div class="header-tools">
+      <button class="tool-btn" id="btn-nav-lock" onclick="toggleSlideLock()" title="Sayfayı Kilitle / Kilidi Aç (L)">🔓</button>
       <button class="tool-btn" id="btn-sound" onclick="toggleSound()" title="Sesi Aç/Kapat">🔊</button>
       <button class="tool-btn" id="btn-notes" onclick="toggleNotes()" title="Öğretmen Notları (N)">📋</button>
       <button class="tool-btn" id="btn-overview" onclick="toggleOverview()" title="Tüm Slaytlar (O)">📑</button>
@@ -1636,12 +1730,15 @@
         SLAYT <span class="current" id="current-slide-num">1</span> / 14
       </div>
       <div style="font-size: 14px; color: var(--text-muted);">
-        İpucu: <strong>Boşluk / Sağ Ok</strong> ile ilerle, <strong>N</strong> ile öğretmen notlarını aç
+        İpucu: <strong>Boşluk / Sağ Ok</strong> ile ilerle, <strong>L</strong> ile sayfayı kilitle
       </div>
     </div>
-    <div style="display: flex; gap: 10px;">
-      <button class="nav-btn" onclick="prevSlide()">◀ Önceki</button>
-      <button class="nav-btn primary" onclick="nextSlide()">Sonraki ▶</button>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button class="nav-btn lock-btn" id="btn-slide-lock" onclick="toggleSlideLock()" title="Akıllı Tahta Kilidi: Dokunurken sayfanın kaymasını engeller">
+        <span id="lock-icon">🔓</span> <span id="lock-text">Kilit: Açık</span>
+      </button>
+      <button class="nav-btn" id="btn-prev-slide" onclick="prevSlide()">◀ Önceki</button>
+      <button class="nav-btn primary" id="btn-next-slide" onclick="nextSlide()">Sonraki ▶</button>
     </div>
   </footer>
 
@@ -1844,7 +1941,68 @@
       }
     }
 
+    /* ===== SLIDE LOCK & SMARTBOARD CONTROLS ===== */
+    let isSlideLocked = false;
+    let toastTimer = null;
+
+    function toggleSlideLock() {
+      isSlideLocked = !isSlideLocked;
+      playClickSound();
+      updateLockUI();
+      showToast(isSlideLocked 
+        ? '🔒 Sayfa Kilitlendi! Akıllı tahtada dokunurken sayfa kaymayacak.' 
+        : '🔓 Sayfa Kilidi Açıldı! Butonlarla sayfa değiştirebilirsiniz.');
+    }
+
+    function updateLockUI() {
+      const footerLockBtn = document.getElementById('btn-slide-lock');
+      const navLockBtn = document.getElementById('btn-nav-lock');
+      const lockIcon = document.getElementById('lock-icon');
+      const lockText = document.getElementById('lock-text');
+      const prevBtn = document.getElementById('btn-prev-slide');
+      const nextBtn = document.getElementById('btn-next-slide');
+
+      if (footerLockBtn) {
+        footerLockBtn.classList.toggle('locked', isSlideLocked);
+        if (lockIcon) lockIcon.textContent = isSlideLocked ? '🔒' : '🔓';
+        if (lockText) lockText.textContent = isSlideLocked ? 'Kilitli' : 'Kilit: Açık';
+      }
+      if (navLockBtn) {
+        navLockBtn.classList.toggle('locked', isSlideLocked);
+        navLockBtn.textContent = isSlideLocked ? '🔒' : '🔓';
+        navLockBtn.title = isSlideLocked ? 'Sayfa Kilitli (Açmak için dokunun)' : 'Sayfayı Kilitle (L)';
+      }
+      if (prevBtn) prevBtn.classList.toggle('nav-locked', isSlideLocked);
+      if (nextBtn) nextBtn.classList.toggle('nav-locked', isSlideLocked);
+    }
+
+    function showToast(message) {
+      let toast = document.getElementById('smartboard-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'smartboard-toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    function handlePortalClick(e) {
+      if (document.referrer && (document.referrer.includes('sunum') || document.referrer.includes('portal') || document.referrer.includes('index.html'))) {
+        e.preventDefault();
+        window.location.href = document.referrer;
+      }
+    }
+
     function nextSlide() {
+      if (isSlideLocked) {
+        showToast('🔒 Sayfa Kilitli! İlerlemek için lütfen alttaki veya üstteki kilit butonuna dokunun.');
+        return;
+      }
       // Special check for Slide 6: advance history steps first!
       if (currentSlide === 7 && !isHistoryGridView && currentHistoryStep < totalHistorySteps) {
         setHistoryStep(currentHistoryStep + 1);
@@ -1859,6 +2017,10 @@
     }
 
     function prevSlide() {
+      if (isSlideLocked) {
+        showToast('🔒 Sayfa Kilitli! Geri gitmek için lütfen alttaki veya üstteki kilit butonuna dokunun.');
+        return;
+      }
       // Special check for Slide 6: go back history steps first!
       if (currentSlide === 7 && !isHistoryGridView && currentHistoryStep > 1) {
         setHistoryStep(currentHistoryStep - 1);
@@ -1873,6 +2035,10 @@
     }
 
     function goToSlide(n) {
+      if (isSlideLocked) {
+        showToast('🔒 Sayfa Kilitli! Slayt değiştirmek için lütfen kilidi açın.');
+        return;
+      }
       currentSlide = n;
       playClickSound();
       updateSlide();
@@ -2641,6 +2807,11 @@ let kuleState = {
           e.preventDefault();
           prevSlide();
           break;
+        case 'l':
+        case 'L':
+          e.preventDefault();
+          toggleSlideLock();
+          break;
         case 'f':
         case 'F':
           e.preventDefault();
@@ -2667,21 +2838,6 @@ let kuleState = {
           break;
       }
     });
-
-    // Touch support for smart boards
-    let touchStartX = 0;
-    window.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    window.addEventListener('touchend', (e) => {
-      const touchEndX = e.changedTouches[0].screenX;
-      const diff = touchEndX - touchStartX;
-      if (Math.abs(diff) > 60) {
-        if (diff < 0) nextSlide();
-        else prevSlide();
-      }
-    }, { passive: true });
 
     // Window load init
     window.addEventListener('DOMContentLoaded', () => {
