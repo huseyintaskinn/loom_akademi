@@ -564,9 +564,27 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+  
+    /* ===== AKILLI TAHTA KORUMASI (Uzun Basma ve Sağ Tık Menüsü Engelleme) ===== */
+    * {
+      -webkit-touch-callout: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+    }
+    body {
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+    }
+    img:not([draggable="true"]) {
+      -webkit-user-drag: none;
+      user-drag: none;
+      -webkit-touch-callout: none;
+    }
+
   </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
   <div id="progress-track"><div id="progress-fill"></div></div>
 
@@ -1776,6 +1794,33 @@
   </div>
 
   <script>
+
+    /* ===== AKILLI TAHTA KORUMASI: SAĞ TIK VE UZUN BASMA (İNCELE) MENÜSÜNÜ ENGELLEME ===== */
+    window.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }, { capture: true, passive: false });
+
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }, { capture: true, passive: false });
+
+    // F12 ve İncele (Inspect) kısayollarını engelleme
+    window.addEventListener('keydown', function (e) {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) ||
+        (e.ctrlKey && ['u', 'U', 's', 'S'].includes(e.key))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    }, { capture: true });
+
     let currentSlide = 1;
     const totalSlides = 14;
     let stampCounter = 0;
