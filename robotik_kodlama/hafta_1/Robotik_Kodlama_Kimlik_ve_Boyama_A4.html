@@ -447,9 +447,22 @@
       height: 16px;
       margin-bottom: 1px;
     }
+  
+    * {
+      -webkit-touch-callout: none !important;
+    }
+    body {
+      -webkit-user-select: none !important;
+      user-select: none !important;
+    }
+    img {
+      -webkit-user-drag: none;
+      user-drag: none;
+    }
+    
   </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
   <!-- Print Button (Hidden when printing) -->
   <div class="no-print-bar" onclick="window.print()">
@@ -693,6 +706,14 @@
     </div>
 
   </div>
+
+
+  <script>
+    window.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      return false;
+    }, { capture: true, passive: false });
+  </script>
 
 </body>
 </html>
