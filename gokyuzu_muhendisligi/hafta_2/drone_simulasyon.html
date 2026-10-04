@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Loom Akademi • BetaFPV Drone Uçuş Simülatörü</title>
+  <style>
+    :root {
+      --primary: #38bdf8;
+      --primary-light: #7dd3fc;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --bg-dark: #090e1a;
+      --sunny-yellow: #fbbf24;
+      --emerald-green: #34d399;
+      --candy-red: #fb7185;
+      --cute-purple: #c084fc;
+      --font-main: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    /* Global Reset & Smartboard/Tablet Protection */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -webkit-touch-callout: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #090e1a;
+      color: #ffffff;
+      font-family: var(--font-main);
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+      touch-action: none;
+    }
+
+    /* App Shell */
+    #sim-app {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Top Navigation Header */
+    #sim-header {
+      height: 50px;
+      min-height: 50px;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+    }
+    .sim-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 15.5px;
+      letter-spacing: 0.5px;
+    }
+    .sim-brand span {
+      color: var(--sunny-yellow);
+      font-weight: 700;
+      font-size: 13.5px;
+    }
+    .sim-badge {
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #042f2e;
+      font-size: 11.5px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-action {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+    .btn-action.active {
+      background: var(--primary);
+      color: #042f2e;
+      border-color: var(--primary);
+    }
+    .btn-action.reset-btn {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+    .btn-action.reset-btn:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    /* Main Container */
+    .sim-container {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+      padding: 10px;
+      gap: 12px;
+      background: radial-gradient(circle at 50% 50%, #111827 0%, #090e1a 100%);
+    }
+
+    /* Left / Top Col: Gökyüzü */
+    .sim-left-col {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Sky Area */
+    .sim-sky {
+      width: 100%;
+      height: 100%;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #1e3a8a 0%, #0284c7 30%, #38bdf8 65%, #bae6fd 90%, #dbeafe 100%);
+      position: relative;
+      overflow: hidden;
+      perspective: 700px;
+    }
+    .sim-sun {
+      position: absolute;
+      top: 20px;
+      right: 28px;
+      width: 44px;
+      height: 44px;
+      background: radial-gradient(circle, #fef08a 20%, #facc15 70%, rgba(250, 204, 21, 0) 100%);
+      border-radius: 50%;
+      filter: drop-shadow(0 0 12px #fde047);
+      pointer-events: none;
+    }
+    .sim-cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 50px;
+      filter: blur(1px);
+      pointer-events: none;
+    }
+    .sim-cloud::before, .sim-cloud::after {
+      content: '';
+      position: absolute;
+      background: inherit;
+      border-radius: 50%;
+    }
+    .sim-c1 {
+      width: 120px; height: 36px; top: 38px; left: 15%;
+      animation: cloudDrift 42s linear infinite;
+    }
+    .sim-c1::before { width: 50px; height: 50px; top: -20px; left: 18px; }
+    .sim-c1::after { width: 38px; height: 38px; top: -14px; left: 55px; }
+
+    .sim-c2 {
+      width: 160px; height: 44px; top: 85px; left: 60%;
+      animation: cloudDrift 55s linear infinite -18s;
+      opacity: 0.85;
+    }
+    .sim-c2::before { width: 65px; height: 65px; top: -28px; left: 24px; }
+    .sim-c2::after { width: 50px; height: 50px; top: -18px; left: 80px; }
+
+    .sim-c3 {
+      width: 90px; height: 28px; top: 130px; left: -100px;
+      animation: cloudDrift 35s linear infinite -5s;
+      opacity: 0.7;
+    }
+    .sim-c3::before { width: 38px; height: 38px; top: -16px; left: 14px; }
+    .sim-c3::after { width: 30px; height: 30px; top: -10px; left: 45px; }
+
+    @keyframes cloudDrift {
+      from { transform: translateX(-150px); }
+      to { transform: translateX(1100px); }
+    }
+
+    /* Ground & Runway */
+    .sim-ground {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100px;
+      background: linear-gradient(180deg, #15803d 0%, #166534 50%, #14532d 100%);
+      transform-origin: bottom center;
+      transform: rotateX(42deg);
+      border-top: 3px solid #22c55e;
+      box-shadow: inset 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+    .sim-runway {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 190px;
+      height: 100%;
+      background: #1e293b;
+      border-left: 3px dashed #facc15;
+      border-right: 3px dashed #facc15;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sim-helipad-ring {
+      width: 64px;
+      height: 64px;
+      border: 3px solid #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Drone Shadow & Wrap */
+    .sim-drone-shadow {
+      position: absolute;
+      bottom: 22px;
+      left: calc(50% - 45px);
+      width: 90px;
+      height: 22px;
+      background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 75%);
+      border-radius: 50%;
+      pointer-events: none;
+      transition: transform 0.08s ease-out, opacity 0.08s ease-out;
+    }
+    .sim-drone-wrap {
+      position: absolute;
+      bottom: 45px;
+      left: calc(50% - 65px);
+      width: 130px;
+      height: 91px;
+      pointer-events: none;
+      transform-origin: center center;
+      will-change: transform, bottom, left;
+      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+    }
+
+    /* Spinning Blades Animation */
+    @keyframes spinBladeCW {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes spinBladeCCW {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
+    }
+    .prop-blade {
+      animation: spinBladeCW 0.07s linear infinite;
+    }
+    .prop-blade.ccw {
+      animation: spinBladeCCW 0.07s linear infinite;
+    }
+    .prop-blade.stopped {
+      animation: none !important;
+      opacity: 0.7;
+    }
+
+    /* FPV HUD Overlay */
+    .sim-hud-overlay {
+      position: absolute;
+      inset: 0;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: #00ffcc;
+      text-shadow: 0 0 4px rgba(0, 255, 204, 0.6), 0 1px 3px rgba(0, 0, 0, 0.9);
+      z-index: 10;
+    }
+    .hud-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .hud-badge {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(0, 255, 204, 0.4);
+      padding: 3px 8px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+    .hud-badge.armed {
+      border-color: #22c55e;
+      color: #22c55e;
+      text-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
+      animation: pulseArmed 1s infinite alternate;
+    }
+    @keyframes pulseArmed {
+      from { opacity: 0.8; }
+      to { opacity: 1; }
+    }
+    .hud-badge.disarmed {
+      border-color: #ef4444;
+      color: #ef4444;
+      text-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
+    }
+
+    /* Artificial Horizon Crosshair */
+    .hud-center-crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      height: 60px;
+      pointer-events: none;
+      transition: transform 0.08s ease-out;
+    }
+    .hud-crosshair-h {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1.5px;
+      background: rgba(0, 255, 204, 0.55);
+    }
+    .hud-crosshair-v {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1.5px;
+      height: 100%;
+      background: rgba(0, 255, 204, 0.55);
+    }
+    .hud-ladder-line {
+      position: absolute;
+      left: 30%;
+      width: 40%;
+      height: 1.5px;
+      background: rgba(0, 255, 204, 0.4);
+    }
+    .hud-ladder-line.top { top: 22%; }
+    .hud-ladder-line.bot { bottom: 22%; }
+
+    /* Bottom Telemetry Bar */
+    .hud-bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 5px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(4px);
+    }
+    .hud-tele-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12.5px;
+    }
+    .hud-label { color: #94a3b8; font-weight: 700; font-size: 11px; }
+    .hud-val { color: #ffffff; font-weight: 900; }
+    .hud-thr-track {
+      width: 45px;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-left: 4px;
+    }
+    .hud-thr-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      transition: width 0.05s ease-out;
+    }
+    .hud-status-msg {
+      font-size: 12px;
+      text-align: center;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.65);
+      border-radius: 6px;
+      color: var(--sunny-yellow);
+      font-weight: 700;
+    }
+
+    /* Right / Bottom Col: Kumanda */
+    .sim-right-col {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.85);
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 8px 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Switches Panel */
+    .sim-switches-panel {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+    .sw-pill-card {
+      background: rgba(30, 41, 65, 0.9);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 4px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: none;
+      transition: all 0.15s ease;
+    }
+    .sw-pill-card:active {
+      transform: scale(0.96);
+      background: rgba(56, 189, 248, 0.25);
+    }
+    .sw-code {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+    .sw-title {
+      font-size: 10px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin: 1px 0;
+    }
+    .sw-val {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .sw-val.on { color: #22c55e; }
+    .sw-val.off { color: #ef4444; }
+
+    /* Controller Wrapper */
+    .sim-controller-wrapper {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .sim-ctrl-svg {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.6));
+      touch-action: none;
+    }
+
+    .sim-stick-action-hint {
+      position: absolute;
+      top: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--primary);
+      color: #38bdf8;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 12px;
+      border-radius: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 20;
+      white-space: nowrap;
+    }
+
+    /* Pilot Guide Steps */
+    .sim-pilot-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 11.5px;
+      color: #cbd5e1;
+      width: 100%;
+      white-space: nowrap;
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #0f172a;
+      font-weight: 900;
+      font-size: 10px;
+      margin-right: 3px;
+    }
+    .step-arrow { color: var(--sunny-yellow); font-weight: 900; }
+
+    /* =========================================================
+       RESPONSIVE MODES: LANDSCAPE vs PORTRAIT (TABLET)
+       ========================================================= */
+
+    /* 1. YATAY (LANDSCAPE): 2 SÜTUN (Solda Gökyüzü, Sağda Kumanda) */
+    @media (orientation: landscape) {
+      .sim-container {
+        flex-direction: row;
+      }
+      .sim-left-col {
+        flex: 1.15;
+        height: 100%;
+      }
+      .sim-right-col {
+        flex: 0.85;
+        height: 100%;
+      }
+    }
+
+    /* 2. DİKEY (PORTRAIT): 2 SATIR (Üstte Gökyüzü, Altta Kumanda) */
+    @media (orientation: portrait) {
+      .sim-container {
+        flex-direction: column; /* Dikey sıralama: Kumanda aşağıda, Drone yukarıda */
+        padding: 6px;
+        gap: 8px;
+      }
+      .sim-left-col {
+        flex: none;
+        height: 43vh; /* Gökyüzü ve drone ekranın üst yarısında */
+        width: 100%;
+      }
+      .sim-right-col {
+        flex: 1; /* Kumanda ekranın alt yarısında (başparmak ergonomisi) */
+        width: 100%;
+        height: calc(57vh - 66px);
+        padding: 6px 8px;
+      }
+      .sim-switches-panel {
+        gap: 6px;
+      }
+      .sw-pill-card {
+        padding: 3px 6px;
+      }
+      .sw-code { font-size: 10px; }
+      .sw-title { font-size: 9px; }
+      .sw-val { font-size: 10.5px; }
+      .sim-pilot-steps {
+        font-size: 10.5px;
+        padding: 3px 6px;
+      }
+      .sim-brand span {
+        display: none; /* Dikeyde yer kazan */
+      }
+    }
+
+    /* Pulse Glow Animation */
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 6px #00f0ff); }
+      50% { filter: drop-shadow(0 0 16px #00f0ff); }
+    }
+    .pulse-pwr {
+      animation: pulseGlow 1.8s infinite ease-in-out;
+    }
+
+    /* Help Modal */
+    #help-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 14, 26, 0.94);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #help-modal.open {
+      display: flex;
+    }
+    .help-card {
+      background: rgba(22, 31, 54, 0.98);
+      border: 2px solid var(--primary);
+      border-radius: 18px;
+      max-width: 600px;
+      width: 100%;
+      padding: 22px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+    .help-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .help-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+    .help-item strong { color: var(--sunny-yellow); display: block; margin-bottom: 2px; }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <div id="sim-app">
+    <!-- Top Header -->
+    <header id="sim-header">
+      <div class="sim-brand">
+        <span class="sim-badge">BETAFPV SIM</span>
+        <span>Loom Akademi • Drone Uçuş Simülatörü</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-action reset-btn" onclick="resetDroneSim()" title="Drone'u Başlangıç Konumuna Getir">
+          <span>🔄</span> Sıfırla
+        </button>
+        <button class="btn-action" id="btn-sound" onclick="toggleSound()" title="Sesi Aç / Kapat">
+          <span>🔊</span> <span id="sound-label">Ses Açık</span>
+        </button>
+        <button class="btn-action" onclick="toggleHelp(true)" title="Pilot Rehberini Aç">
+          <span>❓</span> Rehber
+        </button>
+        <button class="btn-action" onclick="toggleFullscreen()" title="Tam Ekran Modu">
+          <span>⛶</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Simulator Area -->
+    <main class="sim-container">
+
+      <!-- GÖKYÜZÜ / DRONE & FPV HUD -->
+      <section class="sim-left-col">
+        <div class="sim-sky" id="sim-sky">
+          <div class="sim-sun"></div>
+          <div class="sim-cloud sim-c1"></div>
+          <div class="sim-cloud sim-c2"></div>
+          <div class="sim-cloud sim-c3"></div>
+
+          <!-- Runway -->
+          <div class="sim-ground">
+            <div class="sim-runway">
+              <div class="sim-helipad-ring">H</div>
+            </div>
+          </div>
+
+          <!-- Drone Shadow -->
+          <div class="sim-drone-shadow" id="sim-drone-shadow"></div>
+
+          <!-- 3D Drone Model -->
+          <div class="sim-drone-wrap" id="sim-drone">
+            <svg id="sim-drone-svg" viewBox="0 0 200 140" width="130" height="91">
+                  <!-- Propeller Ducts (Meteor Whoop Frames) -->
+                  <circle cx="44" cy="38" r="28" fill="rgba(15,23,42,0.6)" stroke="#38bdf8" stroke-width="3" opacity="0.9"/>
+                  <circle cx="156" cy="38" r="28" fill="rgba(15,23,42,0.6)" stroke="#38bdf8" stroke-width="3" opacity="0.9"/>
+                  <circle cx="44" cy="102" r="28" fill="rgba(15,23,42,0.6)" stroke="#38bdf8" stroke-width="3" opacity="0.9"/>
+                  <circle cx="156" cy="102" r="28" fill="rgba(15,23,42,0.6)" stroke="#38bdf8" stroke-width="3" opacity="0.9"/>
+                  
+                  <!-- Carbon Fiber X-Arms -->
+                  <line x1="68" y1="58" x2="44" y2="38" stroke="#1e293b" stroke-width="6" stroke-linecap="round"/>
+                  <line x1="132" y1="58" x2="156" y2="38" stroke="#1e293b" stroke-width="6" stroke-linecap="round"/>
+                  <line x1="68" y1="82" x2="44" y2="102" stroke="#1e293b" stroke-width="6" stroke-linecap="round"/>
+                  <line x1="132" y1="82" x2="156" y2="102" stroke="#1e293b" stroke-width="6" stroke-linecap="round"/>
+                  
+                  <!-- Whoop Canopy / Fuselage -->
+                  <path d="M 64 68 C 64 50, 78 44, 100 44 C 122 44, 136 50, 136 68 C 136 86, 122 92, 100 92 C 78 92, 64 86, 64 68 Z"
+                        fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+                  <path d="M 85 45 L 100 45 L 115 45 L 110 91 L 100 91 L 90 91 Z" fill="#fbbf24" opacity="0.9"/>
+                  
+                  <!-- FPV Camera Mount & Lens -->
+                  <circle cx="100" cy="46" r="9" fill="#0f172a" stroke="#ffffff" stroke-width="1.8"/>
+                  <circle cx="100" cy="46" r="5" fill="#38bdf8"/>
+                  <circle cx="98" cy="44" r="1.5" fill="#ffffff"/>
+                  
+                  <!-- Rear Status LED -->
+                  <rect id="sim-drone-led" x="92" y="85" width="16" height="5" rx="2.5" fill="#ef4444"/>
+                  
+                  <!-- Motor Bells -->
+                  <circle cx="44" cy="38" r="9" fill="#334155" stroke="#94a3b8" stroke-width="1.5"/>
+                  <circle cx="156" cy="38" r="9" fill="#334155" stroke="#94a3b8" stroke-width="1.5"/>
+                  <circle cx="44" cy="102" r="9" fill="#334155" stroke="#94a3b8" stroke-width="1.5"/>
+                  <circle cx="156" cy="102" r="9" fill="#334155" stroke="#94a3b8" stroke-width="1.5"/>
+                  
+                  <!-- Blurry Spinning Propellers -->
+                  <g class="prop-blade stopped" id="prop1" style="transform-origin: 44px 38px;">
+                    <ellipse cx="44" cy="38" rx="24" ry="5" fill="rgba(56,189,248,0.7)"/>
+                    <ellipse cx="44" cy="38" rx="5" ry="24" fill="rgba(56,189,248,0.7)"/>
+                  </g>
+                  <g class="prop-blade ccw stopped" id="prop2" style="transform-origin: 156px 38px;">
+                    <ellipse cx="156" cy="38" rx="24" ry="5" fill="rgba(56,189,248,0.7)"/>
+                    <ellipse cx="156" cy="38" rx="5" ry="24" fill="rgba(56,189,248,0.7)"/>
+                  </g>
+                  <g class="prop-blade ccw stopped" id="prop3" style="transform-origin: 44px 102px;">
+                    <ellipse cx="44" cy="102" rx="24" ry="5" fill="rgba(56,189,248,0.7)"/>
+                    <ellipse cx="44" cy="102" rx="5" ry="24" fill="rgba(56,189,248,0.7)"/>
+                  </g>
+                  <g class="prop-blade stopped" id="prop4" style="transform-origin: 156px 102px;">
+                    <ellipse cx="156" cy="102" rx="24" ry="5" fill="rgba(56,189,248,0.7)"/>
+                    <ellipse cx="156" cy="102" rx="5" ry="24" fill="rgba(56,189,248,0.7)"/>
+                  </g>
+                </svg>
+          </div>
+
+          <!-- FPV HUD -->
+          <div class="sim-hud-overlay">
+            <div class="hud-top-bar">
+              <div class="hud-badge disarmed" id="hud-arm-badge">🔒 DISARMED</div>
+              <div class="hud-badge mode" id="hud-mode-badge">ANGLE</div>
+              <div class="hud-badge rate" id="hud-rate-badge">%70 NORMAL</div>
+              <div class="hud-badge batt" id="hud-batt"><span style="color:#22c55e">🔋</span> 4.18V</div>
+            </div>
+
+            <!-- Horizon Crosshair -->
+            <div class="hud-center-crosshair" id="hud-crosshair">
+              <div class="hud-crosshair-h"></div>
+              <div class="hud-crosshair-v"></div>
+              <div class="hud-ladder-line top"></div>
+              <div class="hud-ladder-line bot"></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <div class="hud-bottom-bar">
+                <div class="hud-tele-item">
+                  <span class="hud-label">GAZ:</span>
+                  <span class="hud-val" id="hud-val-thr">0%</span>
+                  <div class="hud-thr-track">
+                    <div class="hud-thr-fill" id="hud-thr-fill"></div>
+                  </div>
+                </div>
+                <div class="hud-tele-item">
+                  <span class="hud-label">İRTİFA:</span>
+                  <span class="hud-val" id="hud-val-alt">0.0 m</span>
+                </div>
+                <div class="hud-tele-item">
+                  <span class="hud-label">HIZ:</span>
+                  <span class="hud-val" id="hud-val-speed">0 km/s</span>
+                </div>
+                <div class="hud-tele-item" id="hud-buzzer-alert" style="display:none; color: #ef4444; font-weight:800;">
+                  📢 BUZZER AKTİF
+                </div>
+              </div>
+
+              <div class="hud-status-msg" id="hud-status-msg">
+                ⚠️ Uçuşa başlamak için kumandadaki ⏻ GÜÇ butonuna dokunun!
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GERÇEK BETAFPV LITERADIO 2 SIM KUMANDA -->
+      <section class="sim-right-col">
+        <!-- Switches Panel -->
+        <div class="sim-switches-panel">
+          <div class="sw-pill-card" id="card-sw-sa" onclick="toggleSimSwitch('sa')">
+            <span class="sw-code">SA</span>
+            <span class="sw-title">ARM</span>
+            <span class="sw-val off" id="pill-sa-val">KİLİTLİ</span>
+          </div>
+          <div class="sw-pill-card" id="card-sw-sb" onclick="toggleSimSwitch('sb')">
+            <span class="sw-code">SB</span>
+            <span class="sw-title">MOD</span>
+            <span class="sw-val" id="pill-sb-val">ANGLE</span>
+          </div>
+          <div class="sw-pill-card" id="card-sw-sc" onclick="toggleSimSwitch('sc')">
+            <span class="sw-code">SC</span>
+            <span class="sw-title">HIZ</span>
+            <span class="sw-val" id="pill-sc-val">%70</span>
+          </div>
+          <div class="sw-pill-card" id="card-sw-sd" onclick="toggleSimSwitch('sd')">
+            <span class="sw-code">SD</span>
+            <span class="sw-title">BUZZER</span>
+            <span class="sw-val off" id="pill-sd-val">KAPALI</span>
+          </div>
+        </div>
+
+        <!-- SVG Controller -->
+        <div class="sim-controller-wrapper">
+          <div class="sim-stick-action-hint" id="sim-active-label"></div>
+          <svg id="betafpv-svg-ctrl" viewBox="0 0 560 420" width="100%" height="100%" class="sim-ctrl-svg" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Soft ambient shadow -->
+    <filter id="ctrl-drop-shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+    
+    <!-- Gimbal Well Deep Shadow -->
+    <radialGradient id="gimbal-well-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="65%" stop-color="#14171d"/>
+      <stop offset="90%" stop-color="#0a0c10"/>
+      <stop offset="100%" stop-color="#2d3340"/>
+    </radialGradient>
+
+    <!-- Plastic Body Gradient -->
+    <linearGradient id="body-surface" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#f8fafc"/>
+      <stop offset="70%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+
+    <!-- Chrome/Metallic Lever Gradient -->
+    <linearGradient id="metal-chrome" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="20%" stop-color="#f8fafc"/>
+      <stop offset="45%" stop-color="#cbd5e1"/>
+      <stop offset="70%" stop-color="#64748b"/>
+      <stop offset="90%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+
+    <!-- Stick Knob Metallic Top Face -->
+    <radialGradient id="stick-knob-top" cx="45%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#e2e8f0"/>
+      <stop offset="85%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </radialGradient>
+
+    <!-- Power LED Cyan Glow -->
+    <filter id="pwr-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- ================= CONTROLLER SHADOW ================= -->
+  <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+        fill="rgba(0,0,0,0.38)" filter="url(#ctrl-drop-shadow)" transform="translate(0, 8)"/>
+
+  <!-- ================= CONTROLLER MAIN BODY ================= -->
+  <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+        fill="url(#body-surface)" stroke="#cbd5e1" stroke-width="2"/>
+
+  <!-- Ergonomic Side Highlights & Contours -->
+  <path d="M 125 155 C 98 220, 96 300, 126 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 435 155 C 462 220, 464 300, 434 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Top Center Bevel / Scoop Panel -->
+  <path d="M 215 108 C 235 120, 255 122, 280 122 C 305 122, 325 120, 345 108 C 356 101, 362 94, 370 88 C 310 85, 250 85, 190 88 C 198 94, 204 101, 215 108 Z"
+        fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>
+
+  <!-- BETAFPV Feather Logo & Text -->
+  <g transform="translate(244, 94)">
+    <path d="M 14 0 C 11 6, 7 9, 0 11 C 5 11, 10 9, 13 6 C 14 4, 15 2, 14 0 Z" fill="#94a3b8"/>
+    <path d="M 12 4 C 8 8, 4 9, 0 11 C 4 10, 8 8, 10 5 Z" fill="#64748b"/>
+    <text x="22" y="10" font-family="'Segoe UI', 'Outfit', sans-serif" font-weight="900" font-size="11.5" letter-spacing="2" fill="#94a3b8">BETAFPV</text>
+  </g>
+
+  <!-- ================= TOP SWITCHES (SA, SB, SC, SD) ================= -->
+  <!-- Switch SA (Sol Dış: Arm/Disarm - 2 pos) -->
+  <g id="svg-sw-sa" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sa')">
+    <title>Switch A (SA): Motor Kilidi (Arm / Disarm)</title>
+    <ellipse cx="128" cy="92" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+    <ellipse cx="128" cy="91" rx="4.2" ry="2.2" fill="#64748b"/>
+    <text x="128" y="105" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#0284c7" letter-spacing="0.5">SA</text>
+    <g id="svg-lever-sa" transform="translate(128, 92) rotate(-22)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <line x1="0" y1="0" x2="0" y2="-17" stroke="url(#metal-chrome)" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="0" y="-17" r="3" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+    </g>
+    <circle cx="128" cy="84" r="28" fill="transparent" style="touch-action: none;"/>
+  </g>
+
+  <!-- Switch SB (Sol İç: Uçuş Modu - 3 pos) -->
+  <g id="svg-sw-sb" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sb')">
+    <title>Switch B (SB): Uçuş Modu (Angle / Horizon / Acro)</title>
+    <ellipse cx="160" cy="84" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+    <ellipse cx="160" cy="83" rx="4.2" ry="2.2" fill="#64748b"/>
+    <text x="160" y="97" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#d97706" letter-spacing="0.5">SB</text>
+    <g id="svg-lever-sb" transform="translate(160, 84) rotate(-20)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <line x1="0" y1="0" x2="0" y2="-20" stroke="url(#metal-chrome)" stroke-width="3.8" stroke-linecap="round"/>
+      <circle cx="0" y="-20" r="3.2" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+    </g>
+    <circle cx="160" cy="74" r="28" fill="transparent" style="touch-action: none;"/>
+  </g>
+
+  <!-- Switch SC (Sağ İç: Hız Seviyesi - 3 pos) -->
+  <g id="svg-sw-sc" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sc')">
+    <title>Switch C (SC): Hız Kademesi (%40 / %70 / %100)</title>
+    <ellipse cx="400" cy="84" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+    <ellipse cx="400" cy="83" rx="4.2" ry="2.2" fill="#64748b"/>
+    <text x="400" y="97" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#059669" letter-spacing="0.5">SC</text>
+    <g id="svg-lever-sc" transform="translate(400, 84) rotate(0)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <line x1="0" y1="0" x2="0" y2="-20" stroke="url(#metal-chrome)" stroke-width="3.8" stroke-linecap="round"/>
+      <circle cx="0" y="-20" r="3.2" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+    </g>
+    <circle cx="400" cy="74" r="28" fill="transparent" style="touch-action: none;"/>
+  </g>
+
+  <!-- Switch SD (Sağ Dış: Turtle & Buzzer - 2 pos) -->
+  <g id="svg-sw-sd" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sd')">
+    <title>Switch D (SD): Kaplumbağa Modu & Buzzer</title>
+    <ellipse cx="432" cy="92" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+    <ellipse cx="432" cy="91" rx="4.2" ry="2.2" fill="#64748b"/>
+    <text x="432" y="105" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#7c3aed" letter-spacing="0.5">SD</text>
+    <g id="svg-lever-sd" transform="translate(432, 92) rotate(22)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <line x1="0" y1="0" x2="0" y2="-17" stroke="url(#metal-chrome)" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="0" y="-17" r="3" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+    </g>
+    <circle cx="432" cy="84" r="28" fill="transparent" style="touch-action: none;"/>
+  </g>
+
+  <!-- ================= GIMBAL LEFT (Sol Kol: Throttle / Yaw) ================= -->
+  <g id="gimbal-left-group" style="touch-action: none;">
+    <circle cx="175" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+    <circle cx="175" cy="215" r="52" fill="url(#gimbal-well-grad)" stroke="#334155" stroke-width="2"/>
+    <rect x="141" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+    <rect x="146" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+    <circle cx="147" cy="187" r="1.8" fill="#475569"/>
+    <circle cx="203" cy="187" r="1.8" fill="#475569"/>
+    <circle cx="147" cy="243" r="1.8" fill="#475569"/>
+    <circle cx="203" cy="243" r="1.8" fill="#475569"/>
+
+    <!-- Moveable Left Stick Assembly -->
+    <g id="svg-stick-left" style="cursor: grab; touch-action: none;" transform="translate(0, 0)">
+      <circle id="stick-glow-left" cx="175" cy="215" r="26" fill="none" stroke="#00f0ff" stroke-width="2.5" opacity="0" style="transition: opacity 0.15s ease; filter: drop-shadow(0 0 10px #00f0ff); pointer-events: none;"/>
+      <circle cx="175" cy="215" r="26" fill="transparent"/>
+      <circle cx="175" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+      <circle cx="175" cy="215" r="15" fill="url(#metal-chrome)" stroke="#334155" stroke-width="1"/>
+      <circle cx="175" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+      <circle cx="175" cy="215" r="11" fill="url(#stick-knob-top)"/>
+      <circle cx="175" cy="215" r="7" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="2 1.5"/>
+      <circle cx="175" cy="215" r="3" fill="#475569"/>
+    </g>
+    <text x="175" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#38bdf8" letter-spacing="0.5">⬆️ SOL KOL (Gaz &amp; Yaw)</text>
+  </g>
+
+  <!-- ================= CENTER POWER BUTTON ================= -->
+  <g id="svg-power-group" style="cursor: pointer; touch-action: none;" onclick="toggleSimPower()">
+    <title>Açma / Kapama Güç Tuşu (Tıklayın)</title>
+    <circle cx="280" cy="232" r="26" fill="transparent" style="touch-action: none;"/>
+    <circle cx="280" cy="232" r="19" fill="#14171e" stroke="#334155" stroke-width="1.5"/>
+    <!-- Glowing Halo LED Ring -->
+    <circle id="svg-pwr-led" cx="280" cy="232" r="14.5" fill="none" stroke="#475569" stroke-width="2.2" style="transition: all 0.3s ease;"/>
+    <circle id="svg-pwr-core" cx="280" cy="232" r="11.5" fill="#090b0e" stroke="#1e293b" stroke-width="1"/>
+    <!-- Power Icon -->
+    <path id="svg-pwr-icon" d="M 276 230 A 5.5 5.5 0 1 0 284 230 M 280 226 L 280 231"
+          fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 0.3s ease;"/>
+    <text id="svg-pwr-label" x="280" y="263" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="9.5" font-weight="800" fill="#94a3b8" letter-spacing="1">GÜÇ</text>
+  </g>
+
+  <!-- ================= GIMBAL RIGHT (Sağ Kol: Pitch / Roll) ================= -->
+  <g id="gimbal-right-group" style="touch-action: none;">
+    <circle cx="385" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+    <circle cx="385" cy="215" r="52" fill="url(#gimbal-well-grad)" stroke="#334155" stroke-width="2"/>
+    <rect x="351" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+    <rect x="356" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+    <circle cx="357" cy="187" r="1.8" fill="#475569"/>
+    <circle cx="413" cy="187" r="1.8" fill="#475569"/>
+    <circle cx="357" cy="243" r="1.8" fill="#475569"/>
+    <circle cx="413" cy="243" r="1.8" fill="#475569"/>
+
+    <!-- Moveable Right Stick Assembly -->
+    <g id="svg-stick-right" style="cursor: grab; touch-action: none;" transform="translate(0, 0)">
+      <circle id="stick-glow-right" cx="385" cy="215" r="26" fill="none" stroke="#fbbf24" stroke-width="2.5" opacity="0" style="transition: opacity 0.15s ease; filter: drop-shadow(0 0 10px #fbbf24); pointer-events: none;"/>
+      <circle cx="385" cy="215" r="26" fill="transparent"/>
+      <circle cx="385" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+      <circle cx="385" cy="215" r="15" fill="url(#metal-chrome)" stroke="#334155" stroke-width="1"/>
+      <circle cx="385" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+      <circle cx="385" cy="215" r="11" fill="url(#stick-knob-top)"/>
+      <circle cx="385" cy="215" r="7" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="2 1.5"/>
+      <circle cx="385" cy="215" r="3" fill="#475569"/>
+    <text x="385" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#fbbf24" letter-spacing="0.5">🕹️ SAĞ KOL (Pitch &amp; Roll)</text>
+  </g>
+</svg>
+        </div>
+
+        <!-- Pilot Guide -->
+        <div class="sim-pilot-steps">
+          <span><span class="step-num">1</span> ⏻ Güç Aç</span>
+          <span class="step-arrow">➔</span>
+          <span><span class="step-num">2</span> [SA] Arm Et</span>
+          <span class="step-arrow">➔</span>
+          <span><span class="step-num">3</span> [Sol Kol] Gaz Ver</span>
+          <span class="step-arrow">➔</span>
+          <span><span class="step-num">4</span> [Sağ Kol] Uçur!</span>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Help / Pilot Rehberi Modal -->
+  <div id="help-modal" onclick="if(event.target===this) toggleHelp(false)">
+    <div class="help-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(255,255,255,0.15); padding-bottom: 8px;">
+        <h3 style="font-size: 18px; color: var(--sunny-yellow); font-weight: 800; display:flex; align-items:center; gap:8px;">
+          <span>🛸</span> Pilot Kullanım Kılavuzu
+        </h3>
+        <button class="btn-action" style="padding: 4px 10px;" onclick="toggleHelp(false)">✕</button>
+      </div>
+
+      <div class="help-grid">
+        <div class="help-item">
+          <strong>🕹️ Sol Kol (Gaz &amp; Yaw):</strong>
+          Sol başparmağınızla yukarı iterek yükselin, aşağı çekerek alçalın. Sola/sağa iterek drone'un kendi ekseninde dönmesini sağlayın.
+        </div>
+        <div class="help-item">
+          <strong>🕹️ Sağ Kol (Pitch &amp; Roll):</strong>
+          Sağ başparmağınızla ileri/geri iterek ileri veya geri uçun. Sola/sağa iterek yana kaydırın.
+        </div>
+        <div class="help-item">
+          <strong>🔴 SA Şalteri (Arm / Kilit):</strong>
+          Motorları devreye sokar veya kilitler. Uçuş öncesi kumandayı açıp SA'ya dokunun.
+        </div>
+        <div class="help-item">
+          <strong>🟡 SB (Uçuş Modu):</strong>
+          ANGLE: Otomatik yatay dengeleme (yeni başlayanlar için ideal). HORIZON / ACRO: Serbest uçuş.
+        </div>
+        <div class="help-item">
+          <strong>🟢 SC (Hız Kademesi):</strong>
+          %40 (Hassas iç mekan), %70 (Dengeli normal), %100 (Hızlı yarış hızı).
+        </div>
+        <div class="help-item">
+          <strong>🟣 SD (Buzzer &amp; Kaplumbağa):</strong>
+          Drone ters düşerse kaplumbağa moduyla otomatik düzeltir ve sesli bip uyarısı verir.
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 10px;">
+        <button class="btn-action active" style="width: 100%; justify-content: center; font-size: 14px; padding: 10px;" onclick="toggleHelp(false)">
+          Anladım, Uçuşa Başla! 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===== SMARTBOARD & TABLET KORUMASI ===== */
+    ['contextmenu', 'selectstart', 'dragstart', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+      window.addEventListener(evt, e => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }, { capture: true, passive: false });
+      document.addEventListener(evt, e => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }, { capture: true, passive: false });
+    });
+
+    window.addEventListener('resize', () => window.scrollTo(0, 0));
+    window.addEventListener('orientationchange', () => {
+      window.scrollTo(0, 0);
+      setTimeout(() => window.scrollTo(0, 0), 100);
+    });
+
+    window.addEventListener('keydown', e => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) ||
+        (e.ctrlKey && ['u', 'U', 's', 'S'].includes(e.key))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+      if (e.key === 'm' || e.key === 'M') toggleSound();
+      if (e.key === 'r' || e.key === 'R') resetDroneSim();
+    }, { capture: true });
+
+    /* ===== AUDIO SYNTHESIZER (100% OFFLINE WEB AUDIO) ===== */
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('btn-sound');
+      const label = document.getElementById('sound-label');
+      if (soundEnabled) {
+        btn.querySelector('span').textContent = '🔊';
+        if (label) label.textContent = 'Ses Açık';
+        btn.classList.remove('active');
+        if (simState.armed && simState.power) {
+          updateMotorAudio(true, simState.throttle);
+        }
+        if (simState.buzzer) setBuzzerSound(true);
+      } else {
+        btn.querySelector('span').textContent = '🔇';
+        if (label) label.textContent = 'Sessiz';
+        btn.classList.add('active');
+        stopMotorAudio();
+        setBuzzerSound(false);
+      }
+    }
+
+    function playPowerSound(isOn) {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      if (isOn) {
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + i * 0.08);
+          gain.gain.setValueAtTime(0.18, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.16);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.16);
+        });
+      } else {
+        [1046.50, 783.99, 523.25, 329.63].forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(f, now + i * 0.07);
+          gain.gain.setValueAtTime(0.12, now + i * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.14);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.07);
+          osc.stop(now + i * 0.07 + 0.14);
+        });
+      }
+    }
+
+    function playSwitchClick() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1200, now);
+      osc.frequency.exponentialRampToValueAtTime(250, now + 0.04);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    }
+
+    let motorOsc = null, motorGain = null;
+    function updateMotorAudio(armed, throttle) {
+      if (!soundEnabled || !armed) {
+        stopMotorAudio();
+        return;
+      }
+      initAudio();
+      if (!motorOsc) {
+        try {
+          motorOsc = audioCtx.createOscillator();
+          motorGain = audioCtx.createGain();
+          motorOsc.type = 'sawtooth';
+          motorOsc.frequency.setValueAtTime(95, audioCtx.currentTime);
+          motorGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+          motorOsc.connect(motorGain);
+          motorGain.connect(audioCtx.destination);
+          motorOsc.start();
+        } catch(e) {}
+      }
+      if (motorOsc && motorGain) {
+        const targetFreq = 95 + throttle * 320;
+        const targetGain = 0.04 + throttle * 0.10;
+        motorOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.05);
+        motorGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.05);
+      }
+    }
+
+    function stopMotorAudio() {
+      if (motorOsc) {
+        try {
+          motorGain.gain.setTargetAtTime(0.001, audioCtx.currentTime, 0.04);
+          setTimeout(() => {
+            if (motorOsc) {
+              motorOsc.stop();
+              motorOsc.disconnect();
+              motorOsc = null;
+              motorGain = null;
+            }
+          }, 60);
+        } catch(e) {
+          motorOsc = null; motorGain = null;
+        }
+      }
+    }
+
+    let buzzerInterval = null;
+    function setBuzzerSound(active) {
+      if (buzzerInterval) {
+        clearInterval(buzzerInterval);
+        buzzerInterval = null;
+      }
+      if (active && soundEnabled) {
+        initAudio();
+        buzzerInterval = setInterval(() => {
+          try {
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(2600, now);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.12);
+          } catch(e) {}
+        }, 280);
+      }
+    }
+
+    /* ===== SIMULATION STATE ===== */
+    const simState = {
+      power: false,
+      armed: false,
+      mode: 0, // 0: Angle, 1: Horizon, 2: Acro
+      rate: 1, // 0: 40%, 1: 70%, 2: 100%
+      buzzer: false,
+      throttle: 0,
+      yaw: 0,
+      pitch: 0,
+      roll: 0,
+      droneX: 0,
+      droneY: 0,
+      droneYaw: 0,
+      dronePitch: 0,
+      droneRoll: 0,
+      speed: 0
+    };
+
+    const stickState = {
+      left: { pointerId: null, active: false, dx: 0, dy: 32 },
+      right: { pointerId: null, active: false, dx: 0, dy: 0 }
+    };
+
+    /* ===== CONTROLLER SWITCHES & POWER ===== */
+    let lastPowerToggleTime = 0;
+    function toggleSimPower() {
+      const now = Date.now();
+      if (now - lastPowerToggleTime < 220) return;
+      lastPowerToggleTime = now;
+
+      initAudio();
+      simState.power = !simState.power;
+      playPowerSound(simState.power);
+
+      const pwrLed = document.getElementById('svg-pwr-led');
+      const pwrIcon = document.getElementById('svg-pwr-icon');
+      const pwrLabel = document.getElementById('svg-pwr-label');
+      const statusMsg = document.getElementById('hud-status-msg');
+
+      if (simState.power) {
+        if (pwrLed) {
+          pwrLed.setAttribute('stroke', '#00f0ff');
+          pwrLed.setAttribute('filter', 'url(#pwr-glow)');
+          pwrLed.classList.add('pulse-pwr');
+        }
+        if (pwrIcon) pwrIcon.setAttribute('stroke', '#ffffff');
+        if (pwrLabel) { pwrLabel.setAttribute('fill', '#38bdf8'); pwrLabel.textContent = 'AÇIK'; }
+        if (statusMsg) statusMsg.textContent = '🟢 Kumanda Açıldı! Motorları başlatmak için SA şalterine dokunun.';
+      } else {
+        if (pwrLed) {
+          pwrLed.setAttribute('stroke', '#475569');
+          pwrLed.removeAttribute('filter');
+          pwrLed.classList.remove('pulse-pwr');
+        }
+        if (pwrIcon) pwrIcon.setAttribute('stroke', '#94a3b8');
+        if (pwrLabel) { pwrLabel.setAttribute('fill', '#94a3b8'); pwrLabel.textContent = 'GÜÇ'; }
+        if (statusMsg) statusMsg.textContent = '⚠️ Kumanda Kapalı - Açmak için ortadaki GÜÇ butonuna dokunun!';
+
+        if (simState.armed) {
+          simState.armed = false;
+          updateArmVisuals();
+        }
+        if (simState.buzzer) {
+          simState.buzzer = false;
+          updateBuzzerVisuals();
+        }
+      }
+    }
+
+    let lastSwitchToggleTime = {};
+    function toggleSimSwitch(swId) {
+      const now = Date.now();
+      if (lastSwitchToggleTime[swId] && (now - lastSwitchToggleTime[swId] < 220)) return;
+      lastSwitchToggleTime[swId] = now;
+
+      if (!simState.power) {
+        showStickHint('⚠️ Önce Güç Butonuna Basın!');
+        const statusMsg = document.getElementById('hud-status-msg');
+        if (statusMsg) statusMsg.textContent = '⚠️ Kumanda Kapalı! Önce ortadaki ⏻ GÜÇ butonuna dokunun.';
+        return;
+      }
+      playSwitchClick();
+
+      if (swId === 'sa') {
+        simState.armed = !simState.armed;
+        updateArmVisuals();
+      } else if (swId === 'sb') {
+        simState.mode = (simState.mode + 1) % 3;
+        updateModeVisuals();
+      } else if (swId === 'sc') {
+        simState.rate = (simState.rate + 1) % 3;
+        updateRateVisuals();
+      } else if (swId === 'sd') {
+        simState.buzzer = !simState.buzzer;
+        updateBuzzerVisuals();
+      }
+    }
+
+    function updateArmVisuals() {
+      const lever = document.getElementById('svg-lever-sa');
+      const pillVal = document.getElementById('pill-sa-val');
+      const hudBadge = document.getElementById('hud-arm-badge');
+      const droneLed = document.getElementById('sim-drone-led');
+      const statusMsg = document.getElementById('hud-status-msg');
+
+      if (simState.armed) {
+        if (lever) lever.setAttribute('transform', 'translate(128, 92) rotate(22)');
+        if (pillVal) { pillVal.textContent = 'ARMED'; pillVal.className = 'sw-val on'; }
+        if (hudBadge) { hudBadge.textContent = '🟢 ARMED'; hudBadge.className = 'hud-badge armed'; }
+        if (droneLed) droneLed.setAttribute('fill', '#22c55e');
+        if (statusMsg) statusMsg.textContent = '✈️ MOTORLAR DEVREDE! Sol kol ile gaz verip havalanın!';
+        setPropellersSpinning(true);
+        updateMotorAudio(true, simState.throttle);
+      } else {
+        if (lever) lever.setAttribute('transform', 'translate(128, 92) rotate(-22)');
+        if (pillVal) { pillVal.textContent = 'KİLİTLİ'; pillVal.className = 'sw-val off'; }
+        if (hudBadge) { hudBadge.textContent = '🔒 DISARMED'; hudBadge.className = 'hud-badge disarmed'; }
+        if (droneLed) droneLed.setAttribute('fill', '#ef4444');
+        if (statusMsg) statusMsg.textContent = '🔒 Motorlar kilitlendi. Uçuş için SA şalterine dokunun.';
+        setPropellersSpinning(false);
+        updateMotorAudio(false, 0);
+      }
+    }
+
+    function updateModeVisuals() {
+      const lever = document.getElementById('svg-lever-sb');
+      const pillVal = document.getElementById('pill-sb-val');
+      const hudBadge = document.getElementById('hud-mode-badge');
+      const modes = ['ANGLE', 'HORIZON', 'ACRO'];
+      const angles = [-20, 0, 20];
+      const m = modes[simState.mode];
+
+      if (lever) lever.setAttribute('transform', 'translate(160, 84) rotate(' + angles[simState.mode] + ')');
+      if (pillVal) pillVal.textContent = m;
+      if (hudBadge) hudBadge.textContent = m;
+      showStickHint('Uçuş Modu: ' + m);
+    }
+
+    function updateRateVisuals() {
+      const lever = document.getElementById('svg-lever-sc');
+      const pillVal = document.getElementById('pill-sc-val');
+      const hudBadge = document.getElementById('hud-rate-badge');
+      const rates = ['%40 YAVAŞ', '%70 NORMAL', '%100 TURBO'];
+      const pillTexts = ['%40', '%70', '%100'];
+      const angles = [-20, 0, 20];
+
+      if (lever) lever.setAttribute('transform', 'translate(400, 84) rotate(' + angles[simState.rate] + ')');
+      if (pillVal) pillVal.textContent = pillTexts[simState.rate];
+      if (hudBadge) hudBadge.textContent = rates[simState.rate];
+      showStickHint('Hız Seviyesi: ' + pillTexts[simState.rate]);
+    }
+
+    function updateBuzzerVisuals() {
+      const lever = document.getElementById('svg-lever-sd');
+      const pillVal = document.getElementById('pill-sd-val');
+      const buzzerAlert = document.getElementById('hud-buzzer-alert');
+
+      if (simState.buzzer) {
+        if (lever) lever.setAttribute('transform', 'translate(432, 92) rotate(-22)');
+        if (pillVal) { pillVal.textContent = 'AÇIK (BEEP)'; pillVal.className = 'sw-val on'; }
+        if (buzzerAlert) buzzerAlert.style.display = 'flex';
+        setBuzzerSound(true);
+        showStickHint('🔊 Buzzer & Turtle Modu Aktif!');
+        
+        if (Math.abs(simState.droneRoll) > 90) {
+          simState.droneRoll = 0;
+          simState.dronePitch = 0;
+          showStickHint('🐢 Kaplumbağa Modu: Drone Düzeltildi!');
+        }
+      } else {
+        if (lever) lever.setAttribute('transform', 'translate(432, 92) rotate(22)');
+        if (pillVal) { pillVal.textContent = 'KAPALI'; pillVal.className = 'sw-val off'; }
+        if (buzzerAlert) buzzerAlert.style.display = 'none';
+        setBuzzerSound(false);
+      }
+    }
+
+    function setPropellersSpinning(isSpinning) {
+      ['prop1','prop2','prop3','prop4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (isSpinning) el.classList.remove('stopped');
+          else el.classList.add('stopped');
+        }
+      });
+    }
+
+    function setPropSpeed(throttle) {
+      const dur = Math.max(0.02, 0.16 - throttle * 0.13);
+      ['prop1','prop2','prop3','prop4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.animationDuration = dur + 's';
+      });
+    }
+
+    function showStickHint(txt) {
+      const hint = document.getElementById('sim-active-label');
+      if (!hint) return;
+      hint.textContent = txt;
+      hint.style.opacity = '1';
+      clearTimeout(hint._timer);
+      hint._timer = setTimeout(() => { hint.style.opacity = '0'; }, 1600);
+    }
+
+    function resetDroneSim() {
+      playSwitchClick();
+      simState.droneX = 0;
+      simState.droneY = 0;
+      simState.droneYaw = 0;
+      simState.dronePitch = 0;
+      simState.droneRoll = 0;
+      simState.throttle = 0;
+      simState.yaw = 0;
+      simState.pitch = 0;
+      simState.roll = 0;
+      
+      stickState.left.dx = 0;
+      stickState.left.dy = 32;
+      stickState.right.dx = 0;
+      stickState.right.dy = 0;
+
+      const stickL = document.getElementById('svg-stick-left');
+      const stickR = document.getElementById('svg-stick-right');
+      if (stickL) stickL.setAttribute('transform', 'translate(0, 32)');
+      if (stickR) stickR.setAttribute('transform', 'translate(0, 0)');
+      
+      updateDronePosition();
+      updateTelemetryUI();
+      if (simState.armed) {
+        updateMotorAudio(true, 0);
+      }
+      showStickHint('🔄 Konum Sıfırlandı');
+    }
+
+    /* ===== GIMBAL & MULTI-TOUCH POINTER EVENTS ===== */
+    function getSvgPoint(svg, clientX, clientY) {
+      const pt = svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function initSimGimbals() {
+      const svg = document.getElementById('betafpv-svg-ctrl');
+      if (!svg) return;
+
+      const stickLeft = document.getElementById('svg-stick-left');
+      const stickRight = document.getElementById('svg-stick-right');
+      const glowLeft = document.getElementById('stick-glow-left');
+      const glowRight = document.getElementById('stick-glow-right');
+
+      if (stickLeft) stickLeft.setAttribute('transform', 'translate(0, 32)');
+      if (stickRight) stickRight.setAttribute('transform', 'translate(0, 0)');
+
+      const switchPointers = {};
+
+      const GIMBAL_LEFT_CENTER = { x: 175, y: 215, radius: 75 };
+      const GIMBAL_RIGHT_CENTER = { x: 385, y: 215, radius: 75 };
+      const POWER_CENTER = { x: 280, y: 232, radius: 32 };
+      const SWITCHES = [
+        { id: 'sa', x: 128, y: 92, radius: 34 },
+        { id: 'sb', x: 160, y: 84, radius: 34 },
+        { id: 'sc', x: 400, y: 84, radius: 34 },
+        { id: 'sd', x: 432, y: 92, radius: 34 }
+      ];
+
+      function dist(x1, y1, x2, y2) {
+        return Math.hypot(x1 - x2, y1 - y2);
+      }
+
+      function updateLeftStick(pt) {
+        let dx = pt.x - 175;
+        let dy = pt.y - 215;
+        const d = Math.hypot(dx, dy);
+        if (d > 32) {
+          dx = (dx / d) * 32;
+          dy = (dy / d) * 32;
+        }
+        stickState.left.dx = dx;
+        stickState.left.dy = dy;
+        stickLeft.setAttribute('transform', 'translate(' + dx + ',' + dy + ')');
+
+        simState.throttle = Math.max(0, Math.min(1, (32 - dy) / 64));
+        simState.yaw = Math.max(-1, Math.min(1, dx / 32));
+
+        if (simState.armed && simState.power) {
+          setPropSpeed(simState.throttle);
+          updateMotorAudio(true, simState.throttle);
+        }
+
+        let hint = '';
+        if (simState.throttle > 0.05) hint += '⬆️ Gaz %' + Math.round(simState.throttle * 100) + ' ';
+        if (simState.yaw > 0.2) hint += '↻ Yaw Sağ ';
+        else if (simState.yaw < -0.2) hint += '↺ Yaw Sol ';
+        if (hint) showStickHint(hint);
+      }
+
+      function updateRightStick(pt) {
+        let dx = pt.x - 385;
+        let dy = pt.y - 215;
+        const d = Math.hypot(dx, dy);
+        if (d > 32) {
+          dx = (dx / d) * 32;
+          dy = (dy / d) * 32;
+        }
+        stickState.right.dx = dx;
+        stickState.right.dy = dy;
+        stickRight.setAttribute('transform', 'translate(' + dx + ',' + dy + ')');
+
+        simState.pitch = -dy / 32;
+        simState.roll = dx / 32;
+
+        let hint = '';
+        if (simState.pitch > 0.2) hint += '↗️ Pitch İleri ';
+        else if (simState.pitch < -0.2) hint += '↙️ Pitch Geri ';
+        if (simState.roll > 0.2) hint += '➡️ Roll Sağ ';
+        else if (simState.roll < -0.2) hint += '⬅️ Roll Sol ';
+        if (hint) showStickHint(hint);
+      }
+
+      svg.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        initAudio();
+        try { svg.setPointerCapture(e.pointerId); } catch(err){}
+
+        const pt = getSvgPoint(svg, e.clientX, e.clientY);
+
+        if (dist(pt.x, pt.y, POWER_CENTER.x, POWER_CENTER.y) <= POWER_CENTER.radius) {
+          toggleSimPower();
+          return;
+        }
+
+        for (const sw of SWITCHES) {
+          if (dist(pt.x, pt.y, sw.x, sw.y) <= sw.radius) {
+            switchPointers[e.pointerId] = { id: sw.id, startY: pt.y, handledDrag: false };
+            toggleSimSwitch(sw.id);
+            return;
+          }
+        }
+
+        if (dist(pt.x, pt.y, GIMBAL_LEFT_CENTER.x, GIMBAL_LEFT_CENTER.y) <= GIMBAL_LEFT_CENTER.radius) {
+          if (!simState.power) {
+            showStickHint('⚠️ Önce Güç Butonuna Basın!');
+            return;
+          }
+          stickState.left.pointerId = e.pointerId;
+          stickState.left.active = true;
+          if (glowLeft) glowLeft.style.opacity = '1';
+          updateLeftStick(pt);
+          return;
+        }
+
+        if (dist(pt.x, pt.y, GIMBAL_RIGHT_CENTER.x, GIMBAL_RIGHT_CENTER.y) <= GIMBAL_RIGHT_CENTER.radius) {
+          if (!simState.power) {
+            showStickHint('⚠️ Önce Güç Butonuna Basın!');
+            return;
+          }
+          stickState.right.pointerId = e.pointerId;
+          stickState.right.active = true;
+          if (glowRight) glowRight.style.opacity = '1';
+          updateRightStick(pt);
+          return;
+        }
+      }, { passive: false });
+
+      window.addEventListener('pointermove', e => {
+        if (stickState.left.active && e.pointerId === stickState.left.pointerId) {
+          e.preventDefault();
+          const pt = getSvgPoint(svg, e.clientX, e.clientY);
+          updateLeftStick(pt);
+        }
+
+        if (stickState.right.active && e.pointerId === stickState.right.pointerId) {
+          e.preventDefault();
+          const pt = getSvgPoint(svg, e.clientX, e.clientY);
+          updateRightStick(pt);
+        }
+
+        if (switchPointers[e.pointerId]) {
+          const sp = switchPointers[e.pointerId];
+          const pt = getSvgPoint(svg, e.clientX, e.clientY);
+          const dy = pt.y - sp.startY;
+          if (!sp.handledDrag && Math.abs(dy) > 14) {
+            sp.handledDrag = true;
+            if (sp.id === 'sa') {
+              if (dy > 0 && !simState.armed) toggleSimSwitch('sa');
+              else if (dy < 0 && simState.armed) toggleSimSwitch('sa');
+            } else if (sp.id === 'sb') {
+              if (dy < -8) { simState.mode = 0; updateModeVisuals(); playSwitchClick(); }
+              else if (dy > 8) { simState.mode = 2; updateModeVisuals(); playSwitchClick(); }
+              else { simState.mode = 1; updateModeVisuals(); playSwitchClick(); }
+            } else if (sp.id === 'sc') {
+              if (dy < -8) { simState.rate = 0; updateRateVisuals(); playSwitchClick(); }
+              else if (dy > 8) { simState.rate = 2; updateRateVisuals(); playSwitchClick(); }
+              else { simState.rate = 1; updateRateVisuals(); playSwitchClick(); }
+            } else if (sp.id === 'sd') {
+              if (dy > 0 && !simState.buzzer) toggleSimSwitch('sd');
+              else if (dy < 0 && simState.buzzer) toggleSimSwitch('sd');
+            }
+          }
+        }
+      }, { passive: false });
+
+      function handlePointerEnd(e) {
+        if (switchPointers[e.pointerId]) {
+          delete switchPointers[e.pointerId];
+        }
+
+        if (stickState.left.active && e.pointerId === stickState.left.pointerId) {
+          stickState.left.active = false;
+          stickState.left.pointerId = null;
+          if (glowLeft) glowLeft.style.opacity = '0';
+          try { svg.releasePointerCapture(e.pointerId); } catch(err){}
+
+          stickState.left.dx = 0;
+          stickLeft.style.transition = 'transform 0.12s ease-out';
+          stickLeft.setAttribute('transform', 'translate(0, ' + stickState.left.dy + ')');
+          setTimeout(() => { stickLeft.style.transition = ''; }, 130);
+          simState.yaw = 0;
+        }
+
+        if (stickState.right.active && e.pointerId === stickState.right.pointerId) {
+          stickState.right.active = false;
+          stickState.right.pointerId = null;
+          if (glowRight) glowRight.style.opacity = '0';
+          try { svg.releasePointerCapture(e.pointerId); } catch(err){}
+
+          stickState.right.dx = 0;
+          stickState.right.dy = 0;
+          stickRight.style.transition = 'transform 0.14s ease-out';
+          stickRight.setAttribute('transform', 'translate(0, 0)');
+          setTimeout(() => { stickRight.style.transition = ''; }, 150);
+
+          simState.pitch = 0;
+          simState.roll = 0;
+        }
+      }
+
+      window.addEventListener('pointerup', handlePointerEnd);
+      window.addEventListener('pointercancel', handlePointerEnd);
+
+      ['sa', 'sb', 'sc', 'sd'].forEach(id => {
+        const card = document.getElementById('card-sw-' + id);
+        if (card) {
+          card.addEventListener('pointerdown', e => {
+            e.preventDefault();
+            toggleSimSwitch(id);
+          });
+        }
+      });
+    }
+
+    /* ===== FLIGHT PHYSICS LOOP ===== */
+    let lastTime = performance.now();
+    function flightLoop(now) {
+      const dt = Math.min(0.1, (now - lastTime) / 1000);
+      lastTime = now;
+
+      const skyEl = document.getElementById('sim-sky');
+      const maxX = skyEl ? Math.max(140, (skyEl.clientWidth / 2) - 65) : 220;
+      const maxY = skyEl ? Math.max(160, skyEl.clientHeight - 130) : 260;
+
+      if (simState.armed && simState.power) {
+        const rateMult = simState.rate === 0 ? 0.45 : simState.rate === 1 ? 0.75 : 1.15;
+        const lift = simState.throttle * 140;
+        const gravity = 48;
+        const vertVel = (lift - gravity) * dt * 1.5;
+        simState.droneY = Math.max(0, Math.min(maxY, simState.droneY + vertVel * 20));
+
+        if (simState.droneY > 3) {
+          simState.droneY = Math.max(0, Math.min(maxY, simState.droneY + simState.pitch * 35 * rateMult * dt));
+          simState.droneX = Math.max(-maxX, Math.min(maxX, simState.droneX + simState.roll * 90 * rateMult * dt));
+          simState.droneYaw += simState.yaw * 110 * rateMult * dt;
+
+          if (simState.mode === 0) {
+            simState.droneRoll = simState.roll * 28;
+            simState.dronePitch = -simState.pitch * 24;
+          } else if (simState.mode === 1) {
+            simState.droneRoll = simState.roll * 45;
+            simState.dronePitch = -simState.pitch * 35;
+          } else {
+            simState.droneRoll += simState.roll * 160 * rateMult * dt;
+            simState.dronePitch += -simState.pitch * 160 * rateMult * dt;
+          }
+
+          const horizSpeed = Math.hypot(simState.roll, simState.pitch) * (simState.rate === 0 ? 25 : simState.rate === 1 ? 48 : 72);
+          simState.speed = Math.round(horizSpeed + simState.throttle * 12);
+        } else {
+          simState.droneRoll = 0;
+          simState.dronePitch = 0;
+          simState.speed = 0;
+        }
+      } else {
+        if (simState.droneY > 0) {
+          simState.droneY = Math.max(0, simState.droneY - 90 * dt);
+          simState.droneRoll *= 0.9;
+          simState.dronePitch *= 0.9;
+          simState.speed = 0;
+        }
+      }
+
+      updateDronePosition();
+      updateTelemetryUI();
+      requestAnimationFrame(flightLoop);
+    }
+
+    function updateDronePosition() {
+      const droneEl = document.getElementById('sim-drone');
+      const shadowEl = document.getElementById('sim-drone-shadow');
+      const crosshair = document.getElementById('hud-crosshair');
+      if (!droneEl) return;
+
+      const altPx = simState.droneY;
+      droneEl.style.bottom = (45 + altPx) + 'px';
+      droneEl.style.left = 'calc(50% - 65px + ' + simState.droneX + 'px)';
+
+      const scale = 1 - (altPx / 700);
+      droneEl.style.transform = 'scale(' + scale + ') rotate(' + simState.droneYaw + 'deg) rotateX(' + simState.dronePitch + 'deg) rotateZ(' + simState.droneRoll + 'deg)';
+
+      if (shadowEl) {
+        shadowEl.style.left = 'calc(50% - 45px + ' + simState.droneX + 'px)';
+        const shadowScale = Math.max(0.35, 1 - (altPx / 300));
+        const shadowOpacity = Math.max(0.08, 0.5 - (altPx / 400));
+        shadowEl.style.transform = 'scale(' + shadowScale + ')';
+        shadowEl.style.opacity = shadowOpacity;
+      }
+
+      if (crosshair) {
+        crosshair.style.transform = 'translate(-50%, -50%) rotate(' + (-simState.droneRoll) + 'deg) translateY(' + (simState.dronePitch * 1.2) + 'px)';
+      }
+    }
+
+    function updateTelemetryUI() {
+      const thrFill = document.getElementById('hud-thr-fill');
+      const thrVal = document.getElementById('hud-val-thr');
+      const altVal = document.getElementById('hud-val-alt');
+      const speedVal = document.getElementById('hud-val-speed');
+      const battVal = document.getElementById('hud-batt');
+
+      if (thrFill) thrFill.style.width = Math.round(simState.throttle * 100) + '%';
+      if (thrVal) thrVal.textContent = Math.round(simState.throttle * 100) + '%';
+
+      if (altVal) {
+        const altMeters = (simState.droneY * 0.06).toFixed(1);
+        altVal.textContent = altMeters + ' m';
+      }
+
+      if (speedVal) {
+        speedVal.textContent = simState.speed + ' km/s';
+      }
+
+      if (battVal) {
+        const v = (4.20 - (simState.throttle * 0.18)).toFixed(2);
+        battVal.innerHTML = '<span style="color:#22c55e">🔋</span> ' + v + 'V';
+      }
+    }
+
+    /* Fullscreen & Help Toggles */
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function toggleHelp(open) {
+      const modal = document.getElementById('help-modal');
+      if (modal) modal.classList.toggle('open', open);
+    }
+
+    /* ===== INIT ===== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initSimGimbals();
+      requestAnimationFrame(flightLoop);
+    });
+  </script>
+</body>
+</html>
