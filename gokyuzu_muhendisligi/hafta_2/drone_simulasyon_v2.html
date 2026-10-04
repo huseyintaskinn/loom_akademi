@@ -1,0 +1,3305 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Loom Akademi • BetaFPV Drone Uçuş Simülatörü v2 (3D)</title>
+  
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    :root {
+      --primary: #38bdf8;
+      --primary-light: #7dd3fc;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --bg-dark: #090e1a;
+      --sunny-yellow: #fbbf24;
+      --emerald-green: #34d399;
+      --candy-red: #fb7185;
+      --cute-purple: #c084fc;
+      --font-main: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    /* Global Reset & Smartboard/Tablet Protection */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -webkit-touch-callout: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #090e1a;
+      color: #ffffff;
+      font-family: var(--font-main);
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+      touch-action: none;
+    }
+
+    /* App Shell */
+    #sim-app {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Top Navigation Header */
+    #sim-header {
+      height: 50px;
+      min-height: 50px;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      z-index: 100;
+    }
+    .sim-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+    }
+    .sim-brand span {
+      color: var(--sunny-yellow);
+      font-weight: 700;
+      font-size: 13.5px;
+    }
+    .sim-badge {
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      color: #042f2e;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 4px 9px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+    }
+    .sim-badge.v2 {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-action {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+    .btn-action.active {
+      background: var(--primary);
+      color: #042f2e;
+      border-color: var(--primary);
+      font-weight: 800;
+    }
+    .btn-action.reset-btn {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+    .btn-action.reset-btn:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    /* Main Container */
+    .sim-container {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+      padding: 8px;
+      gap: 10px;
+      background: radial-gradient(circle at 50% 50%, #111827 0%, #090e1a 100%);
+    }
+
+    /* Left / Top Col: 3D Sahne */
+    .sim-left-col {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      background: #020617;
+    }
+
+    /* 3D Canvas Container */
+    #canvas3d-wrap {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    #canvas3d-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      outline: none;
+    }
+
+    /* Camera Switch Toolbar on Top of 3D Canvas */
+    .sim-cam-bar {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      display: flex;
+      gap: 5px;
+      z-index: 20;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .cam-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 7px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .cam-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .cam-btn.active {
+      background: #38bdf8;
+      color: #042f2e;
+      font-weight: 900;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+    }
+
+    /* FPV HUD Overlay */
+    .sim-hud-overlay {
+      position: absolute;
+      inset: 0;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: #00ffcc;
+      text-shadow: 0 0 4px rgba(0, 255, 204, 0.6), 0 1px 3px rgba(0, 0, 0, 0.9);
+      z-index: 10;
+    }
+    .hud-top-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 800;
+      flex-wrap: wrap;
+    }
+    .hud-badge {
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(0, 255, 204, 0.4);
+      padding: 3px 8px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+    .hud-badge.armed {
+      border-color: #22c55e;
+      color: #22c55e;
+      text-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
+      animation: pulseArmed 1s infinite alternate;
+    }
+    @keyframes pulseArmed {
+      from { opacity: 0.85; }
+      to { opacity: 1; }
+    }
+    .hud-badge.disarmed {
+      border-color: #ef4444;
+      color: #ef4444;
+      text-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
+    }
+    .hud-badge.alt-layer {
+      background: rgba(14, 165, 233, 0.25);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      font-weight: 800;
+      transition: all 0.3s ease;
+    }
+    .hud-badge.alt-layer.clouds {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: #ffffff;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+    .hud-badge.alt-layer.stratosphere {
+      background: rgba(99, 102, 241, 0.35);
+      border-color: #818cf8;
+      color: #c7d2fe;
+      box-shadow: 0 0 10px rgba(129, 140, 248, 0.5);
+    }
+    .hud-badge.alt-layer.space {
+      background: rgba(168, 85, 247, 0.4);
+      border-color: #c084fc;
+      color: #f3e8ff;
+      box-shadow: 0 0 14px rgba(192, 132, 252, 0.8);
+      animation: pulseArmed 1.2s infinite alternate;
+    }
+    .hud-badge.score-badge {
+      background: rgba(234, 179, 8, 0.25);
+      border-color: #facc15;
+      color: #fef08a;
+      font-weight: 900;
+      text-shadow: 0 0 6px rgba(250, 204, 21, 0.7);
+    }
+    .hud-badge.gate-badge {
+      background: rgba(34, 197, 94, 0.25);
+      border-color: #22c55e;
+      color: #86efac;
+      font-weight: 900;
+      text-shadow: 0 0 6px rgba(34, 197, 94, 0.7);
+      animation: pulseArmed 1.2s infinite alternate;
+    }
+
+    /* Artificial Horizon Crosshair */
+    .hud-center-crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      height: 60px;
+      pointer-events: none;
+      transition: transform 0.05s ease-out;
+    }
+    .hud-crosshair-h {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1.5px;
+      background: rgba(0, 255, 204, 0.6);
+    }
+    .hud-crosshair-v {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1.5px;
+      height: 100%;
+      background: rgba(0, 255, 204, 0.6);
+    }
+    .hud-ladder-line {
+      position: absolute;
+      left: 30%;
+      width: 40%;
+      height: 1.5px;
+      background: rgba(0, 255, 204, 0.45);
+    }
+    .hud-ladder-line.top { top: 22%; }
+    .hud-ladder-line.bot { bottom: 22%; }
+
+    /* 3D Attitude Indicators (Angles) */
+    .hud-attitude-readout {
+      position: absolute;
+      left: 14px;
+      top: 50px;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 5px 9px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #94a3b8;
+    }
+    .hud-attitude-readout span {
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    /* Mini Stick OSD Overlay (Visual stick feedback) */
+    .hud-mini-stick-box {
+      position: absolute;
+      bottom: 64px;
+      right: 14px;
+      width: 80px;
+      height: 80px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+    .hud-mini-stick-title {
+      font-size: 9px;
+      color: #38bdf8;
+      font-weight: 800;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+    .hud-mini-stick-arena {
+      width: 52px;
+      height: 52px;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px dashed rgba(255, 255, 255, 0.25);
+      border-radius: 50%;
+      position: relative;
+    }
+    .hud-mini-stick-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fbbf24;
+      box-shadow: 0 0 6px #fbbf24;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: transform 0.05s ease-out;
+    }
+
+    /* Bottom Telemetry Bar */
+    .hud-bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 5px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(4px);
+    }
+    .hud-tele-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+    }
+    .hud-label { color: #94a3b8; font-weight: 700; font-size: 10.5px; }
+    .hud-val { color: #ffffff; font-weight: 900; }
+    .hud-thr-track {
+      width: 44px;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-left: 3px;
+    }
+    .hud-thr-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      transition: width 0.05s ease-out;
+    }
+    .hud-status-msg {
+      font-size: 12px;
+      text-align: center;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 6px;
+      color: var(--sunny-yellow);
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    /* 3D Orbit Hint Badge */
+    .hud-orbit-hint {
+      position: absolute;
+      bottom: 64px;
+      left: 14px;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 10.5px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      pointer-events: auto;
+    }
+
+    /* Right / Bottom Col: Kumanda */
+    .sim-right-col {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 8px 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Switches Panel */
+    .sim-switches-panel {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+    .sw-pill-card {
+      background: rgba(30, 41, 65, 0.9);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 4px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: none;
+      transition: all 0.15s ease;
+    }
+    .sw-pill-card:active {
+      transform: scale(0.96);
+      background: rgba(56, 189, 248, 0.25);
+    }
+    .sw-code {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+    .sw-title {
+      font-size: 10px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin: 1px 0;
+    }
+    .sw-val {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .sw-val.on { color: #22c55e; }
+    .sw-val.off { color: #ef4444; }
+
+    /* Controller Wrapper */
+    .sim-controller-wrapper {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .sim-ctrl-svg {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.6));
+      touch-action: none;
+    }
+
+    .sim-stick-action-hint {
+      position: absolute;
+      top: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid var(--primary);
+      color: #38bdf8;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 12px;
+      border-radius: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 20;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Pilot Guide Steps */
+    .sim-pilot-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 11.5px;
+      color: #cbd5e1;
+      width: 100%;
+      white-space: nowrap;
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #0f172a;
+      font-weight: 900;
+      font-size: 10px;
+      margin-right: 3px;
+    }
+    .step-arrow { color: var(--sunny-yellow); font-weight: 900; }
+
+    /* =========================================================
+       RESPONSIVE MODES: LANDSCAPE vs PORTRAIT (TABLET)
+       ========================================================= */
+
+    /* 1. YATAY (LANDSCAPE): 2 SÜTUN */
+    @media (orientation: landscape) {
+      .sim-container {
+        flex-direction: row;
+      }
+      .sim-left-col {
+        flex: 1.25;
+        height: 100%;
+      }
+      .sim-right-col {
+        flex: 0.85;
+        height: 100%;
+      }
+    }
+
+    /* 2. DİKEY (PORTRAIT): 2 SATIR */
+    @media (orientation: portrait) {
+      .sim-container {
+        flex-direction: column;
+        padding: 6px;
+        gap: 8px;
+      }
+      .sim-left-col {
+        flex: none;
+        height: 46vh;
+        width: 100%;
+      }
+      .sim-right-col {
+        flex: 1;
+        width: 100%;
+        height: calc(54vh - 66px);
+        padding: 6px 8px;
+      }
+      .sim-switches-panel {
+        gap: 6px;
+      }
+      .sw-pill-card {
+        padding: 3px 6px;
+      }
+      .sw-code { font-size: 10px; }
+      .sw-title { font-size: 9px; }
+      .sw-val { font-size: 10.5px; }
+      .sim-pilot-steps {
+        font-size: 10.5px;
+        padding: 3px 6px;
+      }
+      .sim-brand span {
+        display: none;
+      }
+      .hud-mini-stick-box {
+        bottom: 58px;
+        right: 8px;
+        width: 65px;
+        height: 65px;
+      }
+      .hud-mini-stick-arena {
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    /* Pulse Glow Animation */
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 6px #00f0ff); }
+      50% { filter: drop-shadow(0 0 16px #00f0ff); }
+    }
+    .pulse-pwr {
+      animation: pulseGlow 1.8s infinite ease-in-out;
+    }
+
+    /* Help Modal */
+    #help-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 14, 26, 0.94);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    #help-modal.open {
+      display: flex;
+    }
+    .help-card {
+      background: rgba(22, 31, 54, 0.98);
+      border: 2px solid var(--primary);
+      border-radius: 18px;
+      max-width: 620px;
+      width: 100%;
+      padding: 22px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .help-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .help-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12.5px;
+    }
+    .help-item strong { color: var(--sunny-yellow); display: block; margin-bottom: 2px; }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <div id="sim-app">
+    <!-- Top Header -->
+    <header id="sim-header">
+      <div class="sim-brand">
+        <span class="sim-badge v2">3D V2</span>
+        <span class="sim-badge">BETAFPV SIM</span>
+        <span>Loom Akademi • BetaFPV Meteor 75 Pro 3D Uçuş Simülatörü</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-action reset-btn" onclick="resetDroneSim()" title="Drone'u Başlangıç Konumuna Getir (R)">
+          <span>🔄</span> Sıfırla
+        </button>
+        <button class="btn-action" onclick="triggerCrashTest()" title="Kaplumbağa Modunu Öğrencilere Göstermek İçin Dronu Ters Düşür (T)">
+          <span>🐢</span> Kaza Testi
+        </button>
+        <button class="btn-action" id="btn-sound" onclick="toggleSound()" title="Sesi Aç / Kapat (M)">
+          <span>🔊</span> <span id="sound-label">Ses Açık</span>
+        </button>
+        <button class="btn-action" onclick="toggleHelp(true)" title="Pilot Rehberini Aç">
+          <span>❓</span> Rehber
+        </button>
+        <button class="btn-action" onclick="toggleFullscreen()" title="Tam Ekran Modu (F)">
+          <span>⛶</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Simulator Area -->
+    <main class="sim-container">
+
+      <!-- SOL KOLON: 3D THREE.JS WEBGL SİMÜLATÖRÜ & FPV HUD -->
+      <section class="sim-left-col">
+        <div id="canvas3d-wrap">
+          <!-- Three.js Canvas burada oluşturulacak -->
+
+          <!-- 3D Kamera Seçici Toolbar -->
+          <div class="sim-cam-bar">
+            <button class="cam-btn active" id="btn-cam-chase" onclick="setCameraMode('chase')" title="Drone'u arkadan takip et">
+              🎥 Takip
+            </button>
+            <button class="cam-btn" id="btn-cam-orbit" onclick="setCameraMode('orbit')" title="Drone etrafında 360° serbestçe dönerek incele">
+              🔄 Serbest 3D
+            </button>
+            <button class="cam-btn" id="btn-cam-fpv" onclick="setCameraMode('fpv')" title="FPV pilot kamerası bakış açısı">
+              🥽 FPV Kokpit
+            </button>
+            <button class="cam-btn" id="btn-cam-top" onclick="setCameraMode('top')" title="Üstten teknik gözlem açısı">
+              📐 Üst/Yan
+            </button>
+          </div>
+
+          <!-- FPV HUD OVERLAY -->
+          <div class="sim-hud-overlay">
+            <div class="hud-top-bar">
+              <div class="hud-badge disarmed" id="hud-arm-badge">🔒 DISARMED</div>
+              <div class="hud-badge mode" id="hud-mode-badge">ANGLE</div>
+              <div class="hud-badge rate" id="hud-rate-badge">%70 NORMAL</div>
+              <div class="hud-badge score-badge" id="hud-score-badge">🏆 SKOR: 0</div>
+              <div class="hud-badge gate-badge" id="hud-gate-badge">🎯 HEDEF: KAPI 1/3</div>
+              <div class="hud-badge alt-layer" id="hud-alt-layer">🌤️ TROPOSFER (0m)</div>
+              <div class="hud-badge batt" id="hud-batt"><span style="color:#22c55e">🔋</span> 4.18V</div>
+            </div>
+
+            <!-- Artificial Horizon Crosshair -->
+            <div class="hud-center-crosshair" id="hud-crosshair">
+              <div class="hud-crosshair-h"></div>
+              <div class="hud-crosshair-v"></div>
+              <div class="hud-ladder-line top"></div>
+              <div class="hud-ladder-line bot"></div>
+            </div>
+
+            <!-- Drone 3D Attitude Indicators (Anlık Roll/Pitch/Yaw açıları) -->
+            <div class="hud-attitude-readout" id="hud-att-readout">
+              <div>ROLL: <span id="att-val-roll">0.0°</span></div>
+              <div>PITCH: <span id="att-val-pitch">0.0°</span></div>
+              <div>YAW: <span id="att-val-yaw">0.0°</span></div>
+            </div>
+
+            <!-- Mini Stick OSD Göstergesi (Sağ Kol Pitch/Roll Anlık Konumu) -->
+            <div class="hud-mini-stick-box">
+              <span class="hud-mini-stick-title">KOL KONUMU</span>
+              <div class="hud-mini-stick-arena">
+                <div class="hud-mini-stick-dot" id="hud-stick-dot"></div>
+              </div>
+            </div>
+
+            <!-- Serbest Mod İpucu -->
+            <div class="hud-orbit-hint" id="hud-orbit-hint" style="display:none;">
+              <span>💡</span> Fareyle / parmağınızla 3D drone'u çevirip her açıdan inceleyebilirsiniz!
+            </div>
+
+            <!-- Bottom Telemetry & Status Bar -->
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <div class="hud-bottom-bar">
+                <div class="hud-tele-item">
+                  <span class="hud-label">GAZ:</span>
+                  <span class="hud-val" id="hud-val-thr">0%</span>
+                  <div class="hud-thr-track">
+                    <div class="hud-thr-fill" id="hud-thr-fill"></div>
+                  </div>
+                </div>
+                <div class="hud-tele-item">
+                  <span class="hud-label">İRTİFA:</span>
+                  <span class="hud-val" id="hud-val-alt">0.0 m</span>
+                </div>
+                <div class="hud-tele-item">
+                  <span class="hud-label">HIZ:</span>
+                  <span class="hud-val" id="hud-val-speed">0 km/s</span>
+                </div>
+                <div class="hud-tele-item" id="hud-buzzer-alert" style="display:none; color: #ef4444; font-weight:800;">
+                  📢 BUZZER AKTİF
+                </div>
+              </div>
+
+              <div class="hud-status-msg" id="hud-status-msg">
+                ⚠️ Uçuşa başlamak için kumandadaki ⏻ GÜÇ butonuna dokunun!
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SAĞ KOLON: GERÇEK BETAFPV LITERADIO 2 KUMANDA -->
+      <section class="sim-right-col">
+        <!-- Switches Panel -->
+        <div class="sim-switches-panel">
+          <div class="sw-pill-card" id="card-sw-sa" onclick="toggleSimSwitch('sa')">
+            <span class="sw-code">SA</span>
+            <span class="sw-title">ARM</span>
+            <span class="sw-val off" id="pill-sa-val">KİLİTLİ</span>
+          </div>
+          <div class="sw-pill-card" id="card-sw-sb" onclick="toggleSimSwitch('sb')">
+            <span class="sw-code">SB</span>
+            <span class="sw-title">MOD</span>
+            <span class="sw-val" id="pill-sb-val">ANGLE</span>
+          </div>
+          <div class="sw-pill-card" id="card-sw-sc" onclick="toggleSimSwitch('sc')">
+            <span class="sw-code">SC</span>
+            <span class="sw-title">HIZ</span>
+            <span class="sw-val" id="pill-sc-val">%70</span>
+          </div>
+          <div class="sw-pill-card" id="card-sw-sd" onclick="toggleSimSwitch('sd')">
+            <span class="sw-code">SD</span>
+            <span class="sw-title">BUZZER</span>
+            <span class="sw-val off" id="pill-sd-val">KAPALI</span>
+          </div>
+        </div>
+
+        <!-- SVG Controller (BetaFPV LiteRadio 2) -->
+        <div class="sim-controller-wrapper">
+          <div class="sim-stick-action-hint" id="sim-active-label"></div>
+          <svg id="betafpv-svg-ctrl" viewBox="0 0 560 420" width="100%" height="100%" class="sim-ctrl-svg" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- Soft ambient shadow -->
+              <filter id="ctrl-drop-shadow" x="-10%" y="-10%" width="120%" height="130%">
+                <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#000000" flood-opacity="0.45"/>
+              </filter>
+              
+              <!-- Gimbal Well Deep Shadow -->
+              <radialGradient id="gimbal-well-grad" cx="50%" cy="50%" r="50%">
+                <stop offset="65%" stop-color="#14171d"/>
+                <stop offset="90%" stop-color="#0a0c10"/>
+                <stop offset="100%" stop-color="#2d3340"/>
+              </radialGradient>
+
+              <!-- Plastic Body Gradient -->
+              <linearGradient id="body-surface" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="25%" stop-color="#f8fafc"/>
+                <stop offset="70%" stop-color="#f1f5f9"/>
+                <stop offset="100%" stop-color="#e2e8f0"/>
+              </linearGradient>
+
+              <!-- Chrome/Metallic Lever Gradient -->
+              <linearGradient id="metal-chrome" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#94a3b8"/>
+                <stop offset="20%" stop-color="#f8fafc"/>
+                <stop offset="45%" stop-color="#cbd5e1"/>
+                <stop offset="70%" stop-color="#64748b"/>
+                <stop offset="90%" stop-color="#e2e8f0"/>
+                <stop offset="100%" stop-color="#475569"/>
+              </linearGradient>
+
+              <!-- Stick Knob Metallic Top Face -->
+              <radialGradient id="stick-knob-top" cx="45%" cy="40%" r="50%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="50%" stop-color="#e2e8f0"/>
+                <stop offset="85%" stop-color="#94a3b8"/>
+                <stop offset="100%" stop-color="#475569"/>
+              </radialGradient>
+
+              <!-- Power LED Cyan Glow -->
+              <filter id="pwr-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <!-- CONTROLLER SHADOW -->
+            <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+                  fill="rgba(0,0,0,0.38)" filter="url(#ctrl-drop-shadow)" transform="translate(0, 8)"/>
+
+            <!-- CONTROLLER MAIN BODY -->
+            <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+                  fill="url(#body-surface)" stroke="#cbd5e1" stroke-width="2"/>
+
+            <!-- Ergonomic Contours -->
+            <path d="M 125 155 C 98 220, 96 300, 126 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 435 155 C 462 220, 464 300, 434 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+
+            <!-- Top Center Scoop Panel -->
+            <path d="M 215 108 C 235 120, 255 122, 280 122 C 305 122, 325 120, 345 108 C 356 101, 362 94, 370 88 C 310 85, 250 85, 190 88 C 198 94, 204 101, 215 108 Z"
+                  fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>
+
+            <!-- BETAFPV Feather Logo & Text -->
+            <g transform="translate(244, 94)">
+              <path d="M 14 0 C 11 6, 7 9, 0 11 C 5 11, 10 9, 13 6 C 14 4, 15 2, 14 0 Z" fill="#94a3b8"/>
+              <path d="M 12 4 C 8 8, 4 9, 0 11 C 4 10, 8 8, 10 5 Z" fill="#64748b"/>
+              <text x="22" y="10" font-family="'Segoe UI', 'Outfit', sans-serif" font-weight="900" font-size="11.5" letter-spacing="2" fill="#94a3b8">BETAFPV</text>
+            </g>
+
+            <!-- SWITCHES (SA, SB, SC, SD) -->
+            <!-- SA (Sol Dış: Arm/Disarm) -->
+            <g id="svg-sw-sa" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sa')">
+              <title>Switch A (SA): Motor Kilidi (Arm / Disarm)</title>
+              <ellipse cx="128" cy="92" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+              <ellipse cx="128" cy="91" rx="4.2" ry="2.2" fill="#64748b"/>
+              <text x="128" y="105" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#0284c7" letter-spacing="0.5">SA</text>
+              <g id="svg-lever-sa" transform="translate(128, 92) rotate(-22)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                <line x1="0" y1="0" x2="0" y2="-17" stroke="url(#metal-chrome)" stroke-width="3.5" stroke-linecap="round"/>
+                <circle cx="0" y="-17" r="3" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+              </g>
+              <circle cx="128" cy="84" r="28" fill="transparent" style="touch-action: none;"/>
+            </g>
+
+            <!-- SB (Sol İç: Uçuş Modu) -->
+            <g id="svg-sw-sb" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sb')">
+              <title>Switch B (SB): Uçuş Modu (Angle / Horizon / Acro)</title>
+              <ellipse cx="160" cy="84" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+              <ellipse cx="160" cy="83" rx="4.2" ry="2.2" fill="#64748b"/>
+              <text x="160" y="97" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#d97706" letter-spacing="0.5">SB</text>
+              <g id="svg-lever-sb" transform="translate(160, 84) rotate(-20)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                <line x1="0" y1="0" x2="0" y2="-20" stroke="url(#metal-chrome)" stroke-width="3.8" stroke-linecap="round"/>
+                <circle cx="0" y="-20" r="3.2" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+              </g>
+              <circle cx="160" cy="74" r="28" fill="transparent" style="touch-action: none;"/>
+            </g>
+
+            <!-- SC (Sağ İç: Hız Seviyesi) -->
+            <g id="svg-sw-sc" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sc')">
+              <title>Switch C (SC): Hız Kademesi (%40 / %70 / %100)</title>
+              <ellipse cx="400" cy="84" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+              <ellipse cx="400" cy="83" rx="4.2" ry="2.2" fill="#64748b"/>
+              <text x="400" y="97" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#059669" letter-spacing="0.5">SC</text>
+              <g id="svg-lever-sc" transform="translate(400, 84) rotate(0)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                <line x1="0" y1="0" x2="0" y2="-20" stroke="url(#metal-chrome)" stroke-width="3.8" stroke-linecap="round"/>
+                <circle cx="0" y="-20" r="3.2" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+              </g>
+              <circle cx="400" cy="74" r="28" fill="transparent" style="touch-action: none;"/>
+            </g>
+
+            <!-- SD (Sağ Dış: Turtle / Buzzer) -->
+            <g id="svg-sw-sd" class="ctrl-sw-item" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sd')">
+              <title>Switch D (SD): Kaplumbağa Modu & Buzzer</title>
+              <ellipse cx="432" cy="92" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+              <ellipse cx="432" cy="91" rx="4.2" ry="2.2" fill="#64748b"/>
+              <text x="432" y="105" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#7c3aed" letter-spacing="0.5">SD</text>
+              <g id="svg-lever-sd" transform="translate(432, 92) rotate(22)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                <line x1="0" y1="0" x2="0" y2="-17" stroke="url(#metal-chrome)" stroke-width="3.5" stroke-linecap="round"/>
+                <circle cx="0" y="-17" r="3" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+              </g>
+              <circle cx="432" cy="84" r="28" fill="transparent" style="touch-action: none;"/>
+            </g>
+
+            <!-- GIMBAL LEFT (Sol Kol: Gaz / Yaw) -->
+            <g id="gimbal-left-group" style="touch-action: none;">
+              <circle cx="175" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+              <circle cx="175" cy="215" r="52" fill="url(#gimbal-well-grad)" stroke="#334155" stroke-width="2"/>
+              <rect x="141" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+              <rect x="146" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+              <circle cx="147" cy="187" r="1.8" fill="#475569"/>
+              <circle cx="203" cy="187" r="1.8" fill="#475569"/>
+              <circle cx="147" cy="243" r="1.8" fill="#475569"/>
+              <circle cx="203" cy="243" r="1.8" fill="#475569"/>
+
+              <!-- Moveable Left Stick -->
+              <g id="svg-stick-left" style="cursor: grab; touch-action: none;" transform="translate(0, 0)">
+                <circle id="stick-glow-left" cx="175" cy="215" r="26" fill="none" stroke="#00f0ff" stroke-width="2.5" opacity="0" style="transition: opacity 0.15s ease; filter: drop-shadow(0 0 10px #00f0ff); pointer-events: none;"/>
+                <circle cx="175" cy="215" r="26" fill="transparent"/>
+                <circle cx="175" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+                <circle cx="175" cy="215" r="15" fill="url(#metal-chrome)" stroke="#334155" stroke-width="1"/>
+                <circle cx="175" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+                <circle cx="175" cy="215" r="11" fill="url(#stick-knob-top)"/>
+                <circle cx="175" cy="215" r="7" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="2 1.5"/>
+                <circle cx="175" cy="215" r="3" fill="#475569"/>
+              </g>
+              <text x="175" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#38bdf8" letter-spacing="0.5">⬆️ SOL KOL (Gaz &amp; Yaw)</text>
+            </g>
+
+            <!-- POWER BUTTON -->
+            <g id="svg-power-group" style="cursor: pointer; touch-action: none;" onclick="toggleSimPower()">
+              <title>Açma / Kapama Güç Tuşu (Tıklayın)</title>
+              <circle cx="280" cy="232" r="26" fill="transparent" style="touch-action: none;"/>
+              <circle cx="280" cy="232" r="19" fill="#14171e" stroke="#334155" stroke-width="1.5"/>
+              <circle id="svg-pwr-led" cx="280" cy="232" r="14.5" fill="none" stroke="#475569" stroke-width="2.2" style="transition: all 0.3s ease;"/>
+              <circle id="svg-pwr-core" cx="280" cy="232" r="11.5" fill="#090b0e" stroke="#1e293b" stroke-width="1"/>
+              <path id="svg-pwr-icon" d="M 276 230 A 5.5 5.5 0 1 0 284 230 M 280 226 L 280 231"
+                    fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 0.3s ease;"/>
+              <text id="svg-pwr-label" x="280" y="263" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="9.5" font-weight="800" fill="#94a3b8" letter-spacing="1">GÜÇ</text>
+            </g>
+
+            <!-- GIMBAL RIGHT (Sağ Kol: Pitch / Roll) -->
+            <g id="gimbal-right-group" style="touch-action: none;">
+              <circle cx="385" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+              <circle cx="385" cy="215" r="52" fill="url(#gimbal-well-grad)" stroke="#334155" stroke-width="2"/>
+              <rect x="351" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+              <rect x="356" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+              <circle cx="357" cy="187" r="1.8" fill="#475569"/>
+              <circle cx="413" cy="187" r="1.8" fill="#475569"/>
+              <circle cx="357" cy="243" r="1.8" fill="#475569"/>
+              <circle cx="413" cy="243" r="1.8" fill="#475569"/>
+
+              <!-- Moveable Right Stick -->
+              <g id="svg-stick-right" style="cursor: grab; touch-action: none;" transform="translate(0, 0)">
+                <circle id="stick-glow-right" cx="385" cy="215" r="26" fill="none" stroke="#fbbf24" stroke-width="2.5" opacity="0" style="transition: opacity 0.15s ease; filter: drop-shadow(0 0 10px #fbbf24); pointer-events: none;"/>
+                <circle cx="385" cy="215" r="26" fill="transparent"/>
+                <circle cx="385" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+                <circle cx="385" cy="215" r="15" fill="url(#metal-chrome)" stroke="#334155" stroke-width="1"/>
+                <circle cx="385" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+                <circle cx="385" cy="215" r="11" fill="url(#stick-knob-top)"/>
+                <circle cx="385" cy="215" r="7" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="2 1.5"/>
+                <circle cx="385" cy="215" r="3" fill="#475569"/>
+              </g>
+              <text x="385" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#fbbf24" letter-spacing="0.5">🕹️ SAĞ KOL (Pitch &amp; Roll)</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Pilot Steps Indicator -->
+        <div class="sim-pilot-steps">
+          <span><span class="step-num">1</span> ⏻ Güç Aç</span>
+          <span class="step-arrow">➔</span>
+          <span><span class="step-num">2</span> [SA] Arm Et</span>
+          <span class="step-arrow">➔</span>
+          <span><span class="step-num">3</span> [Sol Kol] Gaz Ver</span>
+          <span class="step-arrow">➔</span>
+          <span><span class="step-num">4</span> [Sağ Kol] Uçur!</span>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Help / Pilot Rehberi Modal -->
+  <div id="help-modal" onclick="if(event.target===this) toggleHelp(false)">
+    <div class="help-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(255,255,255,0.15); padding-bottom: 8px;">
+        <h3 style="font-size: 18px; color: var(--sunny-yellow); font-weight: 800; display:flex; align-items:center; gap:8px;">
+          <span>🛸</span> 3D Pilot Kullanım ve Antrenman Kılavuzu
+        </h3>
+        <button class="btn-action" style="padding: 4px 10px;" onclick="toggleHelp(false)">✕</button>
+      </div>
+
+      <div class="help-grid">
+        <div class="help-item">
+          <strong>🕹️ Sol Kol (Gaz &amp; Yaw):</strong>
+          Yukarı iterek gaz verin ve yükselin. Aşağı çekerek alçalın. Sola/sağa çevirerek drone'un burnunu kendi ekseninde 360° döndürün.
+        </div>
+        <div class="help-item">
+          <strong>🕹️ Sağ Kol (Pitch &amp; Roll):</strong>
+          İleri iterek burnu öne eğin (ileri uçuş), geri çekerek burnu kaldırın (fren/geri). Sağa/sola yatırarak sağa/sola viraj alın.
+        </div>
+        <div class="help-item">
+          <strong>🔴 SA Şalteri (Arm / Kilit):</strong>
+          Motorları devreye sokar (ARM) veya durdurur (DISARM). Uçuş öncesi kumandayı açıp SA şalterini indirin.
+        </div>
+        <div class="help-item">
+          <strong>🟡 SB (Uçuş Modu):</strong>
+          ANGLE: Otomatik seviyeleme (yeni başlayanlar için kollar bırakılınca düz durur). HORIZON / ACRO: Serbest takla ve akrobasi.
+        </div>
+        <div class="help-item">
+          <strong>🟢 SC (Hız Kademesi):</strong>
+          %40 (Hassas iç mekan uçuşu), %70 (Dengeli standart), %100 (Hızlı yarış uçuşu).
+        </div>
+        <div class="help-item">
+          <strong>🟣 SD (Kaplumbağa Modu &amp; Buzzer):</strong>
+          Drone ters düşerse kaplumbağa modu motorları zıt yönde çevirerek drone'u takla attırıp ayakları üstüne düzeltir! <strong>T</strong> tuşuyla veya <strong>🐢 Kaza Testi</strong> butonuyla öğrencilerinize test edebilirsiniz.
+        </div>
+        <div class="help-item">
+          <strong>🎥 3D Kamera Modları:</strong>
+          <strong>Takip:</strong> Dronu arkasından izler. <br>
+          <strong>Serbest 3D:</strong> Fareyle/parmakla drone'u 360° çevirip kumanda tepkilerini yakından incelersiniz. <br>
+          <strong>FPV Kokpit:</strong> Pilot gözünden kokpit kamerası.
+        </div>
+        <div class="help-item">
+          <strong>⌨️ Klavye Kısayolları:</strong>
+          <strong>W / S:</strong> Gaz Artır / Azalt<br>
+          <strong>A / D:</strong> Yaw Sola / Sağa Dönüş<br>
+          <strong>Ok Tuşları:</strong> Pitch (İleri/Geri) &amp; Roll (Sağ/Sol)<br>
+          <strong>T:</strong> Kaza Testi (Ters Düşür) | <strong>Boşluk:</strong> SA Arm | <strong>R:</strong> Sıfırla
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 10px;">
+        <button class="btn-action active" style="width: 100%; justify-content: center; font-size: 14px; padding: 10px;" onclick="toggleHelp(false)">
+          Anladım, 3D Uçuşa Başla! 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===== SMARTBOARD & TABLET KORUMASI ===== */
+    ['contextmenu', 'selectstart', 'dragstart', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+      window.addEventListener(evt, e => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }, { capture: true, passive: false });
+      document.addEventListener(evt, e => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }, { capture: true, passive: false });
+    });
+
+    window.addEventListener('resize', () => {
+      window.scrollTo(0, 0);
+      onWindowResize();
+    });
+    window.addEventListener('orientationchange', () => {
+      window.scrollTo(0, 0);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        onWindowResize();
+      }, 120);
+    });
+
+    /* ===== SIMULATION STATE ===== */
+    const simState = {
+      power: false,
+      armed: false,
+      mode: 0, // 0: Angle, 1: Horizon, 2: Acro
+      rate: 1, // 0: 40%, 1: 70%, 2: 100%
+      buzzer: false,
+      throttle: 0, // 0..1
+      yaw: 0,      // -1..1
+      pitch: 0,    // -1..1
+      roll: 0,     // -1..1
+      droneX: 0,
+      droneY: 0,
+      droneZ: 0,
+      droneYaw: 0,
+      dronePitch: 0,
+      droneRoll: 0,
+      speed: 0,
+      isTurtleFlipped: false
+    };
+
+    const stickState = {
+      left: { pointerId: null, active: false, dx: 0, dy: 32 },
+      right: { pointerId: null, active: false, dx: 0, dy: 0 }
+    };
+
+    let cameraMode = 'chase'; // 'chase', 'orbit', 'fpv', 'top'
+
+    /* ===== AUDIO SYNTHESIZER (100% OFFLINE WEB AUDIO) ===== */
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('btn-sound');
+      const label = document.getElementById('sound-label');
+      if (soundEnabled) {
+        btn.querySelector('span').textContent = '🔊';
+        if (label) label.textContent = 'Ses Açık';
+        btn.classList.remove('active');
+        if (simState.armed && simState.power) {
+          updateMotorAudio(true, simState.throttle);
+        }
+        if (simState.buzzer) setBuzzerSound(true);
+      } else {
+        btn.querySelector('span').textContent = '🔇';
+        if (label) label.textContent = 'Sessiz';
+        btn.classList.add('active');
+        stopMotorAudio();
+        setBuzzerSound(false);
+      }
+    }
+
+    function playPowerSound(isOn) {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      if (isOn) {
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + i * 0.08);
+          gain.gain.setValueAtTime(0.18, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.16);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.16);
+        });
+      } else {
+        [1046.50, 783.99, 523.25, 329.63].forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(f, now + i * 0.07);
+          gain.gain.setValueAtTime(0.12, now + i * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.14);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.07);
+          osc.stop(now + i * 0.07 + 0.14);
+        });
+      }
+    }
+
+    function playSwitchClick() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1200, now);
+      osc.frequency.exponentialRampToValueAtTime(250, now + 0.04);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    }
+
+    let motorOsc = null, motorGain = null;
+    function updateMotorAudio(armed, throttle) {
+      if (!soundEnabled || !armed) {
+        stopMotorAudio();
+        return;
+      }
+      initAudio();
+      if (!motorOsc) {
+        try {
+          motorOsc = audioCtx.createOscillator();
+          motorGain = audioCtx.createGain();
+          motorOsc.type = 'sawtooth';
+          motorOsc.frequency.setValueAtTime(110, audioCtx.currentTime);
+          motorGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+          motorOsc.connect(motorGain);
+          motorGain.connect(audioCtx.destination);
+          motorOsc.start();
+        } catch(e) {}
+      }
+      if (motorOsc && motorGain) {
+        const targetFreq = 110 + throttle * 380;
+        const targetGain = 0.04 + throttle * 0.12;
+        motorOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.05);
+        motorGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.05);
+      }
+    }
+
+    function stopMotorAudio() {
+      if (motorOsc) {
+        try {
+          motorGain.gain.setTargetAtTime(0.001, audioCtx.currentTime, 0.04);
+          setTimeout(() => {
+            if (motorOsc) {
+              motorOsc.stop();
+              motorOsc.disconnect();
+              motorOsc = null;
+              motorGain = null;
+            }
+          }, 60);
+        } catch(e) {
+          motorOsc = null; motorGain = null;
+        }
+      }
+    }
+
+    let buzzerInterval = null;
+    function setBuzzerSound(active) {
+      if (buzzerInterval) {
+        clearInterval(buzzerInterval);
+        buzzerInterval = null;
+      }
+      if (active && soundEnabled) {
+        initAudio();
+        buzzerInterval = setInterval(() => {
+          try {
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(2600, now);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.12);
+          } catch(e) {}
+        }, 280);
+      }
+    }
+
+    function playGateSuccessSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      [880, 1318.5].forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + i * 0.08);
+        gain.gain.setValueAtTime(0.22, now + i * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.18);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + i * 0.08);
+        osc.stop(now + i * 0.08 + 0.18);
+      });
+    }
+
+    function playLapCompleteSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+      [523.25, 659.25, 783.99, 1046.50, 1318.5].forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, now + i * 0.07);
+        gain.gain.setValueAtTime(0.25, now + i * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.22);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + i * 0.07);
+        osc.stop(now + i * 0.07 + 0.22);
+      });
+    }
+
+    /* =========================================================================
+       THREE.JS 3D SCENE & BETAFPV METEOR 75 PRO MODEL
+       ========================================================================= */
+    let scene, camera, renderer, controls;
+    let droneGroup, droneMesh, droneLedMesh, droneLedLight;
+    let fpvCameraMount = null;
+    let fpvLookTarget = null;
+    let camGroupMesh = null;
+    const propellers = []; // 4 propellers: 0:FL, 1:FR, 2:RL, 3:RR
+    let propMaterial; // Tüm pervaneler orijinal Meteor 75 Pro beyazı!
+    let groundShadow;
+    let canvasWrap;
+
+    // Sıralı FPV Yarış Kapıları (Başlangıcın tam karşısında dümdüz 3 kapı, azalan irtifalar)
+    const raceGatesData = [
+      { x: 0, y: 5.2, z: 22, label: 'KAPI 1' }, // 1. Kapı: En yüksek (kalkış sonrası kolay geçiş)
+      { x: 0, y: 3.8, z: 46, label: 'KAPI 2' }, // 2. Kapı: Orta irtifa (hafif alçalış)
+      { x: 0, y: 2.5, z: 70, label: 'KAPI 3' }  // 3. Kapı: En alçak (yere yakın süzülüş)
+    ];
+    const raceState = {
+      currentGateIndex: 0,
+      score: 0,
+      laps: 0,
+      lastPassedTime: 0
+    };
+    const gateMeshObjects = [];
+
+    // Atmosfer & Uzay Nesneleri
+    let starField, starMaterial;
+    let moonMesh, sunMesh;
+    const cloudMeshes = [];
+    let sunLight, hemiLight;
+
+    function init3D() {
+      canvasWrap = document.getElementById('canvas3d-wrap');
+      const width = canvasWrap.clientWidth;
+      const height = canvasWrap.clientHeight;
+
+      // 1. Scene
+      scene = new THREE.Scene();
+      // Başlangıç: Aydınlık parlak gök mavisi
+      scene.background = new THREE.Color(0x38bdf8);
+      scene.fog = new THREE.FogExp2(0x7dd3fc, 0.0035);
+
+      // 2. Camera (Near clipping 0.05 ile kokpit içi kırpılmaları önler)
+      camera = new THREE.PerspectiveCamera(50, width / height, 0.05, 1500);
+      camera.position.set(0, 4.5, -9);
+
+      // 3. Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      canvasWrap.appendChild(renderer.domElement);
+
+      // 4. OrbitControls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.maxDistance = 120;
+      controls.minDistance = 1.2;
+      controls.enabled = false;
+
+      // 5. Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+      scene.add(ambientLight);
+
+      hemiLight = new THREE.HemisphereLight(0xbbeafe, 0x166534, 0.55);
+      scene.add(hemiLight);
+
+      sunLight = new THREE.DirectionalLight(0xfffbeb, 1.25);
+      sunLight.position.set(40, 90, 60);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 1024;
+      sunLight.shadow.mapSize.height = 1024;
+      sunLight.shadow.camera.near = 1;
+      sunLight.shadow.camera.far = 250;
+      sunLight.shadow.camera.left = -30;
+      sunLight.shadow.camera.right = 30;
+      sunLight.shadow.camera.top = 30;
+      sunLight.shadow.camera.bottom = -30;
+      scene.add(sunLight);
+
+      // 6. Environment: Sonsuz Çim Zemin, Pist, Ağaçlar, Bulutlar, Yıldızlar & Ay
+      create3DEnvironment();
+
+      // 7. Drone Model (BetaFPV Meteor 75 Pro - Net Ön & Arka Ayrımı)
+      createMeteor75ProDrone();
+
+      window.addEventListener('resize', onWindowResize, false);
+    }
+
+    // Prosedürel Canlı Çim Dokusu Oluşturucu
+    function createGrassTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+      // Temel zengin çim yeşili
+      ctx.fillStyle = '#15803d';
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Doğal çim dokusu benekleri
+      for (let i = 0; i < 3500; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const r = Math.random() * 2.2 + 0.8;
+        ctx.fillStyle = Math.random() > 0.45 ? '#166534' : '#22c55e';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(120, 120);
+      return texture;
+    }
+
+    function create3DEnvironment() {
+      // 1. GENİŞ YEŞİL ÇİM ZEMİN (Ufka kadar devam eden 2400x2400 arazi)
+      const grassTexture = createGrassTexture();
+      const groundGeo = new THREE.PlaneGeometry(2400, 2400);
+      const groundMat = new THREE.MeshStandardMaterial({
+        map: grassTexture,
+        roughness: 0.92,
+        metalness: 0.04
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      // 2. RUNWAY PİSTİ (Asfalt Şerit)
+      const runwayGeo = new THREE.PlaneGeometry(16, 140);
+      const runwayMat = new THREE.MeshStandardMaterial({
+        color: 0x1e293b,
+        roughness: 0.75,
+        metalness: 0.15
+      });
+      const runway = new THREE.Mesh(runwayGeo, runwayMat);
+      runway.rotation.x = -Math.PI / 2;
+      runway.position.set(0, 0.015, 0);
+      runway.receiveShadow = true;
+      scene.add(runway);
+
+      // Pist Sarı Kesik Çizgileri
+      for (let z = -60; z <= 60; z += 6) {
+        const lineGeo = new THREE.PlaneGeometry(0.35, 3.5);
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+
+        const lineL = new THREE.Mesh(lineGeo, lineMat);
+        lineL.rotation.x = -Math.PI / 2;
+        lineL.position.set(-7.5, 0.025, z);
+        scene.add(lineL);
+
+        const lineR = new THREE.Mesh(lineGeo, lineMat);
+        lineR.rotation.x = -Math.PI / 2;
+        lineR.position.set(7.5, 0.025, z);
+        scene.add(lineR);
+      }
+
+      // HELIPAD / İNİŞ ALANI
+      const padRingGeo = new THREE.RingGeometry(3.2, 3.7, 32);
+      const padRingMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+      const padRing = new THREE.Mesh(padRingGeo, padRingMat);
+      padRing.rotation.x = -Math.PI / 2;
+      padRing.position.set(0, 0.03, 0);
+      scene.add(padRing);
+
+      const padRingInnerGeo = new THREE.RingGeometry(2.2, 2.5, 32);
+      const padRingInnerMat = new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide });
+      const padRingInner = new THREE.Mesh(padRingInnerGeo, padRingInnerMat);
+      padRingInner.rotation.x = -Math.PI / 2;
+      padRingInner.position.set(0, 0.03, 0);
+      scene.add(padRingInner);
+
+      // Helipad 'H' Harfi
+      const hGroup = new THREE.Group();
+      const hMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const hBar1 = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 2.2), hMat);
+      hBar1.rotation.x = -Math.PI / 2;
+      hBar1.position.set(-0.7, 0.035, 0);
+      hGroup.add(hBar1);
+
+      const hBar2 = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 2.2), hMat);
+      hBar2.rotation.x = -Math.PI / 2;
+      hBar2.position.set(0.7, 0.035, 0);
+      hGroup.add(hBar2);
+
+      const hCross = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.4), hMat);
+      hCross.rotation.x = -Math.PI / 2;
+      hCross.position.set(0, 0.035, 0);
+      hGroup.add(hCross);
+      scene.add(hGroup);
+
+      // 3. SIRALI FPV YARIŞ KAPILARI (Sırayla Geçilen Puanlı Parkur)
+      createSequentialRaceGates();
+
+      // 4. 3D ÇAM AĞAÇLARI
+      createTreeGrove();
+
+      // 5. 3D BULUT TABAKASI (İrtifa: 18m - 30m)
+      createCloudLayer();
+
+      // 6. 3D YILDIZ ALANI
+      createStarField();
+
+      // 7. 3D AY (THE MOON)
+      createMoon();
+
+      // 8. 3D GÜNEŞ KÜRESİ
+      const sunGeo = new THREE.SphereGeometry(14, 24, 24);
+      const sunMat = new THREE.MeshBasicMaterial({ color: 0xfff0aa });
+      sunMesh = new THREE.Mesh(sunGeo, sunMat);
+      sunMesh.position.set(60, 140, 90);
+      scene.add(sunMesh);
+
+      // Dinamik Yumuşak Zemin Gölgesi
+      const shadowGeo = new THREE.PlaneGeometry(2.4, 2.4);
+      const shadowMat = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.55,
+        depthWrite: false
+      });
+      groundShadow = new THREE.Mesh(shadowGeo, shadowMat);
+      groundShadow.rotation.x = -Math.PI / 2;
+      groundShadow.position.set(0, 0.04, 0);
+      scene.add(groundShadow);
+    }
+
+    // SIRALI FPV YARIŞ KAPILARI PARKURU (Dümdüz, Geniş ve Çocuklar İçin Basit)
+    function createSequentialRaceGates() {
+      const archRadius = 4.0; // İlkokul öğrencileri için ferah, geniş geçişli halka
+      raceGatesData.forEach((data, index) => {
+        const gateGroup = new THREE.Group();
+        gateGroup.position.set(data.x, 0, data.z);
+
+        // Geniş Torus kemeri
+        const archGeo = new THREE.TorusGeometry(archRadius, 0.28, 16, 36, Math.PI);
+        const archMat = new THREE.MeshStandardMaterial({
+          color: (index === 0) ? 0x22c55e : 0x0284c7,
+          roughness: 0.3,
+          metalness: 0.4,
+          emissive: (index === 0) ? 0x22c55e : 0x0284c7,
+          emissiveIntensity: (index === 0) ? 0.95 : 0.25
+        });
+        const arch = new THREE.Mesh(archGeo, archMat);
+        arch.position.y = data.y;
+        gateGroup.add(arch);
+
+        // Destek direkleri
+        const postGeo = new THREE.CylinderGeometry(0.24, 0.24, data.y, 16);
+        const postL = new THREE.Mesh(postGeo, archMat);
+        postL.position.set(-archRadius, data.y / 2, 0);
+        gateGroup.add(postL);
+
+        const postR = new THREE.Mesh(postGeo, archMat);
+        postR.position.set(archRadius, data.y / 2, 0);
+        gateGroup.add(postR);
+
+        // Kapı Tabelası (KAPI 1, KAPI 2, KAPI 3)
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, 256, 64);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = (index === 0) ? '#22c55e' : '#38bdf8';
+        ctx.strokeRect(2, 2, 252, 60);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 32px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(data.label, 128, 32);
+
+        const bannerTex = new THREE.CanvasTexture(canvas);
+        const bannerGeo = new THREE.PlaneGeometry(3.8, 0.85);
+        const bannerMat = new THREE.MeshBasicMaterial({ map: bannerTex, side: THREE.DoubleSide });
+        const banner = new THREE.Mesh(bannerGeo, bannerMat);
+        banner.position.y = data.y + archRadius + 0.45;
+        // DİKKAT: z=0'dan gelen pilota yazının ayna gibi ters değil, düz ve net görünmesi için 180° çeviriyoruz:
+        banner.rotation.y = Math.PI;
+        gateGroup.add(banner);
+
+        scene.add(gateGroup);
+
+        gateMeshObjects.push({
+          group: gateGroup,
+          arch: arch,
+          archMat: archMat,
+          banner: banner,
+          data: data,
+          index: index
+        });
+      });
+      updateGateVisuals();
+    }
+
+    function updateGateVisuals() {
+      gateMeshObjects.forEach((item, idx) => {
+        const isCurrent = (idx === raceState.currentGateIndex);
+        if (isCurrent) {
+          item.archMat.color.setHex(0x22c55e); // Parlak neon yeşil aktif kapı
+          item.archMat.emissive.setHex(0x22c55e);
+          item.archMat.emissiveIntensity = 0.95;
+          item.arch.scale.set(1.04, 1.04, 1.04);
+        } else {
+          item.archMat.color.setHex(0x0284c7); // Neon mavi bekleyen kapı
+          item.archMat.emissive.setHex(0x0284c7);
+          item.archMat.emissiveIntensity = 0.22;
+          item.arch.scale.set(1.0, 1.0, 1.0);
+        }
+      });
+
+      const gateBadge = document.getElementById('hud-gate-badge');
+      if (gateBadge) {
+        gateBadge.textContent = '🎯 HEDEF: KAPI ' + (raceState.currentGateIndex + 1) + '/' + raceGatesData.length;
+      }
+      const scoreBadge = document.getElementById('hud-score-badge');
+      if (scoreBadge) {
+        scoreBadge.textContent = '🏆 SKOR: ' + raceState.score;
+      }
+    }
+
+    function checkRaceGateCollisions() {
+      if (!simState.armed || !simState.power) return;
+
+      const target = raceGatesData[raceState.currentGateIndex];
+      if (!target) return;
+
+      // Drone ile hedef kapı arasındaki bağıl mesafe
+      const dx = simState.droneX - target.x;
+      const dy = simState.droneY - target.y;
+      const dz = simState.droneZ - target.z;
+
+      const ringDist = Math.hypot(dx, dy);
+      const planeDist = Math.abs(dz);
+
+      // İlkokul düzeyine uygun ferah algılama toleransı (4.2m yarıçap, ±2.4m derinlik)
+      if (ringDist < 4.2 && planeDist < 2.4) {
+        const now = Date.now();
+        if (now - raceState.lastPassedTime < 900) return;
+        raceState.lastPassedTime = now;
+
+        raceState.score += 100;
+        playGateSuccessSound();
+
+        const passedGate = gateMeshObjects[raceState.currentGateIndex];
+        if (passedGate) {
+          passedGate.archMat.emissiveIntensity = 2.4;
+          setTimeout(() => { if (passedGate) passedGate.archMat.emissiveIntensity = 0.25; }, 350);
+        }
+
+        showStickHint('🎯 ' + target.label + ' GEÇİLDİ! (+100 PUAN)');
+
+        const statusMsg = document.getElementById('hud-status-msg');
+        if (statusMsg) {
+          statusMsg.textContent = '🎯 Harika uçuş! ' + target.label + ' geçildi! (+100 PUAN)';
+        }
+
+        // Sıradaki kapıya geç (1 -> 2 -> 3 -> 1)
+        raceState.currentGateIndex = (raceState.currentGateIndex + 1) % raceGatesData.length;
+
+        // Tur tamamlandı mı? (3 kapı da başarıyla bitti)
+        if (raceState.currentGateIndex === 0) {
+          raceState.laps++;
+          raceState.score += 200; // Tur bonusu
+          playLapCompleteSound();
+          showStickHint('🏆 TEBRİKLER! 3 KAPI TAMAMLANDI! (+200 BONUS)');
+          if (statusMsg) {
+            statusMsg.textContent = '🏆 MÜKEMMEL! 3 kapı da başarıyla tamamlandı! Toplam Skor: ' + raceState.score + ' Puan!';
+          }
+        }
+
+        updateGateVisuals();
+      }
+    }
+
+    // 4. 3D Çam Ağaçları
+    function createTreeGrove() {
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.9 });
+      const foliageMat = new THREE.MeshStandardMaterial({ color: 0x14532d, roughness: 0.8 });
+
+      const trunkGeo = new THREE.CylinderGeometry(0.25, 0.35, 1.8, 8);
+      const c1Geo = new THREE.ConeGeometry(2.2, 2.6, 8);
+      const c2Geo = new THREE.ConeGeometry(1.7, 2.2, 8);
+      const c3Geo = new THREE.ConeGeometry(1.2, 1.8, 8);
+
+      // Rastgele ama pist ve kapı koridorundan uzak konumlarda 75 ağaç
+      for (let i = 0; i < 75; i++) {
+        let x = (Math.random() - 0.5) * 450;
+        let z = (Math.random() - 0.5) * 450;
+        // Pisti ve kapıların düz uçuş koridorunu tamamen açık bırak
+        if (Math.abs(x) < 18 && z > -25 && z < 90) continue;
+
+        const tree = new THREE.Group();
+        tree.position.set(x, 0, z);
+
+        const s = 0.75 + Math.random() * 0.6;
+        tree.scale.set(s, s, s);
+
+        const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+        trunk.position.y = 0.9;
+        trunk.castShadow = true;
+        tree.add(trunk);
+
+        const foliage1 = new THREE.Mesh(c1Geo, foliageMat);
+        foliage1.position.y = 2.4;
+        foliage1.castShadow = true;
+        tree.add(foliage1);
+
+        const foliage2 = new THREE.Mesh(c2Geo, foliageMat);
+        foliage2.position.y = 3.6;
+        foliage2.castShadow = true;
+        tree.add(foliage2);
+
+        const foliage3 = new THREE.Mesh(c3Geo, foliageMat);
+        foliage3.position.y = 4.7;
+        foliage3.castShadow = true;
+        tree.add(foliage3);
+
+        scene.add(tree);
+      }
+    }
+
+    // 3D Bulut Katmanı (İrtifa: 18m - 32m)
+    function createCloudLayer() {
+      const cloudGeo = new THREE.SphereGeometry(3.5, 12, 10);
+      const cloudMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.3,
+        transparent: true,
+        opacity: 0.82
+      });
+
+      for (let i = 0; i < 45; i++) {
+        const cloudGroup = new THREE.Group();
+        const cx = (Math.random() - 0.5) * 550;
+        const cy = 20 + Math.random() * 12; // 20m - 32m irtifa
+        const cz = (Math.random() - 0.5) * 550;
+        cloudGroup.position.set(cx, cy, cz);
+
+        // Bir bulut için 4-5 küre birleşimi
+        const numPuffs = 4 + Math.floor(Math.random() * 3);
+        for (let j = 0; j < numPuffs; j++) {
+          const puff = new THREE.Mesh(cloudGeo, cloudMat);
+          const s = 0.8 + Math.random() * 0.7;
+          puff.scale.set(s * 1.5, s * 0.8, s * 1.2);
+          puff.position.set(
+            (Math.random() - 0.5) * 5,
+            (Math.random() - 0.5) * 1.5,
+            (Math.random() - 0.5) * 5
+          );
+          cloudGroup.add(puff);
+        }
+
+        scene.add(cloudGroup);
+        cloudMeshes.push({ group: cloudGroup, speed: 0.02 + Math.random() * 0.04 });
+      }
+    }
+
+    // 3D Yıldız Alanı (Yüksek irtifada / Uzayda görünür)
+    function createStarField() {
+      const starCount = 3500;
+      const starGeometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(starCount * 3);
+
+      for (let i = 0; i < starCount * 3; i += 3) {
+        // Geniş bir kubbe şeklinde yukarıya dağılmış
+        const radius = 250 + Math.random() * 250;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * (Math.PI / 2.2); // Yukarı yarımküre
+
+        positions[i] = radius * Math.sin(phi) * Math.cos(theta);
+        positions[i + 1] = 45 + radius * Math.cos(phi); // Yükseklik 45m+
+        positions[i + 2] = radius * Math.sin(phi) * Math.sin(theta);
+      }
+
+      starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+      starMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 2.2,
+        transparent: true,
+        opacity: 0 // Başlangıçta gündüz olduğu için görünmez
+      });
+
+      starField = new THREE.Points(starGeometry, starMaterial);
+      scene.add(starField);
+    }
+
+    // 3D Ay (Uzayda asılı küre)
+    function createMoon() {
+      const moonGeo = new THREE.SphereGeometry(18, 32, 32);
+      const moonMat = new THREE.MeshStandardMaterial({
+        color: 0xdde7f5,
+        roughness: 0.75,
+        metalness: 0.1,
+        emissive: 0x93c5fd,
+        emissiveIntensity: 0.25
+      });
+      moonMesh = new THREE.Mesh(moonGeo, moonMat);
+      moonMesh.position.set(130, 190, -220);
+      scene.add(moonMesh);
+
+      // Ayın etrafında hafif atmosferik parıltı halesi
+      const haloGeo = new THREE.SphereGeometry(21, 16, 16);
+      const haloMat = new THREE.MeshBasicMaterial({
+        color: 0x60a5fa,
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.BackSide
+      });
+      const moonHalo = new THREE.Mesh(haloGeo, haloMat);
+      moonMesh.add(moonHalo);
+    }
+
+    /* =========================================================================
+       3D BETAFPV METEOR 75 PRO DRONE BUILDER
+       (Net Ön-Arka Ayrımı: Ön Turuncu, Arka Beyaz, Ön Farlar & İleri Oku)
+       ========================================================================= */
+    function createMeteor75ProDrone() {
+      droneGroup = new THREE.Group();
+      scene.add(droneGroup);
+
+      // Subgroup for pitch and roll rotation (droneGroup handles world pos & yaw)
+      droneMesh = new THREE.Group();
+      droneGroup.add(droneMesh);
+
+      // Materials
+      const frameMaterial = new THREE.MeshStandardMaterial({
+        color: 0x7cb3f5, // Meteor açık mavi whoop gövdesi
+        roughness: 0.55,
+        metalness: 0.1
+      });
+
+      const canopyMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff, // Beyaz kanopi
+        roughness: 0.25,
+        metalness: 0.2
+      });
+
+      const motorMaterial = new THREE.MeshStandardMaterial({
+        color: 0xd8e0e8, // Gümüş fırçasız motor çanı
+        roughness: 0.25,
+        metalness: 0.85
+      });
+
+      const motorBaseMaterial = new THREE.MeshStandardMaterial({
+        color: 0x111827,
+        roughness: 0.6,
+        metalness: 0.7
+      });
+
+      const ventMaterial = new THREE.MeshStandardMaterial({
+        color: 0x111827,
+        roughness: 0.8,
+        metalness: 0.1
+      });
+
+      // TÜM PERVANELER: ORİJİNAL BETAFPV METEOR 75 PRO GİBİ PARLAK BEYAZ!
+      propMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.3,
+        transparent: true,
+        opacity: 0.85,
+        side: THREE.DoubleSide
+      });
+
+      const cameraMaterial = new THREE.MeshStandardMaterial({
+        color: 0x1e293b,
+        roughness: 0.2,
+        metalness: 0.8
+      });
+
+      const lensMaterial = new THREE.MeshStandardMaterial({
+        color: 0x0284c7,
+        roughness: 0.1,
+        metalness: 0.9,
+        emissive: 0x0284c7,
+        emissiveIntensity: 0.6
+      });
+
+      // 1. FC / ESC Merkez Gövde Kutusu
+      const bodyGeo = new THREE.BoxGeometry(1.2, 0.16, 1.2);
+      const body = new THREE.Mesh(bodyGeo, frameMaterial);
+      body.position.y = 0.15;
+      body.castShadow = true;
+      droneMesh.add(body);
+
+      // 2. Kanopi Grubu
+      const canopyGroup = new THREE.Group();
+      canopyGroup.position.set(0, 0.26, 0);
+
+      const canopyGeo = new THREE.SphereGeometry(0.66, 32, 16, 0, Math.PI * 2, 0, Math.PI / 1.8);
+      const canopy = new THREE.Mesh(canopyGeo, canopyMaterial);
+      canopy.scale.set(0.92, 0.92, 1.32);
+      canopy.rotation.x = THREE.MathUtils.degToRad(-15);
+      canopy.castShadow = true;
+      canopyGroup.add(canopy);
+
+      // Kanopi Üzerine Neon Sarı İleri Yön Oku (Chevron / Arrow Marker)
+      // Pilot yukarıdan baktığında ileri yönü anında görür!
+      const arrowShape = new THREE.Shape();
+      arrowShape.moveTo(0, 0.32);
+      arrowShape.lineTo(0.18, -0.15);
+      arrowShape.lineTo(0.08, -0.08);
+      arrowShape.lineTo(0, -0.22);
+      arrowShape.lineTo(-0.08, -0.08);
+      arrowShape.lineTo(-0.18, -0.15);
+      arrowShape.closePath();
+
+      const arrowGeo = new THREE.ShapeGeometry(arrowShape);
+      const arrowMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide });
+      const arrowMesh = new THREE.Mesh(arrowGeo, arrowMat);
+      arrowMesh.position.set(0, 0.58, 0.12);
+      arrowMesh.rotation.x = -Math.PI / 2.3;
+      canopyGroup.add(arrowMesh);
+
+      // Kanopi Havalandırma Izgaraları
+      const finGeo = new THREE.BoxGeometry(0.06, 0.3, 0.3);
+      const fin1 = new THREE.Mesh(finGeo, ventMaterial);
+      fin1.position.set(0.24, 0.45, -0.1);
+      fin1.rotation.x = Math.PI / 6;
+      canopyGroup.add(fin1);
+
+      const fin2 = new THREE.Mesh(finGeo, ventMaterial);
+      fin2.position.set(-0.24, 0.45, -0.1);
+      fin2.rotation.x = Math.PI / 6;
+      canopyGroup.add(fin2);
+
+      const fin3 = new THREE.Mesh(finGeo, ventMaterial);
+      fin3.position.set(0, 0.5, -0.1);
+      fin3.rotation.x = Math.PI / 6;
+      canopyGroup.add(fin3);
+
+      droneMesh.add(canopyGroup);
+
+      // 3. FPV Kamera & Lens (ÖN TARAFTA: +Z YÖNÜNE BAKAR)
+      const camGroup = new THREE.Group();
+      camGroupMesh = camGroup;
+      camGroup.position.set(0, 0.46, 0.72); // +Z: Ön taraf
+      camGroup.rotation.x = THREE.MathUtils.degToRad(-25); // FPV yukarı eğimi
+
+      const camBody = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.32, 16), cameraMaterial);
+      camBody.rotation.x = Math.PI / 2;
+      camGroup.add(camBody);
+
+      const lensGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.1, 16);
+      lensGeo.rotateX(Math.PI / 2);
+      const lens = new THREE.Mesh(lensGeo, lensMaterial);
+      lens.position.z = 0.17;
+      camGroup.add(lens);
+
+      droneMesh.add(camGroup);
+
+      // FPV Kamera Vizör Montaj Noktası (Lensin tam önünde, vizörü kapatacak hiçbir cisim yok!)
+      fpvCameraMount = new THREE.Object3D();
+      fpvCameraMount.position.set(0, 0.48, 1.05); // Lensin tam önü!
+      fpvCameraMount.rotation.x = THREE.MathUtils.degToRad(-25);
+      fpvLookTarget = new THREE.Object3D();
+      fpvLookTarget.position.set(0, 0, 25);
+      fpvCameraMount.add(fpvLookTarget);
+      droneMesh.add(fpvCameraMount);
+
+      // 4. İKİ ADET ÖN BEYAZ LED FAR (Karanlıkta ve Uzayda İleriyi Aydınlatır!)
+      const hlMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const hlGeo = new THREE.SphereGeometry(0.07, 12, 12);
+
+      const hlLeft = new THREE.Mesh(hlGeo, hlMat);
+      hlLeft.position.set(-0.35, 0.38, 0.75);
+      droneMesh.add(hlLeft);
+
+      const hlRight = new THREE.Mesh(hlGeo, hlMat);
+      hlRight.position.set(0.35, 0.38, 0.75);
+      droneMesh.add(hlRight);
+
+      // Ön Farlardan İleriye Doğru Işık Huzmesi
+      const frontSpot = new THREE.SpotLight(0xffffff, 1.2, 35, Math.PI / 5, 0.5);
+      frontSpot.position.set(0, 0.45, 0.8);
+      // İleriye (+Z) baksın
+      const spotTarget = new THREE.Object3D();
+      spotTarget.position.set(0, 0, 15);
+      droneMesh.add(spotTarget);
+      frontSpot.target = spotTarget;
+      droneMesh.add(frontSpot);
+
+      // 5. ARKA RGB STATUS LED & ANTEN (-Z YÖNÜNDE: ARKA TARAF)
+      const ledGeo = new THREE.BoxGeometry(0.3, 0.08, 0.06);
+      const ledMat = new THREE.MeshStandardMaterial({
+        color: 0xef4444,
+        emissive: 0xef4444,
+        emissiveIntensity: 0.8
+      });
+      droneLedMesh = new THREE.Mesh(ledGeo, ledMat);
+      droneLedMesh.position.set(0, 0.32, -0.78);
+      droneMesh.add(droneLedMesh);
+
+      droneLedLight = new THREE.PointLight(0xef4444, 0.8, 2.5);
+      droneLedLight.position.set(0, 0.32, -0.9);
+      droneMesh.add(droneLedLight);
+
+      // Arka FPV Anten Çubuğu
+      const antStemGeo = new THREE.CylinderGeometry(0.018, 0.018, 0.36, 8);
+      const antMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+      const antStem = new THREE.Mesh(antStemGeo, antMat);
+      antStem.position.set(0, 0.52, -0.74);
+      antStem.rotation.x = -Math.PI / 4;
+      droneMesh.add(antStem);
+
+      const antCap = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+      antCap.position.set(0, 0.65, -0.86);
+      droneMesh.add(antCap);
+
+      // 6. DÖRT MOTOR, DUCT VE PERVANE (ÖN: TURUNCU, ARKA: BEYAZ)
+      const offset = 1.35;
+      const propGuardRadius = 1.0;
+      const motorHeight = 0.3;
+      const motorRadius = 0.25;
+
+      // DOĞRU DÜZEN:
+      // +Z = ÖN (Kamera yönü!)
+      // -Z = ARKA (LED yönü!)
+      const motorPositions = [
+        { x: -offset, z:  offset, name: 'FR', isFront: true,  dir: -1 }, // 0: Ön Sağ (CW)
+        { x:  offset, z:  offset, name: 'FL', isFront: true,  dir:  1 }, // 1: Ön Sol (CCW)
+        { x: -offset, z: -offset, name: 'RR', isFront: false, dir:  1 }, // 2: Arka Sağ (CCW)
+        { x:  offset, z: -offset, name: 'RL', isFront: false, dir: -1 }  // 3: Arka Sol (CW)
+      ];
+
+      motorPositions.forEach((pos, index) => {
+        // Duct Outer Ring
+        const ductGroup = new THREE.Group();
+        ductGroup.position.set(pos.x, 0.2, pos.z);
+
+        const ductGeo = new THREE.CylinderGeometry(propGuardRadius, propGuardRadius, 0.32, 32, 1, true);
+        const duct = new THREE.Mesh(ductGeo, frameMaterial);
+        duct.material.side = THREE.DoubleSide;
+        duct.castShadow = true;
+        duct.receiveShadow = true;
+        ductGroup.add(duct);
+
+        // Top/Bottom Rim Torus
+        const lipGeo = new THREE.TorusGeometry(propGuardRadius, 0.035, 8, 32);
+        const lipTop = new THREE.Mesh(lipGeo, frameMaterial);
+        lipTop.position.y = 0.16;
+        lipTop.rotation.x = Math.PI / 2;
+        ductGroup.add(lipTop);
+
+        const lipBottom = new THREE.Mesh(lipGeo, frameMaterial);
+        lipBottom.position.y = -0.16;
+        lipBottom.rotation.x = Math.PI / 2;
+        ductGroup.add(lipBottom);
+
+        // 3 Struts per duct
+        for (let i = 0; i < 3; i++) {
+          const angle = (i * Math.PI * 2) / 3 + (index * Math.PI / 4);
+          const strutGeo = new THREE.BoxGeometry(propGuardRadius * 1.9, 0.04, 0.04);
+          const strut = new THREE.Mesh(strutGeo, frameMaterial);
+          strut.position.y = -0.1;
+          strut.rotation.y = angle;
+          ductGroup.add(strut);
+        }
+
+        droneMesh.add(ductGroup);
+
+        // Motor Base
+        const mBaseGeo = new THREE.CylinderGeometry(motorRadius, motorRadius, 0.1, 16);
+        const mBase = new THREE.Mesh(mBaseGeo, motorBaseMaterial);
+        mBase.position.set(pos.x, 0.15, pos.z);
+        droneMesh.add(mBase);
+
+        // Motor Bell
+        const motorGeo = new THREE.CylinderGeometry(motorRadius * 0.9, motorRadius * 0.9, motorHeight, 16);
+        const motor = new THREE.Mesh(motorGeo, motorMaterial);
+        motor.position.set(pos.x, 0.3, pos.z);
+        motor.castShadow = true;
+        droneMesh.add(motor);
+
+        // Pervane Grubu: Orijinal Meteor 75 Pro gibi tüm 4 pervane de Kar Beyazı!
+        const pMat = propMaterial;
+        const propGroup = new THREE.Group();
+        propGroup.position.set(pos.x, 0.45, pos.z);
+
+        for (let i = 0; i < 3; i++) {
+          const angle = (i * Math.PI * 2) / 3;
+          const bladeGroup = new THREE.Group();
+          bladeGroup.rotation.y = angle;
+
+          const bladeGeo = new THREE.CylinderGeometry(0.14, 0.02, propGuardRadius * 0.94, 8);
+          bladeGeo.scale(1, 1, 0.05);
+          bladeGeo.translate(0, propGuardRadius * 0.47, 0);
+
+          const pitchDir = pos.dir;
+          bladeGeo.rotateX((Math.PI / 10) * pitchDir);
+
+          const blade = new THREE.Mesh(bladeGeo, pMat);
+          blade.rotation.z = Math.PI / 2;
+          bladeGroup.add(blade);
+          propGroup.add(bladeGroup);
+        }
+
+        // Central Hub
+        const hubGeo = new THREE.CylinderGeometry(0.065, 0.065, 0.08, 16);
+        const hub = new THREE.Mesh(hubGeo, pMat);
+        propGroup.add(hub);
+
+        droneMesh.add(propGroup);
+
+        propellers.push({
+          mesh: propGroup,
+          dir: pos.dir,
+          speed: 0,
+          index: index,
+          isFront: pos.isFront
+        });
+
+        // Karbon Kol (Gövdeden Duct'a)
+        const armLength = Math.sqrt(pos.x * pos.x + pos.z * pos.z) - propGuardRadius + 0.1;
+        const armGeo = new THREE.BoxGeometry(armLength, 0.1, 0.22);
+        const arm = new THREE.Mesh(armGeo, frameMaterial);
+        arm.position.set(pos.x / 2, 0.15, pos.z / 2);
+        arm.rotation.y = Math.atan2(pos.x, pos.z) - Math.PI / 2;
+        droneMesh.add(arm);
+      });
+
+      // 7. LiPo 1S Batarya (Altta)
+      const battGeo = new THREE.BoxGeometry(0.62, 0.28, 1.45);
+      const battMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.8 });
+      const batt = new THREE.Mesh(battGeo, battMat);
+      batt.position.set(0, -0.08, 0);
+      droneMesh.add(batt);
+
+      // Batarya Kablosu
+      const wireGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.4, 8);
+      const wireMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b });
+      const wire = new THREE.Mesh(wireGeo, wireMat);
+      wire.position.set(0, -0.08, 0.82);
+      wire.rotation.x = Math.PI / 4;
+      droneMesh.add(wire);
+
+      // Başlangıç konumu (Helipad üzerinde, burnu ileriye dönük)
+      droneGroup.position.set(0, 0.1, 0);
+    }
+
+    function onWindowResize() {
+      if (!renderer || !camera || !canvasWrap) return;
+      const width = canvasWrap.clientWidth;
+      const height = canvasWrap.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    function setCameraMode(mode) {
+      cameraMode = mode;
+      ['chase', 'orbit', 'fpv', 'top'].forEach(m => {
+        const btn = document.getElementById('btn-cam-' + m);
+        if (btn) btn.classList.toggle('active', m === mode);
+      });
+
+      const orbitHint = document.getElementById('hud-orbit-hint');
+      if (orbitHint) {
+        orbitHint.style.display = (mode === 'orbit') ? 'flex' : 'none';
+      }
+
+      if (mode === 'orbit') {
+        controls.enabled = true;
+        controls.target.copy(droneGroup.position);
+      } else {
+        controls.enabled = false;
+      }
+
+      // FPV kokpitteyken kamera gövdesinin/lensinin (mavi nokta) görüşü kapatmasını %100 engelle
+      if (camGroupMesh) {
+        camGroupMesh.visible = (mode !== 'fpv');
+      }
+
+      // Kamera Up vektörünü sıfırla (FPV dışındaki modlar için dikey zemin)
+      if (mode !== 'fpv') {
+        camera.up.set(0, 1, 0);
+      }
+
+      // Seçilen kamera modunu gecikmesiz, anında uygula (Mavi nokta veya bekleme olmasın!)
+      updateCamera();
+
+      if (mode === 'chase') {
+        showStickHint('🎥 Takip Kamerası Modu');
+      } else if (mode === 'orbit') {
+        showStickHint('🔄 Serbest 3D İnceleme: Fare/parmakla döndürün');
+      } else if (mode === 'fpv') {
+        showStickHint('🥽 FPV Pilot Kokpiti: Net Ön Görüş!');
+      } else if (mode === 'top') {
+        showStickHint('📐 Üst/Yan Teknik Gözlem Açısı');
+      }
+    }
+
+    /* =========================================================================
+       CONTROLLER SWITCHES & POWER LOGIC
+       ========================================================================= */
+    let lastPowerToggleTime = 0;
+    function toggleSimPower() {
+      const now = Date.now();
+      if (now - lastPowerToggleTime < 220) return;
+      lastPowerToggleTime = now;
+
+      initAudio();
+      simState.power = !simState.power;
+      playPowerSound(simState.power);
+
+      const pwrLed = document.getElementById('svg-pwr-led');
+      const pwrIcon = document.getElementById('svg-pwr-icon');
+      const pwrLabel = document.getElementById('svg-pwr-label');
+      const statusMsg = document.getElementById('hud-status-msg');
+
+      if (simState.power) {
+        if (pwrLed) {
+          pwrLed.setAttribute('stroke', '#00f0ff');
+          pwrLed.setAttribute('filter', 'url(#pwr-glow)');
+          pwrLed.classList.add('pulse-pwr');
+        }
+        if (pwrIcon) pwrIcon.setAttribute('stroke', '#ffffff');
+        if (pwrLabel) { pwrLabel.setAttribute('fill', '#38bdf8'); pwrLabel.textContent = 'AÇIK'; }
+        if (statusMsg) statusMsg.textContent = '🟢 Kumanda Açıldı! Motorları başlatmak için SA şalterine dokunun.';
+      } else {
+        if (pwrLed) {
+          pwrLed.setAttribute('stroke', '#475569');
+          pwrLed.removeAttribute('filter');
+          pwrLed.classList.remove('pulse-pwr');
+        }
+        if (pwrIcon) pwrIcon.setAttribute('stroke', '#94a3b8');
+        if (pwrLabel) { pwrLabel.setAttribute('fill', '#94a3b8'); pwrLabel.textContent = 'GÜÇ'; }
+        if (statusMsg) statusMsg.textContent = '⚠️ Kumanda Kapalı - Açmak için ortadaki GÜÇ butonuna dokunun!';
+
+        if (simState.armed) {
+          simState.armed = false;
+          updateArmVisuals();
+        }
+        if (simState.buzzer) {
+          simState.buzzer = false;
+          updateBuzzerVisuals();
+        }
+      }
+    }
+
+    let lastSwitchToggleTime = {};
+    function toggleSimSwitch(swId) {
+      const now = Date.now();
+      if (lastSwitchToggleTime[swId] && (now - lastSwitchToggleTime[swId] < 220)) return;
+      lastSwitchToggleTime[swId] = now;
+
+      if (!simState.power) {
+        showStickHint('⚠️ Önce Güç Butonuna Basın!');
+        const statusMsg = document.getElementById('hud-status-msg');
+        if (statusMsg) statusMsg.textContent = '⚠️ Kumanda Kapalı! Önce ortadaki ⏻ GÜÇ butonuna dokunun.';
+        return;
+      }
+      playSwitchClick();
+
+      if (swId === 'sa') {
+        simState.armed = !simState.armed;
+        updateArmVisuals();
+      } else if (swId === 'sb') {
+        simState.mode = (simState.mode + 1) % 3;
+        updateModeVisuals();
+      } else if (swId === 'sc') {
+        simState.rate = (simState.rate + 1) % 3;
+        updateRateVisuals();
+      } else if (swId === 'sd') {
+        simState.buzzer = !simState.buzzer;
+        updateBuzzerVisuals();
+      }
+    }
+
+    function updateArmVisuals() {
+      const lever = document.getElementById('svg-lever-sa');
+      const pillVal = document.getElementById('pill-sa-val');
+      const hudBadge = document.getElementById('hud-arm-badge');
+      const statusMsg = document.getElementById('hud-status-msg');
+
+      if (simState.armed) {
+        if (lever) lever.setAttribute('transform', 'translate(128, 92) rotate(22)');
+        if (pillVal) { pillVal.textContent = 'ARMED'; pillVal.className = 'sw-val on'; }
+        if (hudBadge) { hudBadge.textContent = '🟢 ARMED'; hudBadge.className = 'hud-badge armed'; }
+        if (statusMsg) statusMsg.textContent = '✈️ MOTORLAR DEVREDE! Sol kol ile gaz verip havalanın!';
+
+        // 3D LED update to Green
+        if (droneLedMesh) {
+          droneLedMesh.material.color.setHex(0x22c55e);
+          droneLedMesh.material.emissive.setHex(0x22c55e);
+        }
+        if (droneLedLight) droneLedLight.color.setHex(0x22c55e);
+
+        updateMotorAudio(true, simState.throttle);
+      } else {
+        if (lever) lever.setAttribute('transform', 'translate(128, 92) rotate(-22)');
+        if (pillVal) { pillVal.textContent = 'KİLİTLİ'; pillVal.className = 'sw-val off'; }
+        if (hudBadge) { hudBadge.textContent = '🔒 DISARMED'; hudBadge.className = 'hud-badge disarmed'; }
+        if (statusMsg) statusMsg.textContent = '🔒 Motorlar kilitlendi. Uçuş için SA şalterine dokunun.';
+
+        // 3D LED update to Red
+        if (droneLedMesh) {
+          droneLedMesh.material.color.setHex(0xef4444);
+          droneLedMesh.material.emissive.setHex(0xef4444);
+        }
+        if (droneLedLight) droneLedLight.color.setHex(0xef4444);
+
+        updateMotorAudio(false, 0);
+      }
+    }
+
+    function updateModeVisuals() {
+      const lever = document.getElementById('svg-lever-sb');
+      const pillVal = document.getElementById('pill-sb-val');
+      const hudBadge = document.getElementById('hud-mode-badge');
+      const modes = ['ANGLE', 'HORIZON', 'ACRO'];
+      const angles = [-20, 0, 20];
+      const m = modes[simState.mode];
+
+      if (lever) lever.setAttribute('transform', 'translate(160, 84) rotate(' + angles[simState.mode] + ')');
+      if (pillVal) pillVal.textContent = m;
+      if (hudBadge) hudBadge.textContent = m;
+      showStickHint('Uçuş Modu: ' + m);
+    }
+
+    function updateRateVisuals() {
+      const lever = document.getElementById('svg-lever-sc');
+      const pillVal = document.getElementById('pill-sc-val');
+      const hudBadge = document.getElementById('hud-rate-badge');
+      const rates = ['%40 YAVAŞ', '%70 NORMAL', '%100 TURBO'];
+      const pillTexts = ['%40', '%70', '%100'];
+      const angles = [-20, 0, 20];
+
+      if (lever) lever.setAttribute('transform', 'translate(400, 84) rotate(' + angles[simState.rate] + ')');
+      if (pillVal) pillVal.textContent = pillTexts[simState.rate];
+      if (hudBadge) hudBadge.textContent = rates[simState.rate];
+      showStickHint('Hız Seviyesi: ' + pillTexts[simState.rate]);
+    }
+
+    function updateBuzzerVisuals() {
+      const lever = document.getElementById('svg-lever-sd');
+      const pillVal = document.getElementById('pill-sd-val');
+      const buzzerAlert = document.getElementById('hud-buzzer-alert');
+
+      if (simState.buzzer) {
+        if (lever) lever.setAttribute('transform', 'translate(432, 92) rotate(-22)');
+        if (pillVal) { pillVal.textContent = 'AÇIK (BEEP)'; pillVal.className = 'sw-val on'; }
+        if (buzzerAlert) buzzerAlert.style.display = 'flex';
+        setBuzzerSound(true);
+
+        // Kaplumbağa Modu Kurtarma Hareketi (Flip Over After Crash)
+        if (simState.isTurtleFlipped || Math.abs(simState.droneRoll) > 40 || Math.abs(simState.dronePitch) > 40) {
+          executeTurtleFlipAnimation();
+        } else {
+          showStickHint('🔊 Buzzer & Turtle Modu Aktif!');
+        }
+      } else {
+        if (lever) lever.setAttribute('transform', 'translate(432, 92) rotate(22)');
+        if (pillVal) { pillVal.textContent = 'KAPALI'; pillVal.className = 'sw-val off'; }
+        if (buzzerAlert) buzzerAlert.style.display = 'none';
+        setBuzzerSound(false);
+      }
+    }
+
+    let isTurtleAnimating = false;
+    function executeTurtleFlipAnimation() {
+      if (isTurtleAnimating) return;
+      isTurtleAnimating = true;
+      playGateSuccessSound();
+
+      let progress = 0;
+      const initialRoll = simState.droneRoll;
+      const initialPitch = simState.dronePitch;
+
+      showStickHint('🐢 Kaplumbağa Modu: Zıt İtki Taklası!');
+      const statusMsg = document.getElementById('hud-status-msg');
+      if (statusMsg) {
+        statusMsg.textContent = '🐢 KAPLUMBAĞA MODU: Zıt motor itkisiyle drone havaya zıplayıp ayakları üstüne dönüyor...';
+      }
+
+      const flipInterval = setInterval(() => {
+        progress += 0.08;
+        if (progress >= 1) {
+          clearInterval(flipInterval);
+          isTurtleAnimating = false;
+          simState.droneRoll = 0;
+          simState.dronePitch = 0;
+          simState.droneY = 0.1;
+          simState.isTurtleFlipped = false;
+          showStickHint('🐢 Drone Başarıyla Ayakları Üstüne Döndü!');
+          if (statusMsg) {
+            statusMsg.textContent = '🐢 HARİKA! Drone ayakları üstüne döndü! Artık uçuşa devam edebilirsiniz.';
+          }
+        } else {
+          // 180 derecelik yumuşak dönüş ve havaya zıplama eğrisi
+          simState.droneRoll = THREE.MathUtils.lerp(initialRoll, 0, progress);
+          simState.dronePitch = THREE.MathUtils.lerp(initialPitch, 0, progress);
+          simState.droneY = 0.12 + Math.sin(progress * Math.PI) * 0.55;
+        }
+      }, 25);
+    }
+
+    // Öğretmenlerin öğrencilerine canlı göstermesi için Kaza Simülasyonu
+    function triggerCrashTest() {
+      if (!simState.power) {
+        showStickHint('⚠️ Önce Kumanda Güç Butonunu Açın!');
+        const statusMsg = document.getElementById('hud-status-msg');
+        if (statusMsg) statusMsg.textContent = '⚠️ Önce kumandanın ortasındaki ⏻ GÜÇ butonuna dokunun!';
+        return;
+      }
+      playSwitchClick();
+      // Dronu yere ters düşür
+      simState.droneRoll = 180;
+      simState.dronePitch = 0;
+      simState.droneY = 0.15;
+      simState.isTurtleFlipped = true;
+      simState.speed = 0;
+
+      showStickHint('🐢 DRONE TERS DÜŞTÜ! SD Şalteri ile Kurtarın!');
+      const statusMsg = document.getElementById('hud-status-msg');
+      if (statusMsg) {
+        statusMsg.textContent = '🐢 KAZA SİMÜLASYONU: Drone ters düştü! Sağ üstteki SD şalterine dokunarak Kaplumbağa Modunu devreye alın!';
+      }
+    }
+
+    function showStickHint(txt) {
+      const hint = document.getElementById('sim-active-label');
+      if (!hint) return;
+      hint.textContent = txt;
+      hint.style.opacity = '1';
+      clearTimeout(hint._timer);
+      hint._timer = setTimeout(() => { hint.style.opacity = '0'; }, 1600);
+    }
+
+    function resetDroneSim() {
+      playSwitchClick();
+      simState.droneX = 0;
+      simState.droneY = 0;
+      simState.droneZ = 0;
+      simState.droneYaw = 0;
+      simState.dronePitch = 0;
+      simState.droneRoll = 0;
+      simState.throttle = 0;
+      simState.yaw = 0;
+      simState.pitch = 0;
+      simState.roll = 0;
+      simState.isTurtleFlipped = false;
+      isTurtleAnimating = false;
+
+      stickState.left.dx = 0;
+      stickState.left.dy = 32;
+      stickState.right.dx = 0;
+      stickState.right.dy = 0;
+
+      const stickL = document.getElementById('svg-stick-left');
+      const stickR = document.getElementById('svg-stick-right');
+      if (stickL) stickL.setAttribute('transform', 'translate(0, 32)');
+      if (stickR) stickR.setAttribute('transform', 'translate(0, 0)');
+
+      if (droneGroup) {
+        droneGroup.position.set(0, 0.1, 0);
+        droneGroup.rotation.set(0, 0, 0);
+      }
+      if (droneMesh) {
+        droneMesh.rotation.set(0, 0, 0);
+      }
+
+      // Yarış Parkuru Skorunu ve Kapısını Başa Al
+      raceState.currentGateIndex = 0;
+      raceState.score = 0;
+      raceState.laps = 0;
+      raceState.lastPassedTime = 0;
+      updateGateVisuals();
+
+      updateTelemetryUI();
+      if (simState.armed) {
+        updateMotorAudio(true, 0);
+      }
+      showStickHint('🔄 3D Konum ve Yarış Skoru Sıfırlandı');
+    }
+
+    /* =========================================================================
+       GIMBAL & MULTI-TOUCH POINTER CONTROL
+       ========================================================================= */
+    function getSvgPoint(svg, clientX, clientY) {
+      const pt = svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function initSimGimbals() {
+      const svg = document.getElementById('betafpv-svg-ctrl');
+      if (!svg) return;
+
+      const stickLeft = document.getElementById('svg-stick-left');
+      const stickRight = document.getElementById('svg-stick-right');
+      const glowLeft = document.getElementById('stick-glow-left');
+      const glowRight = document.getElementById('stick-glow-right');
+
+      if (stickLeft) stickLeft.setAttribute('transform', 'translate(0, 32)');
+      if (stickRight) stickRight.setAttribute('transform', 'translate(0, 0)');
+
+      const switchPointers = {};
+
+      const GIMBAL_LEFT_CENTER = { x: 175, y: 215, radius: 75 };
+      const GIMBAL_RIGHT_CENTER = { x: 385, y: 215, radius: 75 };
+      const POWER_CENTER = { x: 280, y: 232, radius: 32 };
+      const SWITCHES = [
+        { id: 'sa', x: 128, y: 92, radius: 34 },
+        { id: 'sb', x: 160, y: 84, radius: 34 },
+        { id: 'sc', x: 400, y: 84, radius: 34 },
+        { id: 'sd', x: 432, y: 92, radius: 34 }
+      ];
+
+      function dist(x1, y1, x2, y2) {
+        return Math.hypot(x1 - x2, y1 - y2);
+      }
+
+      function updateLeftStick(pt) {
+        let dx = pt.x - 175;
+        let dy = pt.y - 215;
+        const d = Math.hypot(dx, dy);
+        if (d > 32) {
+          dx = (dx / d) * 32;
+          dy = (dy / d) * 32;
+        }
+        stickState.left.dx = dx;
+        stickState.left.dy = dy;
+        stickLeft.setAttribute('transform', 'translate(' + dx + ',' + dy + ')');
+
+        simState.throttle = Math.max(0, Math.min(1, (32 - dy) / 64));
+        simState.yaw = Math.max(-1, Math.min(1, dx / 32));
+
+        if (simState.armed && simState.power) {
+          updateMotorAudio(true, simState.throttle);
+        }
+
+        let hint = '';
+        if (simState.throttle > 0.05) hint += '⬆️ Gaz %' + Math.round(simState.throttle * 100) + ' ';
+        if (simState.yaw > 0.2) hint += '↻ Yaw Sağ ';
+        else if (simState.yaw < -0.2) hint += '↺ Yaw Sol ';
+        if (hint) showStickHint(hint);
+      }
+
+      function updateRightStick(pt) {
+        let dx = pt.x - 385;
+        let dy = pt.y - 215;
+        const d = Math.hypot(dx, dy);
+        if (d > 32) {
+          dx = (dx / d) * 32;
+          dy = (dy / d) * 32;
+        }
+        stickState.right.dx = dx;
+        stickState.right.dy = dy;
+        stickRight.setAttribute('transform', 'translate(' + dx + ',' + dy + ')');
+
+        simState.pitch = -dy / 32;
+        simState.roll = dx / 32;
+
+        // Mini stick dot feedback
+        const stickDot = document.getElementById('hud-stick-dot');
+        if (stickDot) {
+          stickDot.style.transform = `translate(calc(-50% + ${dx * 0.55}px), calc(-50% + ${dy * 0.55}px))`;
+        }
+
+        let hint = '';
+        if (simState.pitch > 0.2) hint += '↗️ Pitch İleri ';
+        else if (simState.pitch < -0.2) hint += '↙️ Pitch Geri ';
+        if (simState.roll > 0.2) hint += '➡️ Roll Sağ ';
+        else if (simState.roll < -0.2) hint += '⬅️ Roll Sol ';
+        if (hint) showStickHint(hint);
+      }
+
+      svg.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        initAudio();
+        try { svg.setPointerCapture(e.pointerId); } catch(err){}
+
+        const pt = getSvgPoint(svg, e.clientX, e.clientY);
+
+        if (dist(pt.x, pt.y, POWER_CENTER.x, POWER_CENTER.y) <= POWER_CENTER.radius) {
+          toggleSimPower();
+          return;
+        }
+
+        for (const sw of SWITCHES) {
+          if (dist(pt.x, pt.y, sw.x, sw.y) <= sw.radius) {
+            switchPointers[e.pointerId] = { id: sw.id, startY: pt.y, handledDrag: false };
+            toggleSimSwitch(sw.id);
+            return;
+          }
+        }
+
+        if (dist(pt.x, pt.y, GIMBAL_LEFT_CENTER.x, GIMBAL_LEFT_CENTER.y) <= GIMBAL_LEFT_CENTER.radius) {
+          if (!simState.power) {
+            showStickHint('⚠️ Önce Güç Butonuna Basın!');
+            return;
+          }
+          stickState.left.pointerId = e.pointerId;
+          stickState.left.active = true;
+          if (glowLeft) glowLeft.style.opacity = '1';
+          updateLeftStick(pt);
+          return;
+        }
+
+        if (dist(pt.x, pt.y, GIMBAL_RIGHT_CENTER.x, GIMBAL_RIGHT_CENTER.y) <= GIMBAL_RIGHT_CENTER.radius) {
+          if (!simState.power) {
+            showStickHint('⚠️ Önce Güç Butonuna Basın!');
+            return;
+          }
+          stickState.right.pointerId = e.pointerId;
+          stickState.right.active = true;
+          if (glowRight) glowRight.style.opacity = '1';
+          updateRightStick(pt);
+          return;
+        }
+      }, { passive: false });
+
+      window.addEventListener('pointermove', e => {
+        if (stickState.left.active && e.pointerId === stickState.left.pointerId) {
+          e.preventDefault();
+          const pt = getSvgPoint(svg, e.clientX, e.clientY);
+          updateLeftStick(pt);
+        }
+
+        if (stickState.right.active && e.pointerId === stickState.right.pointerId) {
+          e.preventDefault();
+          const pt = getSvgPoint(svg, e.clientX, e.clientY);
+          updateRightStick(pt);
+        }
+
+        if (switchPointers[e.pointerId]) {
+          const sp = switchPointers[e.pointerId];
+          const pt = getSvgPoint(svg, e.clientX, e.clientY);
+          const dy = pt.y - sp.startY;
+          if (!sp.handledDrag && Math.abs(dy) > 14) {
+            sp.handledDrag = true;
+            if (sp.id === 'sa') {
+              if (dy > 0 && !simState.armed) toggleSimSwitch('sa');
+              else if (dy < 0 && simState.armed) toggleSimSwitch('sa');
+            } else if (sp.id === 'sb') {
+              if (dy < -8) { simState.mode = 0; updateModeVisuals(); playSwitchClick(); }
+              else if (dy > 8) { simState.mode = 2; updateModeVisuals(); playSwitchClick(); }
+              else { simState.mode = 1; updateModeVisuals(); playSwitchClick(); }
+            } else if (sp.id === 'sc') {
+              if (dy < -8) { simState.rate = 0; updateRateVisuals(); playSwitchClick(); }
+              else if (dy > 8) { simState.rate = 2; updateRateVisuals(); playSwitchClick(); }
+              else { simState.rate = 1; updateRateVisuals(); playSwitchClick(); }
+            } else if (sp.id === 'sd') {
+              if (dy > 0 && !simState.buzzer) toggleSimSwitch('sd');
+              else if (dy < 0 && simState.buzzer) toggleSimSwitch('sd');
+            }
+          }
+        }
+      }, { passive: false });
+
+      function handlePointerEnd(e) {
+        if (switchPointers[e.pointerId]) {
+          delete switchPointers[e.pointerId];
+        }
+
+        if (stickState.left.active && e.pointerId === stickState.left.pointerId) {
+          stickState.left.active = false;
+          stickState.left.pointerId = null;
+          if (glowLeft) glowLeft.style.opacity = '0';
+          try { svg.releasePointerCapture(e.pointerId); } catch(err){}
+
+          stickState.left.dx = 0;
+          stickLeft.style.transition = 'transform 0.12s ease-out';
+          stickLeft.setAttribute('transform', 'translate(0, ' + stickState.left.dy + ')');
+          setTimeout(() => { stickLeft.style.transition = ''; }, 130);
+          simState.yaw = 0;
+        }
+
+        if (stickState.right.active && e.pointerId === stickState.right.pointerId) {
+          stickState.right.active = false;
+          stickState.right.pointerId = null;
+          if (glowRight) glowRight.style.opacity = '0';
+          try { svg.releasePointerCapture(e.pointerId); } catch(err){}
+
+          stickState.right.dx = 0;
+          stickState.right.dy = 0;
+          stickRight.style.transition = 'transform 0.14s ease-out';
+          stickRight.setAttribute('transform', 'translate(0, 0)');
+          setTimeout(() => { stickRight.style.transition = ''; }, 150);
+
+          const stickDot = document.getElementById('hud-stick-dot');
+          if (stickDot) stickDot.style.transform = 'translate(-50%, -50%)';
+
+          simState.pitch = 0;
+          simState.roll = 0;
+        }
+      }
+
+      window.addEventListener('pointerup', handlePointerEnd);
+      window.addEventListener('pointercancel', handlePointerEnd);
+
+      ['sa', 'sb', 'sc', 'sd'].forEach(id => {
+        const card = document.getElementById('card-sw-' + id);
+        if (card) {
+          card.addEventListener('pointerdown', e => {
+            e.preventDefault();
+            toggleSimSwitch(id);
+          });
+        }
+      });
+    }
+
+    /* KEYBOARD CONTROLS (W/S/A/D, Arrows, Space) */
+    const keys = {};
+    window.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        toggleSimSwitch('sa');
+      } else if (e.key === 'r' || e.key === 'R') {
+        resetDroneSim();
+      } else if (e.key === 't' || e.key === 'T') {
+        triggerCrashTest();
+      } else if (e.key === 'm' || e.key === 'M') {
+        toggleSimSwitch('sb');
+      } else if (e.key === 'c' || e.key === 'C') {
+        toggleSimSwitch('sc');
+      } else if (e.key === 'b' || e.key === 'B') {
+        toggleSimSwitch('sd');
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      } else if (e.key === '1') {
+        setCameraMode('chase');
+      } else if (e.key === '2') {
+        setCameraMode('orbit');
+      } else if (e.key === '3') {
+        setCameraMode('fpv');
+      } else if (e.key === '4') {
+        setCameraMode('top');
+      }
+    });
+
+    window.addEventListener('keyup', e => {
+      keys[e.key.toLowerCase()] = false;
+    });
+
+    function processKeyboardInput(dt) {
+      if (!simState.power) return;
+
+      // Throttle (W / S)
+      if (keys['w']) {
+        simState.throttle = Math.min(1, simState.throttle + dt * 0.9);
+        stickState.left.dy = 32 - simState.throttle * 64;
+      } else if (keys['s']) {
+        simState.throttle = Math.max(0, simState.throttle - dt * 0.9);
+        stickState.left.dy = 32 - simState.throttle * 64;
+      }
+
+      // Yaw (A / D)
+      if (keys['a']) {
+        simState.yaw = -0.8;
+        stickState.left.dx = -25;
+      } else if (keys['d']) {
+        simState.yaw = 0.8;
+        stickState.left.dx = 25;
+      } else if (!stickState.left.active) {
+        simState.yaw = 0;
+        stickState.left.dx = 0;
+      }
+
+      // Pitch (ArrowUp / ArrowDown)
+      if (keys['arrowup']) {
+        simState.pitch = 0.8;
+        stickState.right.dy = -25;
+      } else if (keys['arrowdown']) {
+        simState.pitch = -0.8;
+        stickState.right.dy = 25;
+      } else if (!stickState.right.active) {
+        simState.pitch = 0;
+        stickState.right.dy = 0;
+      }
+
+      // Roll (ArrowLeft / ArrowRight)
+      if (keys['arrowleft']) {
+        simState.roll = -0.8;
+        stickState.right.dx = -25;
+      } else if (keys['arrowright']) {
+        simState.roll = 0.8;
+        stickState.right.dx = 25;
+      } else if (!stickState.right.active) {
+        simState.roll = 0;
+        stickState.right.dx = 0;
+      }
+
+      // Sync stick SVG visuals if controlled via keyboard
+      if (!stickState.left.active) {
+        const stickL = document.getElementById('svg-stick-left');
+        if (stickL) stickL.setAttribute('transform', `translate(${stickState.left.dx}, ${stickState.left.dy})`);
+      }
+      if (!stickState.right.active) {
+        const stickR = document.getElementById('svg-stick-right');
+        if (stickR) stickR.setAttribute('transform', `translate(${stickState.right.dx}, ${stickState.right.dy})`);
+        const stickDot = document.getElementById('hud-stick-dot');
+        if (stickDot) stickDot.style.transform = `translate(calc(-50% + ${stickState.right.dx * 0.55}px), calc(-50% + ${stickState.right.dy * 0.55}px))`;
+      }
+    }
+
+    /* =========================================================================
+       3D FLIGHT PHYSICS & DYNAMICS LOOP
+       (Doğru Eksenler: İleri = Burun Öne Eğilir & İleri Uçar, Geri = Burun Kalkar)
+       ========================================================================= */
+    let lastClockTime = performance.now();
+    let hasReachedSpaceNotification = false;
+
+    function flightLoop(now) {
+      requestAnimationFrame(flightLoop);
+
+      const dt = Math.min(0.08, (now - lastClockTime) / 1000);
+      lastClockTime = now;
+
+      processKeyboardInput(dt);
+
+      const rateMult = simState.rate === 0 ? 0.45 : simState.rate === 1 ? 0.80 : 1.25;
+
+      // Bulutların gökyüzünde hafifçe rüzgarla süzülmesi
+      if (cloudMeshes && cloudMeshes.length > 0) {
+        cloudMeshes.forEach(c => {
+          c.group.position.x += c.speed;
+          if (c.group.position.x > 300) c.group.position.x = -300;
+        });
+      }
+
+      if (simState.armed && simState.power) {
+        if (simState.isTurtleFlipped) {
+          // Drone kaza yapıp ters düşmüş halde yerde yatıyor
+          simState.droneY = 0.15;
+          simState.droneRoll = 180;
+          simState.dronePitch = 0;
+          simState.speed = 0;
+          if (simState.throttle > 0.08) {
+            showStickHint('🐢 Drone Ters Düştü! Kurtarmak için SD Şalterini Açın');
+          }
+        } else {
+          // İrtifaya göre yerçekimi (Uzayda atmosferik yerçekimi azalır!)
+          const inSpace = simState.droneY > 45;
+          const gravityForce = inSpace ? 2.6 : 4.8;
+          const liftForce = simState.throttle * 15.2;
+          const vertVelocity = (liftForce - gravityForce) * dt;
+
+          // Dikey İrtifa Hareketi (Yukarı sınır yok - çocuklar uzaya çıkabilsin!)
+          simState.droneY = Math.max(0.1, simState.droneY + vertVelocity);
+
+          if (simState.droneY > 0.15) {
+            // Yaw Dönüşü (Kendi ekseni etrafında burun yönü)
+            simState.droneYaw += -simState.yaw * 140 * rateMult * dt;
+
+            // DOĞRU PITCH & ROLL FİZİĞİ:
+            // simState.pitch > 0 (Sağ kol ileri itildi): Burun ÖNE eğilir (pozitif rotation.x)
+            // simState.roll > 0 (Sağ kol sağa yatırıldı): Drone SAĞA yatar (pozitif rotation.z)
+            // simState.roll < 0 (Sağ kol sola yatırıldı): Drone SOLA yatar (negatif rotation.z)
+            if (simState.mode === 0) { // Angle mode (Otomatik düzelme)
+              const targetPitch = simState.pitch * 28 * rateMult;
+              const targetRoll = simState.roll * 28 * rateMult; // Sağa kol -> Sağa eğim!
+              simState.dronePitch += (targetPitch - simState.dronePitch) * 12 * dt;
+              simState.droneRoll += (targetRoll - simState.droneRoll) * 12 * dt;
+            } else if (simState.mode === 1) { // Horizon mode
+              const targetPitch = simState.pitch * 45 * rateMult;
+              const targetRoll = simState.roll * 45 * rateMult; // Sağa kol -> Sağa eğim!
+              simState.dronePitch += (targetPitch - simState.dronePitch) * 10 * dt;
+              simState.droneRoll += (targetRoll - simState.droneRoll) * 10 * dt;
+            } else { // Acro mode (Serbest takla)
+              simState.dronePitch += simState.pitch * 180 * rateMult * dt;
+              simState.droneRoll += simState.roll * 180 * rateMult * dt; // Sağa kol -> Sağa takla!
+            }
+
+            // DOĞRU İLERİ / GERİ & YANAL HAREKET (+Z: İLERİ, -Z: GERİ, -X: SAĞA, +X: SOLA)
+            const yawRad = THREE.MathUtils.degToRad(simState.droneYaw);
+            const fwdSpeed = simState.pitch * 11.5 * rateMult;
+            const latSpeed = simState.roll * 11.5 * rateMult;
+
+            // Sağ kol ileri itilince drone +Z yönüne (burnun baktığı yöne) uçar!
+            // Sağ kol sağa yatırılınca (-X yönüne, yani pilotun sağına) uçar!
+            // Sağ kol sola yatırılınca (+X yönüne, yani pilotun soluna) uçar!
+            simState.droneZ += (Math.cos(yawRad) * fwdSpeed + Math.sin(yawRad) * latSpeed) * dt;
+            simState.droneX += (Math.sin(yawRad) * fwdSpeed - Math.cos(yawRad) * latSpeed) * dt;
+
+            // Yatay Hız (km/h)
+            const horizSpeed = Math.hypot(fwdSpeed, latSpeed) * 3.6;
+            simState.speed = Math.round(horizSpeed + simState.throttle * 10);
+          } else {
+            // Yere temas: Acro modunda takla atıp ters düştüyse kaza algıla
+            if (simState.mode === 2 && Math.abs(simState.droneRoll) > 90) {
+              simState.isTurtleFlipped = true;
+              simState.droneRoll = 180;
+              showStickHint('🐢 Kaza: Drone Ters Düştü! SD ile Kurtarın');
+            } else if (!isTurtleAnimating) {
+              simState.droneRoll *= 0.85;
+              simState.dronePitch *= 0.85;
+            }
+            simState.speed = 0;
+          }
+        }
+      } else {
+        // Disarmed veya Kapalı: Yere yumuşakça süzülüş
+        if (simState.droneY > 0.1) {
+          simState.droneY = Math.max(0.1, simState.droneY - 7.5 * dt);
+          if (!simState.isTurtleFlipped && !isTurtleAnimating) {
+            simState.droneRoll *= 0.9;
+            simState.dronePitch *= 0.9;
+          }
+          simState.speed = 0;
+        }
+      }
+
+      // 3D Drone Pozisyon ve Eğimini Güncelle
+      if (droneGroup && droneMesh) {
+        droneGroup.position.set(simState.droneX, simState.droneY, simState.droneZ);
+        droneGroup.rotation.y = THREE.MathUtils.degToRad(simState.droneYaw);
+
+        droneMesh.rotation.x = THREE.MathUtils.degToRad(simState.dronePitch);
+        droneMesh.rotation.z = THREE.MathUtils.degToRad(simState.droneRoll);
+
+        // Havada hafif canlı mikro titreşim
+        if (simState.armed && simState.droneY > 0.15) {
+          const t = now * 0.02;
+          droneMesh.position.y = Math.sin(t) * 0.012;
+        } else {
+          droneMesh.position.y = 0;
+        }
+      }
+
+      // Pervane Devirlerini Güncelle
+      updatePropellers(dt);
+
+      // Sıralı FPV Yarış Kapıları Kontrolü (Puan & Hedef Geçişi)
+      checkRaceGateCollisions();
+
+      // Aktif kapıya hafif nabız parıltısı (hedefin kolay seçilmesi için)
+      if (gateMeshObjects && gateMeshObjects[raceState.currentGateIndex]) {
+        const activeGate = gateMeshObjects[raceState.currentGateIndex];
+        const pulse = Math.sin(now * 0.006) * 0.2;
+        activeGate.archMat.emissiveIntensity = 0.85 + pulse;
+      }
+
+      // Dinamik Zemin Gölgesi (Yüksekte küçülüp şeffaflaşır)
+      if (groundShadow) {
+        groundShadow.position.x = simState.droneX;
+        groundShadow.position.z = simState.droneZ;
+        const h = simState.droneY;
+        const shadowScale = Math.max(0.4, 1.2 + h * 0.12);
+        const shadowOpacity = Math.max(0, 0.65 - h * 0.07);
+        groundShadow.scale.set(shadowScale, shadowScale, shadowScale);
+        groundShadow.material.opacity = shadowOpacity;
+      }
+
+      // Atmosfer & Uzay Katmanı Geçişini Güncelle
+      updateAtmosphere(simState.droneY);
+
+      // Kamerayı Güncelle
+      updateCamera();
+
+      // Telemetri ve HUD Göstergelerini Güncelle
+      updateTelemetryUI();
+
+      // 3D Sahneyi Render Et
+      if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+      }
+    }
+
+    /* =========================================================================
+       PROPELLER DYNAMICS (Meteor 75 Pro Beyaz Pervaneler & Diferansiyel Hız)
+       ========================================================================= */
+    function updatePropellers(dt) {
+      const baseRPM = (simState.armed && simState.power) ? (0.2 + simState.throttle * 0.8) : 0;
+
+      // Diferansiyel Motor Karışımı:
+      // Sağ kol ileri (pitch > 0) -> Arka motorlar hızlanır, ön motorlar yavaşlar!
+      // Sağ kol sağa (roll > 0) -> Sol motorlar hızlanır, sağ motorlar yavaşlar!
+      const pitchMix = simState.pitch * 0.28;
+      const rollMix = simState.roll * 0.28;
+      const yawMix = simState.yaw * 0.22;
+
+      // Motorlar: 0:FR (Ön Sağ), 1:FL (Ön Sol), 2:RR (Arka Sağ), 3:RL (Arka Sol)
+      let motorSpeeds;
+      if (isTurtleAnimating) {
+        // Kaplumbağa modu animasyonu: İki motor zıt yönde hızla dönerek taklayı simüle eder
+        motorSpeeds = [0.15, 0.95, 0.15, 0.95];
+      } else {
+        motorSpeeds = [
+          Math.max(0, baseRPM - pitchMix - rollMix + yawMix), // 0: FR (Ön Sağ)
+          Math.max(0, baseRPM - pitchMix + rollMix - yawMix), // 1: FL (Ön Sol)
+          Math.max(0, baseRPM + pitchMix - rollMix - yawMix), // 2: RR (Arka Sağ)
+          Math.max(0, baseRPM + pitchMix + rollMix + yawMix)  // 3: RL (Arka Sol)
+        ];
+      }
+
+      propellers.forEach((p, idx) => {
+        const targetSpeed = motorSpeeds[idx] * (simState.armed ? 0.75 : 0);
+        p.speed += (targetSpeed - p.speed) * 15 * dt;
+
+        if (p.speed > 0.005) {
+          p.mesh.rotation.y += p.speed * p.dir * 45;
+        }
+      });
+
+      // Pervane Dönüş Hareket Bulanıklığı (Beyaz pervaneler dönerken gerçekçi hafif şeffaflık)
+      const avgSpeed = (motorSpeeds[0] + motorSpeeds[1] + motorSpeeds[2] + motorSpeeds[3]) / 4;
+      if (propMaterial) {
+        if (simState.armed && avgSpeed > 0.05) {
+          propMaterial.opacity = Math.max(0.35, 0.88 - avgSpeed * 0.50);
+        } else {
+          propMaterial.opacity = 0.88;
+        }
+      }
+    }
+
+    /* =========================================================================
+       ATMOSPHERE & SPACE DYNAMICS (Yükseldikçe Gökyüzü -> Stratosfer -> Uzay)
+       ========================================================================= */
+    function updateAtmosphere(alt) {
+      if (!scene || !scene.fog) return;
+
+      const altBadge = document.getElementById('hud-alt-layer');
+      const statusMsg = document.getElementById('hud-status-msg');
+
+      // Renk Paleti Geçişleri
+      const skyDay = new THREE.Color(0x38bdf8);   // Açık gök mavisi (0m)
+      const skyMid = new THREE.Color(0x1e1b4b);   // Derin kobalt / alacakaranlık (25m)
+      const skySpace = new THREE.Color(0x02040a); // Kadife uzay siyahı (50m+)
+
+      const fogDay = new THREE.Color(0x7dd3fc);
+      const fogMid = new THREE.Color(0x312e81);
+      const fogSpace = new THREE.Color(0x02040a);
+
+      if (alt < 15) {
+        // KATMAN 1: TROPOSFER (Yeryüzü Normal Uçuş)
+        const t = Math.max(0, Math.min(1, alt / 15));
+        scene.background.lerpColors(skyDay, skyDay, t);
+        scene.fog.color.lerpColors(fogDay, fogDay, t);
+        scene.fog.density = 0.0035;
+
+        if (starMaterial) starMaterial.opacity = 0;
+        if (sunLight) sunLight.intensity = 1.25;
+
+        if (altBadge) {
+          altBadge.className = 'hud-badge alt-layer';
+          altBadge.textContent = '🌤️ TROPOSFER (' + alt.toFixed(0) + 'm)';
+        }
+      } else if (alt < 35) {
+        // KATMAN 2: BULUT TABAKASI (Bulutların Üstüne Çıkış)
+        const t = (alt - 15) / 20;
+        scene.background.lerpColors(skyDay, skyMid, t);
+        scene.fog.color.lerpColors(fogDay, fogMid, t);
+        scene.fog.density = 0.0035 - t * 0.0015;
+
+        // Yıldızlar hafifçe göz kırpmaya başlar
+        if (starMaterial) starMaterial.opacity = t * 0.45;
+        if (sunLight) sunLight.intensity = 1.25 - t * 0.2;
+
+        if (altBadge) {
+          altBadge.className = 'hud-badge alt-layer clouds';
+          altBadge.textContent = '☁️ BULUT TABAKASI (' + alt.toFixed(0) + 'm)';
+        }
+      } else if (alt < 55) {
+        // KATMAN 3: STRATOSFER (Atmosfer İnceliyor)
+        const t = (alt - 35) / 20;
+        scene.background.lerpColors(skyMid, skySpace, t);
+        scene.fog.color.lerpColors(fogMid, fogSpace, t);
+        scene.fog.density = 0.002 - t * 0.0015;
+
+        if (starMaterial) starMaterial.opacity = 0.45 + t * 0.45;
+        if (sunLight) sunLight.intensity = 1.05 - t * 0.3;
+
+        if (altBadge) {
+          altBadge.className = 'hud-badge alt-layer stratosphere';
+          altBadge.textContent = '🌌 STRATOSFER (' + alt.toFixed(0) + 'm)';
+        }
+      } else {
+        // KATMAN 4: DERİN UZAY (Yıldızlar, Ay ve Yerçekimi Düşük!)
+        scene.background.copy(skySpace);
+        scene.fog.color.copy(fogSpace);
+        scene.fog.density = 0.0004;
+
+        if (starMaterial) starMaterial.opacity = 1.0; // Tüm yıldızlar pırıl pırıl!
+        if (sunLight) sunLight.intensity = 0.85;
+
+        if (altBadge) {
+          altBadge.className = 'hud-badge alt-layer space';
+          altBadge.textContent = '🚀 DERİN UZAY (' + alt.toFixed(0) + 'm)';
+        }
+
+        if (!hasReachedSpaceNotification && statusMsg) {
+          hasReachedSpaceNotification = true;
+          statusMsg.textContent = '🚀 TEBRİKLER! Drone uzaya ulaştı! Yıldızlar ve Ay karşınızda, aşağıda Dünya!';
+          showStickHint('🚀 Uzay Sınırı Aşıldı: Yerçekimi Azaldı!');
+        }
+      }
+    }
+
+    /* =========================================================================
+       CAMERA RIG MODES (Doğru Takip: Arkadan Öne Doğru Bakış & FPV Kokpit)
+       ========================================================================= */
+    function updateCamera() {
+      if (!droneGroup) return;
+
+      const dPos = droneGroup.position;
+      const yawRad = THREE.MathUtils.degToRad(simState.droneYaw);
+
+      if (cameraMode === 'chase') {
+        camera.up.set(0, 1, 0);
+        // TAKİP KAMERASI: Drone'un ARKASINDA (-Z) durup önüne (+Z) doğru bakar!
+        const dist = 5.4;
+        const height = 2.2;
+        const targetCamX = dPos.x - Math.sin(yawRad) * dist;
+        const targetCamZ = dPos.z - Math.cos(yawRad) * dist;
+        const targetCamY = dPos.y + height;
+
+        camera.position.x += (targetCamX - camera.position.x) * 0.12;
+        camera.position.y += (targetCamY - camera.position.y) * 0.12;
+        camera.position.z += (targetCamZ - camera.position.z) * 0.12;
+
+        const lookAtTarget = new THREE.Vector3(dPos.x, dPos.y + 0.45, dPos.z);
+        camera.lookAt(lookAtTarget);
+
+      } else if (cameraMode === 'orbit') {
+        camera.up.set(0, 1, 0);
+        // SERBEST 3D İNCELEME: Drone'u merkez alır, fare/parmakla her açıdan dönülür
+        controls.target.copy(dPos);
+        controls.update();
+
+      } else if (cameraMode === 'fpv') {
+        // FPV PİLOT KOKPİTİ: Kristal netliğinde ön görüş (Mavi leke veya lens engeli kesinlikle yok!)
+        if (droneGroup && fpvCameraMount && fpvLookTarget) {
+          droneGroup.updateMatrixWorld(true);
+
+          const camPos = new THREE.Vector3();
+          const lookPos = new THREE.Vector3();
+          fpvCameraMount.getWorldPosition(camPos);
+          fpvLookTarget.getWorldPosition(lookPos);
+
+          camera.position.copy(camPos);
+
+          // Gerçek FPV gözlük hissi: Drone roll yaptığında ufuk çizgisi ve kamera açısı da doğal yatsın!
+          const droneUp = new THREE.Vector3(0, 1, 0);
+          droneUp.applyQuaternion(droneMesh.getWorldQuaternion(new THREE.Quaternion()));
+          camera.up.copy(droneUp);
+
+          camera.lookAt(lookPos);
+        }
+
+      } else if (cameraMode === 'top') {
+        camera.up.set(0, 1, 0);
+        // ÜST / YAN TEKNİK BAKIŞ: Eğim açılarını cetvel gibi gösterir
+        const targetCamX = dPos.x + 4.2;
+        const targetCamY = dPos.y + 4.5;
+        const targetCamZ = dPos.z - 3.8;
+
+        camera.position.x += (targetCamX - camera.position.x) * 0.1;
+        camera.position.y += (targetCamY - camera.position.y) * 0.1;
+        camera.position.z += (targetCamZ - camera.position.z) * 0.1;
+        camera.lookAt(dPos);
+      }
+    }
+
+    /* TELEMETRY & HUD UI UPDATE */
+    function updateTelemetryUI() {
+      const thrFill = document.getElementById('hud-thr-fill');
+      const thrVal = document.getElementById('hud-val-thr');
+      const altVal = document.getElementById('hud-val-alt');
+      const speedVal = document.getElementById('hud-val-speed');
+      const battVal = document.getElementById('hud-batt');
+      const crosshair = document.getElementById('hud-crosshair');
+
+      // Attitude degrees readout
+      const attRoll = document.getElementById('att-val-roll');
+      const attPitch = document.getElementById('att-val-pitch');
+      const attYaw = document.getElementById('att-val-yaw');
+
+      if (thrFill) thrFill.style.width = Math.round(simState.throttle * 100) + '%';
+      if (thrVal) thrVal.textContent = Math.round(simState.throttle * 100) + '%';
+
+      if (altVal) {
+        const altMeters = (simState.droneY - 0.1).toFixed(1);
+        altVal.textContent = Math.max(0, altMeters) + ' m';
+      }
+
+      if (speedVal) {
+        speedVal.textContent = simState.speed + ' km/s';
+      }
+
+      if (battVal) {
+        const v = (4.20 - (simState.throttle * 0.18)).toFixed(2);
+        battVal.innerHTML = '<span style="color:#22c55e">🔋</span> ' + v + 'V';
+      }
+
+      if (attRoll) attRoll.textContent = (simState.droneRoll).toFixed(1) + '°';
+      if (attPitch) attPitch.textContent = (simState.dronePitch).toFixed(1) + '°';
+      if (attYaw) attYaw.textContent = ((simState.droneYaw % 360 + 360) % 360).toFixed(0) + '°';
+
+      // Yapay Ufuk Çizgisi: Gövde eğimleriyle tam senkronize
+      if (crosshair) {
+        const rollDeg = -simState.droneRoll;
+        const pitchPx = -simState.dronePitch * 1.3;
+        crosshair.style.transform = `translate(-50%, -50%) rotate(${rollDeg}deg) translateY(${pitchPx}px)`;
+      }
+    }
+
+    /* FULLSCREEN & MODALS */
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function toggleHelp(open) {
+      const modal = document.getElementById('help-modal');
+      if (modal) modal.classList.toggle('open', open);
+    }
+
+    /* INIT ON LOAD */
+    window.addEventListener('DOMContentLoaded', () => {
+      init3D();
+      initSimGimbals();
+      requestAnimationFrame(flightLoop);
+    });
+  </script>
+</body>
+</html>

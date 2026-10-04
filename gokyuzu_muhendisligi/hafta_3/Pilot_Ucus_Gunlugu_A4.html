@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Loom Akademi • Katlanabilir Resmi Pilot Uçuş Günlüğü (Foldable Passport - S/B Uyumlu)</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 6mm 8mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      background: #e2e8f0;
+      color: #000000;
+      font-family: 'Segoe UI', 'Trebuchet MS', Arial, -apple-system, sans-serif;
+    }
+
+    /* Print Controls */
+    .no-print-bar {
+      position: fixed;
+      top: 14px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      gap: 10px;
+    }
+    .print-btn {
+      background: #000000;
+      color: #ffffff;
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+    .print-btn:hover { background: #333333; transform: translateY(-2px); }
+
+    @media print {
+      .no-print-bar { display: none !important; }
+      body { background: #ffffff !important; }
+      .a4-landscape-sheet {
+        box-shadow: none !important;
+        margin: 0 auto !important;
+        border: 2px solid #000000 !important;
+        page-break-after: always;
+      }
+      .a4-landscape-sheet:last-child { page-break-after: avoid; }
+    }
+
+    /* Main A4 Landscape Sheet (281mm x 196mm) */
+    .a4-landscape-sheet {
+      width: 281mm;
+      height: 196mm;
+      margin: 10px auto 25px;
+      background: #ffffff;
+      border: 2.5px solid #000000;
+      border-radius: 8px;
+      padding: 5mm;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    /* Center Fold Line */
+    .center-fold-line {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      height: 100%;
+      width: 0;
+      border-left: 2px dashed #666666;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .fold-badge {
+      position: absolute;
+      top: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffffff;
+      border: 1px solid #000000;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 8.5px;
+      font-weight: 800;
+      color: #000000;
+      white-space: nowrap;
+      z-index: 12;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Booklet Panels (Left and Right) */
+    .booklet-panel {
+      flex: 1;
+      height: 100%;
+      padding: 4mm 7mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .panel-left { padding-right: 8mm; }
+    .panel-right { padding-left: 8mm; }
+
+    /* Passport / Certificate Styling */
+    .passport-border {
+      border: 2px solid #000000;
+      height: 100%;
+      border-radius: 6px;
+      padding: 5mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #ffffff;
+      position: relative;
+    }
+
+    .emblem-title-group {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .main-emblem {
+      font-size: 38px;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .passport-header-title {
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #000000;
+    }
+    .passport-sub {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #333333;
+      border-bottom: 1.5px solid #000000;
+      padding-bottom: 3px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Input fields */
+    .field-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .f-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: #000000;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+    .f-line {
+      flex: 1;
+      border-bottom: 1.5px dotted #000000;
+      height: 14px;
+    }
+
+    /* Missions Table */
+    .missions-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9px;
+      margin-top: 3px;
+    }
+    .missions-table th {
+      background: #000000;
+      color: #ffffff;
+      padding: 3px 5px;
+      text-align: left;
+      font-weight: 800;
+      border: 1px solid #000000;
+    }
+    .missions-table td {
+      border: 1px solid #000000;
+      padding: 3.5px 5px;
+      vertical-align: middle;
+    }
+    .mission-row-active {
+      background: #f1f5f9;
+      font-weight: 800;
+    }
+    .stamp-box-mini {
+      width: 17mm;
+      height: 14mm;
+      border: 1.5px dashed #000000;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 7px;
+      font-weight: 800;
+      line-height: 1.1;
+      background: #ffffff;
+    }
+
+    .contract-rules {
+      font-size: 9px;
+      line-height: 1.35;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .rule-bullet {
+      display: flex;
+      gap: 5px;
+      font-weight: 600;
+    }
+    .rule-bullet strong { font-weight: 800; }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <!-- Print Button -->
+  <div class="no-print-bar">
+    <div class="print-btn" onclick="window.print()">
+      <span>🖨️</span> Katlanabilir Günlüğü Yazdır (A4 - S/B)
+    </div>
+  </div>
+
+  <!-- ==================== SHEET 1: DIŞ YÜZEY (ARKA KAPAK & ÖN KAPAK) ==================== -->
+  <div class="a4-landscape-sheet">
+    <div class="center-fold-line"></div>
+    <div class="fold-badge">✂️ BURADAN İKİYE KATLAYINIZ (ORTA KATLAMA ÇİZGİSİ)</div>
+
+    <!-- SOL PANEL: ARKA KAPAK (UÇUŞ SÖZLEŞMESİ & VELİ NOTU) -->
+    <div class="booklet-panel panel-left">
+      <div class="passport-border">
+        
+        <div class="emblem-title-group">
+          <div style="font-size: 13px; font-weight: 900; letter-spacing: 0.5px;">GÖKYÜZÜ MÜHENDİSLERİ SÖZLEŞMESİ</div>
+          <div style="font-size: 9px; color: #444; font-weight: 700;">5 ALTIN UÇUŞ & ATÖLYE KURALI</div>
+        </div>
+
+        <div class="contract-rules" style="margin: 6px 0;">
+          <div class="rule-bullet">
+            <span>1.</span>
+            <div><strong>Önce Güvenlik:</strong> Dönen pervanelere ve uçuş sahasına izinsiz asla yaklaşmam.</div>
+          </div>
+          <div class="rule-bullet">
+            <span>2.</span>
+            <div><strong>Kuleye Saygı:</strong> Öğretmenimin ve kule telsizinin "Dur" komutuna anında uyarım.</div>
+          </div>
+          <div class="rule-bullet">
+            <span>3.</span>
+            <div><strong>Ekipmanı Koru:</strong> Kumandayı ve drone'u hassas, dikkatli bir mühendis gibi kullanırım.</div>
+          </div>
+          <div class="rule-bullet">
+            <span>4.</span>
+            <div><strong>Yardımlaşma:</strong> Uçan arkadaşıma dikkat dağıtıcı hareket yapmam, onu desteklerim.</div>
+          </div>
+          <div class="rule-bullet">
+            <span>5.</span>
+            <div><strong>Sürekli Gelişim:</strong> Başarısız inişlerde pes etmem; analiz eder, tekrar denerim!</div>
+          </div>
+        </div>
+
+        <div style="border-top: 1.5px solid #000; padding-top: 6px; font-size: 8.5px; line-height: 1.35; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid #000;">
+          <strong>👨‍👩‍👧‍👦 VELİ BİLGİLENDİRME:</strong><br>
+          Bu defter öğrencimizin her hafta derse getireceği resmi uçuş karnesidir. Her başarılı görevde öğretmen tarafından mühür basılır. Lütfen haftalık görevleri evde birlikte inceleyiniz.
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #000; padding-top: 6px;">
+          <div>
+            <div style="font-size: 8.5px; font-weight: 800;">Eğitmen / Zümre Başkanı</div>
+            <div style="font-size: 8px; color: #333;">Loom Akademi Havacılık</div>
+          </div>
+          <div style="border-bottom: 1.5px dotted #000; width: 35mm; height: 12px; text-align: center; font-size: 7.5px; color: #666;">
+            Resmi İmza / Mühür
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SAĞ PANEL: ÖN KAPAK (PASAPORT RESMİ KAPAĞI) -->
+    <div class="booklet-panel panel-right">
+      <div class="passport-border" style="border-width: 2.5px;">
+        
+        <div class="emblem-title-group">
+          <div class="main-emblem">🦅✈️</div>
+          <div style="font-size: 11px; font-weight: 800; letter-spacing: 1px;">LOOM AKADEMİ</div>
+          <div class="passport-header-title">RESMİ PİLOT UÇUŞ GÜNLÜĞÜ</div>
+          <div class="passport-sub">GÖKYÜZÜ MÜHENDİSLİĞİ LİSANS DEFTERİ</div>
+        </div>
+
+        <!-- Pilot Profile Fields on Front Cover -->
+        <div style="display: flex; flex-direction: column; gap: 4px; margin: 8px 0;">
+          <div class="field-row">
+            <span class="f-label">Pilot Adı & Soyadı:</span>
+            <div class="f-line"></div>
+          </div>
+          <div class="field-row">
+            <span class="f-label">Çağrı Kodu (Callsign):</span>
+            <div class="f-line"></div>
+          </div>
+          <div class="field-row">
+            <span class="f-label">Okul & Sınıfı:</span>
+            <div class="f-line"></div>
+          </div>
+          <div class="field-row">
+            <span class="f-label">Lisans / Mühendis No:</span>
+            <div class="f-line"></div>
+          </div>
+          <div class="field-row">
+            <span class="f-label">Eğitim Yılı:</span>
+            <span style="font-weight: 800; font-size: 10px;">2026 - 2027</span>
+          </div>
+        </div>
+
+        <div style="border: 1.5px dashed #000; padding: 6px; border-radius: 6px; text-align: center; background: #f8fafc;">
+          <div style="font-size: 8.5px; font-weight: 800; text-transform: uppercase;">UÇUŞ KONTROL MERKEZİ ONAYI</div>
+          <div style="font-size: 7.5px; color: #444; margin-top: 1px;">Bu defter öğrencinin havacılık ve pilotaj yetkinliğini belgeler.</div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; font-size: 8px; font-weight: 800; border-top: 1.5px solid #000; padding-top: 4px;">
+          <span>BELGE SERİ NO: GM-A4-2026</span>
+          <span>LOOM AKADEMİ HAVA SAHASI</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ==================== SHEET 2: İÇ YÜZEY (GÖREV SAYFALARI & KAŞE ALANLARI) ==================== -->
+  <div class="a4-landscape-sheet">
+    <div class="center-fold-line"></div>
+    <div class="fold-badge">✂️ BURADAN İKİYE KATLAYINIZ (ORTA KATLAMA ÇİZGİSİ)</div>
+
+    <!-- SOL PANEL: 1. DÖNEM BAŞLANGIÇ GÖREVLERİ (1 - 8. HAFTALAR) -->
+    <div class="booklet-panel panel-left">
+      <div class="passport-border">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 3px;">
+          <div>
+            <div style="font-size: 12px; font-weight: 900;">1. DÖNEM TEMEL PİLOTAJ GÖREVLERİ</div>
+            <div style="font-size: 8.5px; color: #333;">HAFTA 1 - 8 • KALKIŞ, İNİŞ VE YÖN KONTROLÜ</div>
+          </div>
+          <div style="font-size: 8px; font-weight: 800; border: 1px solid #000; padding: 2px 6px; border-radius: 4px;">SAYFA 1</div>
+        </div>
+
+        <table class="missions-table">
+          <thead>
+            <tr>
+              <th style="width: 14%;">Hafta</th>
+              <th style="width: 58%;">Görev ve Kazanım</th>
+              <th style="width: 28%; text-align: center;">Kule Mührü</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Hafta</strong></td>
+              <td>Havacılık Tarihi & Süzülen Glider Kağıt Uçak Testi</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+            <tr>
+              <td><strong>2. Hafta</strong></td>
+              <td>LiteRadio Kumanda Kolları & Ahşap Uçak Montajı</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+            <!-- 3. HAFTA ÖZEL VURGULU -->
+            <tr class="mission-row-active">
+              <td><strong>⭐ 3. Hafta</strong></td>
+              <td>
+                <strong>Drone Anatomisi & İlk Dokunuş (Touchdown)</strong><br>
+                <span style="font-size: 7.5px;">5 temel parça • 1m kalkış • 3 sn hover • iniş</span>
+              </td>
+              <td>
+                <div class="stamp-box-mini" style="border: 2px solid #000; font-weight: 900;">
+                  İLK DOKUNUŞ<br>RESMİ KAŞE
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>4-5. Hafta</strong></td>
+              <td>Kumanda Hassasiyeti & Kontrollü İniş-Kalkış</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+            <tr>
+              <td><strong>6. Hafta</strong></td>
+              <td>Zemin Yön Manevraları (Sağa - Sola Kayma)</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+            <tr>
+              <td><strong>7. Hafta</strong></td>
+              <td>İleri - Geri Rota Takibi & Sabit İrtifa</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+            <tr>
+              <td><strong>8. Hafta</strong></td>
+              <td>Havada Sabit Kalma (Hover Ustası - 5 Saniye)</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="font-size: 8px; color: #333; text-align: right; font-style: italic;">
+          * Başarılı uçuşlardan sonra öğretmen tarafından mühürlenir.
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SAĞ PANEL: İLERİ GÖREVLER & TURNUVA LİSANSI (9 - 18. HAFTALAR) -->
+    <div class="booklet-panel panel-right">
+      <div class="passport-border">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 3px;">
+          <div>
+            <div style="font-size: 12px; font-weight: 900;">İLERİ PARKUR & TURNUVA GÖREVLERİ</div>
+            <div style="font-size: 8.5px; color: #333;">HAFTA 9 - 18 • ENGELLİ PARKUR VE YARIŞ LİSANSI</div>
+          </div>
+          <div style="font-size: 8px; font-weight: 800; border: 1px solid #000; padding: 2px 6px; border-radius: 4px;">SAYFA 2</div>
+        </div>
+
+        <table class="missions-table">
+          <thead>
+            <tr>
+              <th style="width: 14%;">Hafta</th>
+              <th style="width: 58%;">Görev ve Kazanım</th>
+              <th style="width: 28%; text-align: center;">Kule Mührü</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>9-10. Hafta</strong></td>
+              <td>Çemberden Geçiş (Farklı Yükseklik Engelleri)</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+            <tr>
+              <td><strong>11-12. Hafta</strong></td>
+              <td>Tam Tur Parkur Uçuşu (Kalkış, Dönüş, İniş)</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+            <tr>
+              <td><strong>13-14. Hafta</strong></td>
+              <td>Drone Hedef Oyunu & Kapılardan Puan Toplama</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+            <tr>
+              <td><strong>15-17. Hafta</strong></td>
+              <td>Pilot & Co-Pilot Yarış Antrenmanı</td>
+              <td><div class="stamp-box-mini">MÜHÜR / KAŞE</div></td>
+            </tr>
+            <!-- 18. HAFTA TURNUVA -->
+            <tr class="mission-row-active" style="border: 2px solid #000;">
+              <td><strong>🏆 18. Hafta</strong></td>
+              <td>
+                <strong>Büyük Drone Turnuvası (Final Parkuru)</strong><br>
+                <span style="font-size: 7.5px;">Engelli parkur • Zaman yarışı • 1. Dönem Madalyası</span>
+              </td>
+              <td>
+                <div class="stamp-box-mini" style="border: 2px solid #000; font-weight: 900;">
+                  TURNUVA<br>ALTIN MÜHÜR
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- 2. Dönem Önizleme Çerçevesi -->
+        <div style="border: 1.5px solid #000; background: #f8fafc; padding: 5px 8px; border-radius: 4px; font-size: 8px; line-height: 1.3;">
+          <strong>🚀 2. DÖNEM VİZYONU (3D YAZICI & KENDİ İHA'MI ÜRETİYORUM):</strong><br>
+          Öğrencimiz 2. dönemde 3D yazıcı teknolojisiyle tanışacak; kendi İHA'sının gövde, motor ve elektronik bağlantılarını yaparak açık alan Uçuş Günü'ne katılacaktır!
+        </div>
+
+        <div style="display: flex; justify-content: space-between; font-size: 7.5px; color: #444; border-top: 1px solid #000; padding-top: 3px;">
+          <span>LOOM AKADEMİ HAVACILIK SİSTEMİ</span>
+          <span>ONAY: EĞİTMEN HÜSEYİN TAŞKIN</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
