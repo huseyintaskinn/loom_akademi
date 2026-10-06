@@ -177,33 +177,50 @@
       outline: none;
     }
 
-    /* Camera Switch Toolbar on Top of 3D Canvas */
-    .sim-cam-bar {
-      position: absolute;
-      top: 10px;
-      right: 12px;
+    /* Camera Switch Toolbar & HUD Top Row */
+    .hud-top-row {
       display: flex;
-      gap: 5px;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      pointer-events: none;
+    }
+    .hud-top-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      pointer-events: auto;
+      max-width: calc(100% - 245px);
+    }
+    .sim-cam-bar {
+      display: inline-flex;
+      gap: 3px;
       z-index: 20;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(8px);
-      padding: 4px;
-      border-radius: 10px;
+      padding: 3px 5px;
+      border-radius: 9px;
       border: 1px solid rgba(255, 255, 255, 0.18);
+      pointer-events: auto;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     }
     .cam-btn {
       background: transparent;
       border: 1px solid transparent;
       color: #94a3b8;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
-      padding: 4px 9px;
-      border-radius: 7px;
+      padding: 3.5px 7px;
+      border-radius: 6px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       transition: all 0.15s ease;
+      white-space: nowrap;
     }
     .cam-btn:hover {
       color: #ffffff;
@@ -233,17 +250,19 @@
     .hud-top-bar {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 12.5px;
+      gap: 6px;
+      font-size: 11.5px;
       font-weight: 800;
       flex-wrap: wrap;
     }
     .hud-badge {
-      background: rgba(15, 23, 42, 0.82);
+      background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(0, 255, 204, 0.4);
-      padding: 3px 8px;
+      padding: 2.5px 7px;
       border-radius: 6px;
       backdrop-filter: blur(4px);
+      font-size: 11.5px;
+      white-space: nowrap;
     }
     .hud-badge.armed {
       border-color: #22c55e;
@@ -339,18 +358,22 @@
     .hud-ladder-line.top { top: 22%; }
     .hud-ladder-line.bot { bottom: 22%; }
 
-    /* 3D Attitude Indicators (Angles) */
+    /* 3D Attitude Indicators (Angles & Battery) */
     .hud-attitude-readout {
       position: absolute;
       left: 14px;
-      top: 50px;
-      background: rgba(15, 23, 42, 0.78);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      top: 80px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 8px;
       padding: 5px 9px;
       font-size: 11px;
       line-height: 1.4;
       color: #94a3b8;
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      z-index: 12;
     }
     .hud-attitude-readout span {
       color: #ffffff;
@@ -360,11 +383,11 @@
     /* Mini Stick OSD Overlay (Visual stick feedback) */
     .hud-mini-stick-box {
       position: absolute;
-      bottom: 64px;
+      bottom: 104px;
       right: 14px;
-      width: 80px;
-      height: 80px;
-      background: rgba(15, 23, 42, 0.85);
+      width: 78px;
+      height: 78px;
+      background: rgba(15, 23, 42, 0.88);
       border: 1.5px solid rgba(56, 189, 248, 0.4);
       border-radius: 10px;
       display: flex;
@@ -372,6 +395,8 @@
       align-items: center;
       justify-content: center;
       padding: 4px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      z-index: 12;
     }
     .hud-mini-stick-title {
       font-size: 9px;
@@ -449,7 +474,7 @@
     /* 3D Orbit Hint Badge */
     .hud-orbit-hint {
       position: absolute;
-      bottom: 64px;
+      bottom: 104px;
       left: 14px;
       background: rgba(15, 23, 42, 0.78);
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -461,6 +486,7 @@
       align-items: center;
       gap: 5px;
       pointer-events: auto;
+      z-index: 12;
     }
 
     /* Right / Bottom Col: Kumanda */
@@ -596,6 +622,27 @@
        RESPONSIVE MODES: LANDSCAPE vs PORTRAIT (TABLET)
        ========================================================= */
 
+    /* =========================================================
+       RESPONSIVE MODES: LANDSCAPE vs PORTRAIT vs FOCUS MODE
+       ========================================================= */
+
+    /* 0. GENİŞ EKRAN (FOCUS MODE / TAM SİMÜLASYON) */
+    .sim-container.focus-mode {
+      padding: 0 !important;
+      gap: 0 !important;
+    }
+    .sim-container.focus-mode .sim-right-col {
+      display: none !important;
+    }
+    .sim-container.focus-mode .sim-left-col {
+      flex: 1 1 100% !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 100% !important;
+      border: none !important;
+      border-radius: 0 !important;
+    }
+
     /* 1. YATAY (LANDSCAPE): 2 SÜTUN */
     @media (orientation: landscape) {
       .sim-container {
@@ -642,18 +689,62 @@
         font-size: 10.5px;
         padding: 3px 6px;
       }
-      .sim-brand span {
+      .sim-brand span:last-child {
         display: none;
       }
+      .hud-top-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+      .hud-top-badges {
+        max-width: 100%;
+      }
+      .hud-attitude-readout {
+        top: auto;
+        bottom: 104px;
+        left: 10px;
+        font-size: 10px;
+        padding: 3px 6px;
+      }
       .hud-mini-stick-box {
-        bottom: 58px;
-        right: 8px;
+        bottom: 104px;
+        right: 10px;
         width: 65px;
         height: 65px;
       }
       .hud-mini-stick-arena {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
+      }
+    }
+
+    /* 3. DAR EKRAN / TABLET / AKILLI TAHTA */
+    @media (max-width: 900px) {
+      .header-actions {
+        gap: 4px;
+      }
+      .btn-action {
+        padding: 4px 7px;
+        font-size: 11px;
+      }
+      .sim-brand span:last-child {
+        display: none;
+      }
+      .hud-top-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+      .hud-top-badges {
+        max-width: 100%;
+      }
+      .hud-attitude-readout {
+        top: auto;
+        bottom: 104px;
+        left: 10px;
+        font-size: 10px;
+        padding: 3px 6px;
       }
     }
 
@@ -706,6 +797,211 @@
       font-size: 12.5px;
     }
     .help-item strong { color: var(--sunny-yellow); display: block; margin-bottom: 2px; }
+
+    /* Gamepad / LiteRadio 2 SE Styles */
+    .btn-action.gamepad-active {
+      background: rgba(16, 185, 129, 0.25) !important;
+      border-color: #10b981 !important;
+      color: #6ee7b7 !important;
+      font-weight: 800;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+    .hud-badge.gamepad-badge {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      color: #6ee7b7;
+      font-weight: 800;
+      cursor: pointer;
+      pointer-events: auto;
+      animation: pulseArmed 1.5s infinite alternate;
+    }
+    #gamepad-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 14, 26, 0.94);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    #gamepad-modal.open {
+      display: flex;
+    }
+    .gamepad-card {
+      background: rgba(22, 31, 54, 0.98);
+      border: 2px solid #38bdf8;
+      border-radius: 18px;
+      max-width: 680px;
+      width: 100%;
+      padding: 22px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .gp-status-box {
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin: 12px 0;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .gp-status-box.connected {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1.5px solid #10b981;
+      color: #a7f3d0;
+    }
+    .gp-status-box.disconnected {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1.5px solid #ef4444;
+      color: #fca5a5;
+    }
+    .gp-channel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .gp-channel-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .gp-ch-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+    .gp-ch-meter {
+      height: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+    .gp-ch-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      width: 0%;
+      transition: width 0.05s linear;
+    }
+    .gp-ch-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .gp-select {
+      background: #0f172a;
+      color: #ffffff;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-size: 11px;
+    }
+    .gp-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .gp-raw-axes {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #94a3b8;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .gp-switches-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .gp-sw-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .gp-sw-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+    .gp-btn-pill-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin-top: 6px;
+    }
+    .gp-btn-pill {
+      font-size: 10.5px;
+      padding: 2.5px 7px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #94a3b8;
+      font-weight: 700;
+      transition: all 0.1s ease;
+    }
+    .gp-btn-pill.active {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #052e16;
+      font-weight: 900;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+      transform: scale(1.08);
+    }
+    .btn-detect {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2.5px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-detect:hover {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+    .btn-detect.detecting {
+      background: #f59e0b;
+      border-color: #f59e0b;
+      color: #000;
+      animation: pulseArmed 0.8s infinite alternate;
+    }
   </style>
 </head>
 <body oncontextmenu="return false;">
@@ -722,8 +1018,14 @@
         <button class="btn-action reset-btn" onclick="resetDroneSim()" title="Drone'u Başlangıç Konumuna Getir (R)">
           <span>🔄</span> Sıfırla
         </button>
+        <button class="btn-action" id="btn-gamepad" onclick="toggleGamepadModal(true)" title="BetaFPV LiteRadio 2 SE / USB Kumanda Bağlantısı & Kalibrasyon">
+          <span id="gamepad-icon">🎮</span> <span id="gamepad-status-text">Kumanda Bağla</span>
+        </button>
         <button class="btn-action" onclick="triggerCrashTest()" title="Kaplumbağa Modunu Öğrencilere Göstermek İçin Dronu Ters Düşür (T)">
           <span>🐢</span> Kaza Testi
+        </button>
+        <button class="btn-action" id="btn-toggle-focus" onclick="toggleSimFocusMode()" title="Geniş Ekran: Kumandayı Gizle / Göster (G)">
+          <span id="focus-icon">🖥️</span> <span id="focus-text">Geniş Ekran</span>
         </button>
         <button class="btn-action" id="btn-sound" onclick="toggleSound()" title="Sesi Aç / Kapat (M)">
           <span>🔊</span> <span id="sound-label">Ses Açık</span>
@@ -745,32 +1047,35 @@
         <div id="canvas3d-wrap">
           <!-- Three.js Canvas burada oluşturulacak -->
 
-          <!-- 3D Kamera Seçici Toolbar -->
-          <div class="sim-cam-bar">
-            <button class="cam-btn active" id="btn-cam-chase" onclick="setCameraMode('chase')" title="Drone'u arkadan takip et">
-              🎥 Takip
-            </button>
-            <button class="cam-btn" id="btn-cam-orbit" onclick="setCameraMode('orbit')" title="Drone etrafında 360° serbestçe dönerek incele">
-              🔄 Serbest 3D
-            </button>
-            <button class="cam-btn" id="btn-cam-fpv" onclick="setCameraMode('fpv')" title="FPV pilot kamerası bakış açısı">
-              🥽 FPV Kokpit
-            </button>
-            <button class="cam-btn" id="btn-cam-top" onclick="setCameraMode('top')" title="Üstten teknik gözlem açısı">
-              📐 Üst/Yan
-            </button>
-          </div>
-
           <!-- FPV HUD OVERLAY -->
           <div class="sim-hud-overlay">
-            <div class="hud-top-bar">
-              <div class="hud-badge disarmed" id="hud-arm-badge">🔒 DISARMED</div>
-              <div class="hud-badge mode" id="hud-mode-badge">ANGLE</div>
-              <div class="hud-badge rate" id="hud-rate-badge">%70 NORMAL</div>
-              <div class="hud-badge score-badge" id="hud-score-badge">🏆 SKOR: 0</div>
-              <div class="hud-badge gate-badge" id="hud-gate-badge">🎯 HEDEF: KAPI 1/3</div>
-              <div class="hud-badge alt-layer" id="hud-alt-layer">🌤️ TROPOSFER (0m)</div>
-              <div class="hud-badge batt" id="hud-batt"><span style="color:#22c55e">🔋</span> 4.18V</div>
+            <!-- Top HUD Row: Rozetler Solda, Kamera Seçici Sağda (Çakışmasız Yerleşim) -->
+            <div class="hud-top-row">
+              <div class="hud-top-badges">
+                <div class="hud-badge disarmed" id="hud-arm-badge">🔒 DISARMED</div>
+                <div class="hud-badge mode" id="hud-mode-badge">ANGLE</div>
+                <div class="hud-badge rate" id="hud-rate-badge">%70 NORMAL</div>
+                <div class="hud-badge score-badge" id="hud-score-badge">🏆 SKOR: 0</div>
+                <div class="hud-badge gate-badge" id="hud-gate-badge">🎯 HEDEF: KAPI 1/3</div>
+                <div class="hud-badge alt-layer" id="hud-alt-layer">🌤️ TROPOSFER (0m)</div>
+                <div class="hud-badge gamepad-badge" id="hud-gamepad-badge" style="display:none;" onclick="toggleGamepadModal(true)" title="LiteRadio Ayarları İçin Dokunun">🎮 LITERADIO 2 SE</div>
+              </div>
+
+              <!-- 3D Kamera Seçici Toolbar (Artık Üst Barda Entegre) -->
+              <div class="sim-cam-bar">
+                <button class="cam-btn active" id="btn-cam-chase" onclick="setCameraMode('chase')" title="Drone'u arkadan takip et">
+                  🎥 Takip
+                </button>
+                <button class="cam-btn" id="btn-cam-orbit" onclick="setCameraMode('orbit')" title="Drone etrafında 360° serbestçe dönerek incele">
+                  🔄 3D
+                </button>
+                <button class="cam-btn" id="btn-cam-fpv" onclick="setCameraMode('fpv')" title="FPV pilot kamerası bakış açısı">
+                  🥽 FPV
+                </button>
+                <button class="cam-btn" id="btn-cam-top" onclick="setCameraMode('top')" title="Üstten teknik gözlem açısı">
+                  📐 Üst
+                </button>
+              </div>
             </div>
 
             <!-- Artificial Horizon Crosshair -->
@@ -781,8 +1086,9 @@
               <div class="hud-ladder-line bot"></div>
             </div>
 
-            <!-- Drone 3D Attitude Indicators (Anlık Roll/Pitch/Yaw açıları) -->
+            <!-- Drone 3D Attitude Indicators (Anlık Roll/Pitch/Yaw açıları & Batarya) -->
             <div class="hud-attitude-readout" id="hud-att-readout">
+              <div id="hud-batt" style="color: #22c55e; font-weight: 900; margin-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 2px;"><span style="color:#22c55e">🔋</span> 4.18V</div>
               <div>ROLL: <span id="att-val-roll">0.0°</span></div>
               <div>PITCH: <span id="att-val-pitch">0.0°</span></div>
               <div>YAW: <span id="att-val-yaw">0.0°</span></div>
@@ -1108,17 +1414,236 @@
           <strong>FPV Kokpit:</strong> Pilot gözünden kokpit kamerası.
         </div>
         <div class="help-item">
-          <strong>⌨️ Klavye Kısayolları:</strong>
-          <strong>W / S:</strong> Gaz Artır / Azalt<br>
-          <strong>A / D:</strong> Yaw Sola / Sağa Dönüş<br>
-          <strong>Ok Tuşları:</strong> Pitch (İleri/Geri) &amp; Roll (Sağ/Sol)<br>
-          <strong>T:</strong> Kaza Testi (Ters Düşür) | <strong>Boşluk:</strong> SA Arm | <strong>R:</strong> Sıfırla
+          <strong>⌨️ Klavye &amp; Görünüm Kısayolları:</strong>
+          <strong>W / S:</strong> Gaz Artır / Azalt | <strong>A / D:</strong> Yaw Dönüş<br>
+          <strong>Ok Tuşları:</strong> Pitch &amp; Roll | <strong>Boşluk:</strong> SA Arm<br>
+          <strong>G:</strong> Geniş Ekran (Kumandayı Gizle/Göster)<br>
+          <strong>F:</strong> Tam Ekran | <strong>T:</strong> Kaza Testi | <strong>R:</strong> Sıfırla
+        </div>
+        <div class="help-item" style="grid-column: span 2; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.4);">
+          <strong style="color: #38bdf8;">🎮 Gerçek Kumanda (BetaFPV LiteRadio 2 SE / USB Type-C):</strong>
+          Kumandanızı arkasındaki Type-C kablosuyla bilgisayara veya akıllı tahtaya takın. Kumandayı açıp bir kolu oynatın. <br>
+          • <strong>SA Şalteri (Sol Dış):</strong> Motorları Başlatır / Durdurur (ARM / DISARM).<br>
+          • <strong>SD Şalteri (Sağ Dış):</strong> Kaplumbağa Modu (Ters düşen dronu ayakları üstüne düzeltir).<br>
+          • <strong>SB &amp; SC Şalterleri:</strong> Uçuş modları (Angle/Horizon/Acro) ve Hız kademeleri (%40/%70/%100).<br>
+          • Kumandayla uçarken sağdaki sanal kumandaya ihtiyacınız kalmadığında <strong>🖥️ Geniş Ekran (G)</strong> butonuna basarak tüm ekranı 3D simülasyona ayırabilirsiniz!
         </div>
       </div>
 
       <div style="text-align: center; margin-top: 10px;">
         <button class="btn-action active" style="width: 100%; justify-content: center; font-size: 14px; padding: 10px;" onclick="toggleHelp(false)">
           Anladım, 3D Uçuşa Başla! 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gamepad / LiteRadio 2 SE Ayar Modalı -->
+  <div id="gamepad-modal" onclick="if(event.target===this) toggleGamepadModal(false)">
+    <div class="gamepad-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(255,255,255,0.15); padding-bottom: 8px;">
+        <h3 style="font-size: 17px; color: #38bdf8; font-weight: 800; display:flex; align-items:center; gap:8px;">
+          <span>🎮</span> BetaFPV LiteRadio 2 SE &amp; USB Kumanda Ayarları
+        </h3>
+        <button class="btn-action" style="padding: 4px 10px;" onclick="toggleGamepadModal(false)">✕</button>
+      </div>
+
+      <!-- Bağlantı Durumu Kartı -->
+      <div id="gp-status-box" class="gp-status-box disconnected">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="gp-status-icon" style="font-size:18px;">🔌</span>
+          <span id="gp-status-text">Kumanda Henüz Algılanmadı (USB-C ile bağlayıp bir kolu hareket ettirin)</span>
+        </div>
+        <button class="btn-action" style="font-size:11px; padding:3px 8px;" onclick="checkGamepadsNow()">Yenile</button>
+      </div>
+
+      <!-- Akıllı Tahta & PC Bağlantı Rehberi -->
+      <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #cbd5e1; line-height: 1.5;">
+        <strong style="color: #38bdf8;">📌 Nasıl Bağlanır? (Sürücüsüz &amp; Tak-Çalıştır):</strong><br>
+        1. <strong>BetaFPV LiteRadio 2 SE</strong> kumandanızı arkasındaki Type-C portundan bilgisayara veya akıllı tahtaya takın.<br>
+        2. Kumandanın ortasındaki <strong>GÜÇ</strong> butonuna basarak kumandayı açın (LED mavi/yeşil yanar).<br>
+        3. Tarayıcının (Chrome / Edge) kumandayı algılaması için kollardan birini hafifçe hareket ettirin.<br>
+        4. Kumanda otomatik algılanır; aşağıdaki çubuklar kollarla birlikte canlı olarak hareket eder!
+      </div>
+
+      <!-- 4 Ana Eksen (Kanal) Canlı Göstergeleri ve Ayarları -->
+      <div class="gp-channel-grid">
+        <!-- GAZ (THROTTLE) -->
+        <div class="gp-channel-card">
+          <div class="gp-ch-header">
+            <span>⬆️ GAZ (Throttle)</span>
+            <span id="gp-val-thr" style="color:#22c55e;">%0</span>
+          </div>
+          <div class="gp-ch-meter">
+            <div id="gp-bar-thr" class="gp-ch-fill"></div>
+          </div>
+          <div class="gp-ch-controls">
+            <label>Eksen:
+              <select id="gp-sel-thr" class="gp-select" onchange="updateGamepadMapping()">
+                <option value="0">Eksen 0</option>
+                <option value="1">Eksen 1</option>
+                <option value="2" selected>Eksen 2</option>
+                <option value="3">Eksen 3</option>
+                <option value="4">Eksen 4</option>
+              </select>
+            </label>
+            <label class="gp-checkbox-label">
+              <input type="checkbox" id="gp-inv-thr" onchange="updateGamepadMapping()"> Ters Çevir
+            </label>
+          </div>
+        </div>
+
+        <!-- YAW (DÖNÜŞ) -->
+        <div class="gp-channel-card">
+          <div class="gp-ch-header">
+            <span>↻ YAW (Kendi Ekseni)</span>
+            <span id="gp-val-yaw" style="color:#38bdf8;">0.00</span>
+          </div>
+          <div class="gp-ch-meter">
+            <div id="gp-bar-yaw" class="gp-ch-fill"></div>
+          </div>
+          <div class="gp-ch-controls">
+            <label>Eksen:
+              <select id="gp-sel-yaw" class="gp-select" onchange="updateGamepadMapping()">
+                <option value="0">Eksen 0</option>
+                <option value="1">Eksen 1</option>
+                <option value="2">Eksen 2</option>
+                <option value="3" selected>Eksen 3</option>
+                <option value="4">Eksen 4</option>
+              </select>
+            </label>
+            <label class="gp-checkbox-label">
+              <input type="checkbox" id="gp-inv-yaw" onchange="updateGamepadMapping()"> Ters Çevir
+            </label>
+          </div>
+        </div>
+
+        <!-- PITCH (İLERİ / GERİ) -->
+        <div class="gp-channel-card">
+          <div class="gp-ch-header">
+            <span>↗️ PITCH (İleri / Geri)</span>
+            <span id="gp-val-pitch" style="color:#fbbf24;">0.00</span>
+          </div>
+          <div class="gp-ch-meter">
+            <div id="gp-bar-pitch" class="gp-ch-fill"></div>
+          </div>
+          <div class="gp-ch-controls">
+            <label>Eksen:
+              <select id="gp-sel-pitch" class="gp-select" onchange="updateGamepadMapping()">
+                <option value="0">Eksen 0</option>
+                <option value="1" selected>Eksen 1</option>
+                <option value="2">Eksen 2</option>
+                <option value="3">Eksen 3</option>
+                <option value="4">Eksen 4</option>
+              </select>
+            </label>
+            <label class="gp-checkbox-label">
+              <input type="checkbox" id="gp-inv-pitch" onchange="updateGamepadMapping()"> Ters Çevir
+            </label>
+          </div>
+        </div>
+
+        <!-- ROLL (SAĞ / SOL) -->
+        <div class="gp-channel-card">
+          <div class="gp-ch-header">
+            <span>➡️ ROLL (Sağ / Sol)</span>
+            <span id="gp-val-roll" style="color:#a855f7;">0.00</span>
+          </div>
+          <div class="gp-ch-meter">
+            <div id="gp-bar-roll" class="gp-ch-fill"></div>
+          </div>
+          <div class="gp-ch-controls">
+            <label>Eksen:
+              <select id="gp-sel-roll" class="gp-select" onchange="updateGamepadMapping()">
+                <option value="0" selected>Eksen 0</option>
+                <option value="1">Eksen 1</option>
+                <option value="2">Eksen 2</option>
+                <option value="3">Eksen 3</option>
+                <option value="4">Eksen 4</option>
+              </select>
+            </label>
+            <label class="gp-checkbox-label">
+              <input type="checkbox" id="gp-inv-roll" onchange="updateGamepadMapping()"> Ters Çevir
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Şalter ve Buton Atamaları (SA, SB, SC, SD) -->
+      <div style="font-size: 13px; font-weight: 800; color: #38bdf8; margin-top: 10px; display:flex; align-items:center; justify-content:space-between;">
+        <span>🕹️ Şalter &amp; Buton Eşleştirmeleri:</span>
+        <span style="font-size:11px; color:#94a3b8;">(Kumandadaki şalteri oynatarak otomatik tanıyabilirsiniz)</span>
+      </div>
+
+      <div class="gp-switches-grid">
+        <!-- SA Şalteri (Arm / Kilit) -->
+        <div class="gp-sw-card">
+          <div class="gp-sw-header">
+            <span style="color:#0284c7;">🔴 SA Şalteri (Motor Kilidi - ARM)</span>
+            <span id="gp-sw-val-sa" style="color:#22c55e;">Kilitli (DISARM)</span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:11px; color:#cbd5e1;">
+            <span>Atama: <strong id="gp-sw-bind-sa" style="color:#38bdf8;">Buton 3</strong></span>
+            <button class="btn-detect" id="btn-detect-sa" onclick="startSwitchDetect('sa')">🔍 Şalteri Oynat &amp; Algıla</button>
+          </div>
+        </div>
+
+        <!-- SD Şalteri (Kaplumbağa Modu / Buzzer) -->
+        <div class="gp-sw-card">
+          <div class="gp-sw-header">
+            <span style="color:#7c3aed;">🟣 SD Şalteri (Kaplumbağa / Buzzer)</span>
+            <span id="gp-sw-val-sd" style="color:#a855f7;">Pasif</span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:11px; color:#cbd5e1;">
+            <span>Atama: <strong id="gp-sw-bind-sd" style="color:#38bdf8;">Buton 1</strong></span>
+            <button class="btn-detect" id="btn-detect-sd" onclick="startSwitchDetect('sd')">🔍 Şalteri Oynat &amp; Algıla</button>
+          </div>
+        </div>
+
+        <!-- SB Şalteri (Uçuş Modu) -->
+        <div class="gp-sw-card">
+          <div class="gp-sw-header">
+            <span style="color:#d97706;">🟡 SB Şalteri (Angle / Horizon / Acro)</span>
+            <span id="gp-sw-val-sb" style="color:#fbbf24;">ANGLE</span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:11px; color:#cbd5e1;">
+            <span>Atama: <strong id="gp-sw-bind-sb" style="color:#38bdf8;">Buton 0 (Orta) / Buton 2 (Alt)</strong></span>
+            <button class="btn-detect" id="btn-detect-sb" onclick="startSwitchDetect('sb')">🔍 Şalteri Oynat &amp; Algıla</button>
+          </div>
+        </div>
+
+        <!-- SC Şalteri (Hız Kademesi) -->
+        <div class="gp-sw-card">
+          <div class="gp-sw-header">
+            <span style="color:#059669;">🟢 SC Şalteri (Hız %40 / %70 / %100)</span>
+            <span id="gp-sw-val-sc" style="color:#34d399;">%70 ORTA</span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:11px; color:#cbd5e1;">
+            <span>Atama: <strong id="gp-sw-bind-sc" style="color:#38bdf8;">Eksen 4</strong></span>
+            <button class="btn-detect" id="btn-detect-sc" onclick="startSwitchDetect('sc')">🔍 Şalteri Oynat &amp; Algıla</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canlı Kumanda Buton Göstergesi (Bastıkça / Şalteri Açtıkça Yanar) -->
+      <div style="font-size: 11px; font-weight: 700; color: #94a3b8; margin-top: 8px;">
+        Canlı Kumanda Butonları &amp; Şalter Sinyalleri (Şalteri açınca yeşil yanar):
+      </div>
+      <div id="gp-btn-pills" class="gp-btn-pill-container">
+        <!-- Canlı butonlar -->
+      </div>
+
+      <!-- Ham Eksen Verileri (Canlı Teşhis) -->
+      <div style="font-size: 11px; font-weight: 700; color: #94a3b8; margin-top: 8px;">Ham Kumanda Eksenleri (Hareket ettikçe değişir):</div>
+      <div id="gp-raw-axes" class="gp-raw-axes">Eksen verisi bekleniyor...</div>
+
+      <!-- Alt Butonlar -->
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap;">
+        <button class="btn-action" style="font-size: 12px; padding: 6px 14px;" onclick="resetGamepadMappingToDefault()">
+          ↺ LiteRadio 2 SE Standart Ayarlarına Sıfırla
+        </button>
+        <button class="btn-action active" style="font-size: 12px; padding: 6px 18px;" onclick="toggleGamepadModal(false)">
+          ✓ Ayarları Kaydet &amp; Uçuşa Dön
         </button>
       </div>
     </div>
@@ -1178,6 +1703,635 @@
     };
 
     let cameraMode = 'chase'; // 'chase', 'orbit', 'fpv', 'top'
+
+    /* =========================================================
+       BETAFPV LITERADIO 2 SE & USB GAMEPAD ENGINE (HTML5 Gamepad API)
+       ========================================================= */
+    const DEFAULT_GAMEPAD_CONFIG = {
+      throttleAxis: 2,
+      throttleInvert: false,
+      yawAxis: 3,
+      yawInvert: false,
+      pitchAxis: 1,
+      pitchInvert: false,
+      rollAxis: 0,
+      rollInvert: false,
+      deadzone: 0.035,
+      armButton: 3,         // LiteRadio 2 SE SA Şalteri (Arm) = Button 3
+      turtleButton: 1,      // LiteRadio 2 SE SD Şalteri (Turtle / Buzzer) = Button 1
+      modeAxis: -1,         // SB Şalteri Eksen Değil (SC'nin Eksen 4'ü ile çakışmayı önler)
+      modeButton: 0,        // SB Şalteri Orta (Horizon) = Buton 0
+      modeButtonAcro: 2,    // SB Şalteri Alt (Acro) = Buton 2
+      rateAxis: 4,          // LiteRadio 2 SE SC Şalteri (Hız: %40/%70/%100) = Eksen 4
+      rateButton: -1        // Buton tabanlı modeller için yedek
+    };
+
+    let gamepadConfig = { ...DEFAULT_GAMEPAD_CONFIG };
+    try {
+      localStorage.removeItem('literadio_cfg_v2');
+      localStorage.removeItem('literadio_cfg_v3');
+      localStorage.removeItem('literadio_cfg_v4');
+      const savedCfg = localStorage.getItem('literadio_cfg_v5');
+      if (savedCfg) {
+        gamepadConfig = Object.assign({}, DEFAULT_GAMEPAD_CONFIG, JSON.parse(savedCfg));
+      }
+    } catch(e) {}
+
+    let gamepadConnected = false;
+    let activeGamepadIndex = null;
+    let lastGamepadButtons = {};
+    let sbTransitFrom = 0; // 0 = Angle'dan geldi, 2 = Acro'dan geldi
+    let calibTicker = null;
+
+    // Şalter algılama modu (Auto-Detect / Learn)
+    let detectingSwitchTarget = null;
+    let detectSnapshotButtons = [];
+    let detectSnapshotAxes = [];
+
+    // Geniş Ekran (Focus Mode / Tam Simülasyon)
+    let isFocusMode = false;
+    function toggleSimFocusMode(forceState) {
+      const container = document.querySelector('.sim-container');
+      if (!container) return;
+      isFocusMode = (forceState !== undefined) ? forceState : !isFocusMode;
+      container.classList.toggle('focus-mode', isFocusMode);
+
+      const focusIcon = document.getElementById('focus-icon');
+      const focusText = document.getElementById('focus-text');
+      if (focusIcon) focusIcon.textContent = isFocusMode ? '🎮' : '🖥️';
+      if (focusText) focusText.textContent = isFocusMode ? 'Kumandayı Göster' : 'Geniş Ekran';
+
+      showStickHint(isFocusMode ? '🖥️ Geniş Ekran Simülasyon Aktif (Kumanda Gizlendi)' : '🎮 Standart 2 Sütun Görünüm');
+
+      setTimeout(onWindowResize, 30);
+      setTimeout(onWindowResize, 150);
+    }
+
+    function getActiveGamepad() {
+      if (!navigator.getGamepads) return null;
+      const gamepads = navigator.getGamepads();
+      if (!gamepads) return null;
+
+      if (activeGamepadIndex !== null && gamepads[activeGamepadIndex] && gamepads[activeGamepadIndex].connected) {
+        return gamepads[activeGamepadIndex];
+      }
+
+      for (let i = 0; i < gamepads.length; i++) {
+        const gp = gamepads[i];
+        if (gp && gp.connected) {
+          activeGamepadIndex = i;
+          return gp;
+        }
+      }
+      return null;
+    }
+
+    function updateGamepadUI(gp) {
+      const btnGp = document.getElementById('btn-gamepad');
+      const gpStatusText = document.getElementById('gamepad-status-text');
+      const hudBadge = document.getElementById('hud-gamepad-badge');
+      const statusBox = document.getElementById('gp-status-box');
+      const statusIcon = document.getElementById('gp-status-icon');
+      const modalStatusText = document.getElementById('gp-status-text');
+
+      if (gp) {
+        const isLiteRadio = gp.id.toUpperCase().includes('BETAFPV') || gp.id.toUpperCase().includes('LITERADIO');
+        const shortName = isLiteRadio ? 'LiteRadio 2 SE' : (gp.id.split('(')[0].trim() || 'USB Kumanda');
+
+        if (btnGp) {
+          btnGp.classList.add('gamepad-active');
+          if (gpStatusText) gpStatusText.textContent = shortName;
+        }
+        if (hudBadge) {
+          hudBadge.style.display = 'inline-flex';
+          hudBadge.textContent = '🎮 ' + shortName.toUpperCase();
+        }
+        if (statusBox) {
+          statusBox.className = 'gp-status-box connected';
+          if (statusIcon) statusIcon.textContent = '🟢';
+          if (modalStatusText) modalStatusText.textContent = 'Bağlandı: ' + gp.id;
+        }
+      } else {
+        if (btnGp) {
+          btnGp.classList.remove('gamepad-active');
+          if (gpStatusText) gpStatusText.textContent = 'Kumanda Bağla';
+        }
+        if (hudBadge) {
+          hudBadge.style.display = 'none';
+        }
+        if (statusBox) {
+          statusBox.className = 'gp-status-box disconnected';
+          if (statusIcon) statusIcon.textContent = '🔌';
+          if (modalStatusText) modalStatusText.textContent = 'Kumanda Henüz Algılanmadı (USB-C ile bağlayıp bir kolu hareket ettirin)';
+        }
+      }
+    }
+
+    window.addEventListener('gamepadconnected', (e) => {
+      activeGamepadIndex = e.gamepad.index;
+      gamepadConnected = true;
+      updateGamepadUI(e.gamepad);
+      showStickHint('🎮 ' + e.gamepad.id.split('(')[0].trim() + ' Bağlandı!');
+      const statusMsg = document.getElementById('hud-status-msg');
+      if (statusMsg) {
+        statusMsg.textContent = '🎮 HARİKA! LiteRadio 2 SE kumandası algılandı. Fiziksel kollar ve şalterlerle doğrudan uçabilirsiniz!';
+      }
+      if (!simState.power) {
+        toggleSimPower();
+      }
+    });
+
+    window.addEventListener('gamepaddisconnected', (e) => {
+      if (activeGamepadIndex === e.gamepad.index) {
+        activeGamepadIndex = null;
+      }
+      const remainingGp = getActiveGamepad();
+      if (!remainingGp) {
+        gamepadConnected = false;
+        updateGamepadUI(null);
+        showStickHint('⚠️ Kumanda Bağlantısı Kesildi');
+      } else {
+        updateGamepadUI(remainingGp);
+      }
+    });
+
+    function checkGamepadsNow(quiet = false) {
+      const gp = getActiveGamepad();
+      updateGamepadUI(gp);
+      if (gp) {
+        showStickHint('🎮 ' + gp.id.split('(')[0] + ' Aktif!');
+      } else if (!quiet) {
+        showStickHint('⚠️ Kumanda henüz algılanmadı. Lütfen bir kolu hareket ettirin.');
+      }
+    }
+
+    function processGamepadInput(dt) {
+      const gp = getActiveGamepad();
+      if (!gp) {
+        if (gamepadConnected) {
+          gamepadConnected = false;
+          updateGamepadUI(null);
+        }
+        return;
+      }
+
+      if (!gamepadConnected) {
+        gamepadConnected = true;
+        updateGamepadUI(gp);
+        if (!simState.power) toggleSimPower();
+      }
+
+      const axes = gp.axes;
+      if (!axes || axes.length < 2) return;
+      const cfg = gamepadConfig;
+
+      // 1. Roll (Sağ kol yatay)
+      let rawRoll = axes[cfg.rollAxis] !== undefined ? axes[cfg.rollAxis] : 0;
+      if (Math.abs(rawRoll) < cfg.deadzone) rawRoll = 0;
+      simState.roll = cfg.rollInvert ? -rawRoll : rawRoll;
+
+      // 2. Pitch (Sağ kol dikey)
+      let rawPitch = axes[cfg.pitchAxis] !== undefined ? axes[cfg.pitchAxis] : 0;
+      if (Math.abs(rawPitch) < cfg.deadzone) rawPitch = 0;
+      simState.pitch = cfg.pitchInvert ? -rawPitch : rawPitch;
+
+      // 3. Throttle (Sol kol dikey: 0% - 100%)
+      let rawThr = axes[cfg.throttleAxis] !== undefined ? axes[cfg.throttleAxis] : 1;
+      let thrNorm;
+      if (cfg.throttleInvert) {
+        // Kol yukarı (-1.0) -> %100, Kol aşağı (+1.0) -> %0
+        thrNorm = (1.0 - rawThr) / 2.0;
+      } else {
+        // Kol yukarı (+1.0) -> %100, Kol aşağı (-1.0) -> %0
+        thrNorm = (rawThr + 1.0) / 2.0;
+      }
+      simState.throttle = Math.max(0, Math.min(1, thrNorm));
+
+      // 4. Yaw (Sol kol yatay)
+      let rawYaw = axes[cfg.yawAxis] !== undefined ? axes[cfg.yawAxis] : 0;
+      if (Math.abs(rawYaw) < cfg.deadzone) rawYaw = 0;
+      simState.yaw = cfg.yawInvert ? -rawYaw : rawYaw;
+
+      // Ekrandaki sanal kolları fiziksel kumandayla gerçek zamanlı eşitle
+      if (!stickState.left.active) {
+        stickState.left.dx = simState.yaw * 32;
+        stickState.left.dy = 32 - simState.throttle * 64;
+        const stickL = document.getElementById('svg-stick-left');
+        if (stickL) stickL.setAttribute('transform', `translate(${stickState.left.dx}, ${stickState.left.dy})`);
+      }
+
+      if (!stickState.right.active) {
+        stickState.right.dx = simState.roll * 32;
+        stickState.right.dy = -simState.pitch * 32;
+        const stickR = document.getElementById('svg-stick-right');
+        if (stickR) stickR.setAttribute('transform', `translate(${stickState.right.dx}, ${stickState.right.dy})`);
+        const stickDot = document.getElementById('hud-stick-dot');
+        if (stickDot) stickDot.style.transform = `translate(calc(-50% + ${stickState.right.dx * 0.55}px), calc(-50% + ${stickState.right.dy * 0.55}px))`;
+      }
+
+      // Motor sesini güncelle
+      if (simState.armed && simState.power) {
+        updateMotorAudio(true, simState.throttle);
+      }
+
+      // =========================================================
+      // FİZİKSEL ŞALTERLER (SA, SB, SC, SD) İŞLEME
+      // =========================================================
+
+      // 1. SA Şalteri (Motor Kilidi - ARM / DISARM)
+      // LiteRadio 2 SE: SA aşağı indirilince Button 3 aktif olur
+      if (gp.buttons && cfg.armButton >= 0 && gp.buttons[cfg.armButton]) {
+        const isArmActive = gp.buttons[cfg.armButton].pressed;
+        if (lastGamepadButtons['arm'] === undefined) lastGamepadButtons['arm'] = isArmActive;
+        if (isArmActive !== lastGamepadButtons['arm']) {
+          lastGamepadButtons['arm'] = isArmActive;
+          if (isArmActive !== simState.armed) {
+            toggleSimSwitch('sa');
+          }
+        }
+      }
+
+      // 2. SD Şalteri (Kaplumbağa Modu / Buzzer)
+      // LiteRadio 2 SE: SD aşağı indirilince Button 1 aktif olur
+      if (gp.buttons && cfg.turtleButton >= 0 && gp.buttons[cfg.turtleButton]) {
+        const isTurtleActive = gp.buttons[cfg.turtleButton].pressed;
+        if (lastGamepadButtons['turtle'] === undefined) lastGamepadButtons['turtle'] = isTurtleActive;
+        if (isTurtleActive !== lastGamepadButtons['turtle']) {
+          lastGamepadButtons['turtle'] = isTurtleActive;
+          if (isTurtleActive !== simState.buzzer) {
+            toggleSimSwitch('sd');
+          }
+        }
+      }
+
+      // 3. SB Şalteri (Uçuş Modu: Angle / Horizon / Acro)
+      let sbHandled = false;
+      if (cfg.modeAxis !== undefined && cfg.modeAxis >= 0 && gp.axes && gp.axes.length > cfg.modeAxis) {
+        const rawSb = gp.axes[cfg.modeAxis];
+        if (rawSb !== undefined) {
+          let targetMode = 0;
+          if (rawSb < -0.35) targetMode = 0; // ANGLE
+          else if (rawSb > 0.35) targetMode = 2; // ACRO
+          else targetMode = 1; // HORIZON
+
+          if (targetMode !== simState.mode) {
+            toggleSimSwitch('sb', targetMode);
+          }
+          sbHandled = true;
+        }
+      }
+
+      // Eksen yoksa buton ile yönet (LiteRadio 2 SE: 3-konumlu fiziksel şalter)
+      if (!sbHandled && gp.buttons) {
+        const btnIdx = (cfg.modeButton !== undefined && cfg.modeButton >= 0) ? cfg.modeButton : 0;
+        const btn = gp.buttons[btnIdx];
+
+        if (btn) {
+          const isPressed = btn.pressed;
+
+          // Eğer cihazda fiziken 2. bir Acro butonu varsa (örn: B2)
+          const btnAcroIdx = (cfg.modeButtonAcro !== undefined && cfg.modeButtonAcro >= 0) ? cfg.modeButtonAcro : 2;
+          const isAcroDirect = (gp.buttons[btnAcroIdx] && btnAcroIdx !== cfg.armButton && btnAcroIdx !== cfg.turtleButton)
+                               ? gp.buttons[btnAcroIdx].pressed : false;
+
+          if (isAcroDirect) {
+            if (simState.mode !== 2) {
+              sbTransitFrom = 2;
+              toggleSimSwitch('sb', 2);
+            }
+            lastGamepadButtons['sb'] = false;
+          } else {
+            if (lastGamepadButtons['sb'] === undefined) {
+              lastGamepadButtons['sb'] = isPressed;
+              sbTransitFrom = isPressed ? 1 : simState.mode;
+            }
+
+            // YALNIZCA şalter konumu değiştiğinde tetiklenir (Edge Trigger)
+            if (isPressed !== lastGamepadButtons['sb']) {
+              lastGamepadButtons['sb'] = isPressed;
+
+              if (isPressed) {
+                // Şalter ORTA konuma (Horizon) girdi
+                sbTransitFrom = simState.mode; // Önceden 0 (Angle) mıydı yoksa 2 (Acro) mu?
+                toggleSimSwitch('sb', 1);
+              } else {
+                // Şalter ORTA konumdan çıktı
+                if (sbTransitFrom === 2) {
+                  // Acro'dan ortaya gelmişti -> Şimdi yukarı itildi: ANGLE (0)
+                  toggleSimSwitch('sb', 0);
+                } else {
+                  // Angle'dan ortaya gelmişti -> Şimdi aşağı itildi: ACRO (2)
+                  toggleSimSwitch('sb', 2);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // 4. SC Şalteri (Hız Kademesi: %40 / %70 / %100 - LiteRadio 2 SE: Eksen 4)
+      let scHandled = false;
+      if (cfg.rateAxis !== undefined && cfg.rateAxis >= 0 && gp.axes && gp.axes.length > cfg.rateAxis) {
+        const rawSc = gp.axes[cfg.rateAxis];
+        if (rawSc !== undefined) {
+          let targetRate = 0;
+          if (rawSc < -0.35) targetRate = 0; // %40
+          else if (rawSc > 0.35) targetRate = 2; // %100
+          else targetRate = 1; // %70
+
+          if (targetRate !== simState.rate) {
+            simState.rate = targetRate;
+            updateRateVisuals();
+            playSwitchClick();
+            showStickHint('⚡ SC: ' + (targetRate === 0 ? '%40 (Hassas)' : targetRate === 1 ? '%70 (Standart)' : '%100 (Yarış)'));
+          }
+          scHandled = true;
+        }
+      }
+      // Eksen yoksa buton ile yönet
+      if (!scHandled && gp.buttons && cfg.rateButton !== undefined && cfg.rateButton >= 0 && gp.buttons[cfg.rateButton]) {
+        const isPressed = gp.buttons[cfg.rateButton].pressed;
+        if (lastGamepadButtons['rate'] === undefined) lastGamepadButtons['rate'] = isPressed;
+        if (isPressed !== lastGamepadButtons['rate']) {
+          lastGamepadButtons['rate'] = isPressed;
+          toggleSimSwitch('sc');
+        }
+      }
+    }
+
+    // =========================================================
+    // MODAL VE KALİBRASYON ENGINE
+    // =========================================================
+    function toggleGamepadModal(open) {
+      const modal = document.getElementById('gamepad-modal');
+      if (!modal) return;
+      modal.classList.toggle('open', open);
+
+      if (open) {
+        syncMappingUIToConfig();
+        checkGamepadsNow();
+        startCalibTicker();
+      } else {
+        stopCalibTicker();
+        cancelSwitchDetect();
+      }
+    }
+
+    function syncMappingUIToConfig() {
+      const cfg = gamepadConfig;
+      const setSel = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+      const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+
+      setSel('gp-sel-thr', cfg.throttleAxis);
+      setChk('gp-inv-thr', cfg.throttleInvert);
+      setSel('gp-sel-yaw', cfg.yawAxis);
+      setChk('gp-inv-yaw', cfg.yawInvert);
+      setSel('gp-sel-pitch', cfg.pitchAxis);
+      setChk('gp-inv-pitch', cfg.pitchInvert);
+      setSel('gp-sel-roll', cfg.rollAxis);
+      setChk('gp-inv-roll', cfg.rollInvert);
+
+      const bindSa = document.getElementById('gp-sw-bind-sa');
+      if (bindSa) bindSa.textContent = 'Buton ' + cfg.armButton;
+
+      const bindSd = document.getElementById('gp-sw-bind-sd');
+      if (bindSd) bindSd.textContent = 'Buton ' + cfg.turtleButton;
+
+      const bindSb = document.getElementById('gp-sw-bind-sb');
+      if (bindSb) bindSb.textContent = cfg.modeAxis >= 0 ? `Eksen ${cfg.modeAxis}` : `Buton ${cfg.modeButton} (Orta) / ${cfg.modeButtonAcro !== undefined ? cfg.modeButtonAcro : 2} (Alt)`;
+
+      const bindSc = document.getElementById('gp-sw-bind-sc');
+      if (bindSc) bindSc.textContent = cfg.rateAxis >= 0 ? `Eksen ${cfg.rateAxis}` : `Buton ${cfg.rateButton}`;
+    }
+
+    function updateGamepadMapping() {
+      const getSel = (id, def) => { const el = document.getElementById(id); return el ? parseInt(el.value, 10) : def; };
+      const getChk = (id, def) => { const el = document.getElementById(id); return el ? el.checked : def; };
+
+      gamepadConfig.throttleAxis = getSel('gp-sel-thr', 2);
+      gamepadConfig.throttleInvert = getChk('gp-inv-thr', false);
+      gamepadConfig.yawAxis = getSel('gp-sel-yaw', 3);
+      gamepadConfig.yawInvert = getChk('gp-inv-yaw', false);
+      gamepadConfig.pitchAxis = getSel('gp-sel-pitch', 1);
+      gamepadConfig.pitchInvert = getChk('gp-inv-pitch', false);
+      gamepadConfig.rollAxis = getSel('gp-sel-roll', 0);
+      gamepadConfig.rollInvert = getChk('gp-inv-roll', false);
+
+      try {
+        localStorage.setItem('literadio_cfg_v5', JSON.stringify(gamepadConfig));
+      } catch(e) {}
+    }
+
+    function resetGamepadMappingToDefault() {
+      gamepadConfig = { ...DEFAULT_GAMEPAD_CONFIG };
+      try {
+        localStorage.removeItem('literadio_cfg_v5');
+        localStorage.removeItem('literadio_cfg_v4');
+        localStorage.removeItem('literadio_cfg_v3');
+        localStorage.removeItem('literadio_cfg_v2');
+      } catch(e) {}
+      syncMappingUIToConfig();
+      showStickHint('↺ LiteRadio 2 SE Standart Ayarlarına Sıfırlandı');
+    }
+
+    function startSwitchDetect(targetId) {
+      const gp = getActiveGamepad();
+      if (!gp) {
+        showStickHint('⚠️ Önce kumandayı bağlayın ve bir kolu hareket ettirin!');
+        return;
+      }
+
+      detectingSwitchTarget = targetId;
+      detectSnapshotButtons = gp.buttons ? gp.buttons.map(b => b.pressed) : [];
+      detectSnapshotAxes = gp.axes ? [...gp.axes] : [];
+
+      ['sa', 'sb', 'sc', 'sd'].forEach(id => {
+        const btn = document.getElementById('btn-detect-' + id);
+        if (btn) {
+          if (id === targetId) {
+            btn.classList.add('detecting');
+            btn.textContent = '⏳ Şalteri Oynatın...';
+          } else {
+            btn.classList.remove('detecting');
+            btn.textContent = '🔍 Şalteri Oynat & Algıla';
+          }
+        }
+      });
+
+      showStickHint('🔍 Kumandadaki ' + targetId.toUpperCase() + ' şalterini hareket ettirin...');
+    }
+
+    function cancelSwitchDetect() {
+      if (detectingSwitchTarget) {
+        const btn = document.getElementById('btn-detect-' + detectingSwitchTarget);
+        if (btn) {
+          btn.classList.remove('detecting');
+          btn.textContent = '🔍 Şalteri Oynat & Algıla';
+        }
+        detectingSwitchTarget = null;
+      }
+    }
+
+    function checkSwitchDetection(gp) {
+      if (!detectingSwitchTarget || !gp) return;
+
+      const targetId = detectingSwitchTarget;
+      let detected = null;
+
+      // 1. Buton tetiklenmesi kontrolü
+      if (gp.buttons) {
+        for (let i = 0; i < gp.buttons.length; i++) {
+          const isPressed = gp.buttons[i].pressed;
+          const wasPressed = !!detectSnapshotButtons[i];
+          if (isPressed !== wasPressed) {
+            detected = { type: 'button', index: i };
+            break;
+          }
+        }
+      }
+
+      // 2. Aux eksen tetiklenmesi kontrolü (SB / SC için Eksen 4-7)
+      if (!detected && gp.axes && (targetId === 'sb' || targetId === 'sc')) {
+        for (let i = 4; i < gp.axes.length; i++) {
+          const diff = Math.abs(gp.axes[i] - (detectSnapshotAxes[i] || 0));
+          if (diff > 0.35) {
+            detected = { type: 'axis', index: i };
+            break;
+          }
+        }
+      }
+
+      if (detected) {
+        if (detected.type === 'button') {
+          if (targetId === 'sa') gamepadConfig.armButton = detected.index;
+          else if (targetId === 'sd') gamepadConfig.turtleButton = detected.index;
+          else if (targetId === 'sb') { gamepadConfig.modeButton = detected.index; gamepadConfig.modeAxis = -1; }
+          else if (targetId === 'sc') { gamepadConfig.rateButton = detected.index; gamepadConfig.rateAxis = -1; }
+          showStickHint('✓ ' + targetId.toUpperCase() + ' Şalteri -> Buton ' + detected.index + ' olarak atandı!');
+        } else if (detected.type === 'axis') {
+          if (targetId === 'sb') { gamepadConfig.modeAxis = detected.index; gamepadConfig.modeButton = -1; }
+          else if (targetId === 'sc') { gamepadConfig.rateAxis = detected.index; gamepadConfig.rateButton = -1; }
+          showStickHint('✓ ' + targetId.toUpperCase() + ' Şalteri -> Eksen ' + detected.index + ' olarak atandı!');
+        }
+
+        try {
+          localStorage.setItem('literadio_cfg_v5', JSON.stringify(gamepadConfig));
+        } catch(e) {}
+
+        syncMappingUIToConfig();
+        cancelSwitchDetect();
+      }
+    }
+
+    function startCalibTicker() {
+      stopCalibTicker();
+      calibTicker = setInterval(renderCalibrationModalMeters, 40);
+    }
+
+    function stopCalibTicker() {
+      if (calibTicker) {
+        clearInterval(calibTicker);
+        calibTicker = null;
+      }
+    }
+
+    function renderCalibrationModalMeters() {
+      const gp = getActiveGamepad();
+      const statusBox = document.getElementById('gp-status-box');
+      const statusIcon = document.getElementById('gp-status-icon');
+      const statusText = document.getElementById('gp-status-text');
+      const rawDiv = document.getElementById('gp-raw-axes');
+
+      if (!gp) {
+        if (statusBox) statusBox.className = 'gp-status-box disconnected';
+        if (statusIcon) statusIcon.textContent = '🔌';
+        if (statusText) statusText.textContent = 'Kumanda Henüz Algılanmadı (USB-C takıp bir kolu oynatın)';
+        if (rawDiv) rawDiv.textContent = 'Eksen verisi yok (Bağlantı bekleniyor...)';
+        return;
+      }
+
+      if (statusBox) statusBox.className = 'gp-status-box connected';
+      if (statusIcon) statusIcon.textContent = '🟢';
+      if (statusText) statusText.textContent = 'Algılandı: ' + gp.id;
+
+      // Canlı şalter tespit kontrolü
+      checkSwitchDetection(gp);
+
+      // Ham Eksenler
+      if (rawDiv && gp.axes) {
+        rawDiv.innerHTML = gp.axes.map((val, idx) => `<span>Eksen ${idx}: <strong style="color:#ffffff">${val.toFixed(2)}</strong></span>`).join(' &bull; ');
+      }
+
+      // Canlı Buton Hapları (0-11)
+      const pillsContainer = document.getElementById('gp-btn-pills');
+      if (pillsContainer && gp.buttons) {
+        pillsContainer.innerHTML = gp.buttons.map((b, idx) => {
+          const isActive = b.pressed;
+          let label = 'B' + idx;
+          if (idx === gamepadConfig.armButton) label += ' (SA)';
+          else if (idx === gamepadConfig.turtleButton) label += ' (SD)';
+          else if (idx === gamepadConfig.modeButton) label += ' (SB-Orta)';
+          else if (idx === (gamepadConfig.modeButtonAcro !== undefined ? gamepadConfig.modeButtonAcro : 2)) label += ' (SB-Alt)';
+          else if (idx === gamepadConfig.rateButton) label += ' (SC)';
+          return `<span class="gp-btn-pill ${isActive ? 'active' : ''}">${label}</span>`;
+        }).join('');
+      }
+
+      // Şalter Değerleri Canlı Metinleri
+      const valSa = document.getElementById('gp-sw-val-sa');
+      if (valSa) {
+        valSa.textContent = simState.armed ? '⚡ MOTORLAR AÇIK (ARM)' : '🔒 Kilitli (DISARM)';
+        valSa.style.color = simState.armed ? '#22c55e' : '#ef4444';
+      }
+
+      const valSd = document.getElementById('gp-sw-val-sd');
+      if (valSd) {
+        valSd.textContent = simState.buzzer ? '🐢 AKTİF / DÜZELTME' : 'Pasif';
+        valSd.style.color = simState.buzzer ? '#a855f7' : '#94a3b8';
+      }
+
+      const valSb = document.getElementById('gp-sw-val-sb');
+      if (valSb) {
+        valSb.textContent = simState.mode === 0 ? 'ANGLE (Stabil)' : simState.mode === 1 ? 'HORIZON (Yarı-Akro)' : 'ACRO (Serbest)';
+        valSb.style.color = '#fbbf24';
+      }
+
+      const valSc = document.getElementById('gp-sw-val-sc');
+      if (valSc) {
+        valSc.textContent = simState.rate === 0 ? '%40 (Hassas)' : simState.rate === 1 ? '%70 (Standart)' : '%100 (Yarış)';
+        valSc.style.color = '#34d399';
+      }
+
+      const cfg = gamepadConfig;
+      const barThr = document.getElementById('gp-bar-thr');
+      const valThr = document.getElementById('gp-val-thr');
+      const barYaw = document.getElementById('gp-bar-yaw');
+      const valYaw = document.getElementById('gp-val-yaw');
+      const barPitch = document.getElementById('gp-bar-pitch');
+      const valPitch = document.getElementById('gp-val-pitch');
+      const barRoll = document.getElementById('gp-bar-roll');
+      const valRoll = document.getElementById('gp-val-roll');
+
+      if (barThr && gp.axes[cfg.throttleAxis] !== undefined) {
+        const rawT = gp.axes[cfg.throttleAxis];
+        const normT = cfg.throttleInvert ? (1.0 - rawT) / 2 : (rawT + 1.0) / 2;
+        const pctT = Math.max(0, Math.min(100, Math.round(normT * 100)));
+        barThr.style.width = pctT + '%';
+        if (valThr) valThr.textContent = '%' + pctT;
+      }
+
+      const updateCenterBar = (bar, valEl, raw, inv) => {
+        if (!bar || raw === undefined) return;
+        const finalVal = inv ? -raw : raw;
+        const pct = Math.max(0, Math.min(100, (finalVal + 1.0) * 50));
+        bar.style.width = pct + '%';
+        if (valEl) valEl.textContent = (finalVal >= 0 ? '+' : '') + finalVal.toFixed(2);
+      };
+
+      updateCenterBar(barYaw, valYaw, gp.axes[cfg.yawAxis], cfg.yawInvert);
+      updateCenterBar(barPitch, valPitch, gp.axes[cfg.pitchAxis], cfg.pitchInvert);
+      updateCenterBar(barRoll, valRoll, gp.axes[cfg.rollAxis], cfg.rollInvert);
+    }
 
     /* ===== AUDIO SYNTHESIZER (100% OFFLINE WEB AUDIO) ===== */
     let audioCtx = null;
@@ -1681,11 +2835,19 @@
           item.archMat.emissive.setHex(0x22c55e);
           item.archMat.emissiveIntensity = 0.95;
           item.arch.scale.set(1.04, 1.04, 1.04);
+          if (item.banner) {
+            item.banner.visible = true;
+            item.banner.scale.set(1.08, 1.08, 1.08);
+          }
         } else {
           item.archMat.color.setHex(0x0284c7); // Neon mavi bekleyen kapı
           item.archMat.emissive.setHex(0x0284c7);
           item.archMat.emissiveIntensity = 0.22;
           item.arch.scale.set(1.0, 1.0, 1.0);
+          if (item.banner) {
+            // Gelecek kapı tabelalarını gizle - başlangıç noktasından bakıldığında üst üste çakışmasın!
+            item.banner.visible = false;
+          }
         }
       });
 
@@ -2321,9 +3483,9 @@
     }
 
     let lastSwitchToggleTime = {};
-    function toggleSimSwitch(swId) {
+    function toggleSimSwitch(swId, explicitVal) {
       const now = Date.now();
-      if (lastSwitchToggleTime[swId] && (now - lastSwitchToggleTime[swId] < 220)) return;
+      if (explicitVal === undefined && lastSwitchToggleTime[swId] && (now - lastSwitchToggleTime[swId] < 220)) return;
       lastSwitchToggleTime[swId] = now;
 
       if (!simState.power) {
@@ -2335,16 +3497,17 @@
       playSwitchClick();
 
       if (swId === 'sa') {
-        simState.armed = !simState.armed;
+        simState.armed = (explicitVal !== undefined) ? !!explicitVal : !simState.armed;
         updateArmVisuals();
       } else if (swId === 'sb') {
-        simState.mode = (simState.mode + 1) % 3;
+        simState.mode = (explicitVal !== undefined) ? explicitVal : ((simState.mode + 1) % 3);
+        sbTransitFrom = simState.mode;
         updateModeVisuals();
       } else if (swId === 'sc') {
-        simState.rate = (simState.rate + 1) % 3;
+        simState.rate = (explicitVal !== undefined) ? explicitVal : ((simState.rate + 1) % 3);
         updateRateVisuals();
       } else if (swId === 'sd') {
-        simState.buzzer = !simState.buzzer;
+        simState.buzzer = (explicitVal !== undefined) ? !!explicitVal : !simState.buzzer;
         updateBuzzerVisuals();
       }
     }
@@ -2803,6 +3966,8 @@
         toggleSimSwitch('sd');
       } else if (e.key === 'f' || e.key === 'F') {
         toggleFullscreen();
+      } else if (e.key === 'g' || e.key === 'G') {
+        toggleSimFocusMode();
       } else if (e.key === '1') {
         setCameraMode('chase');
       } else if (e.key === '2') {
@@ -2893,6 +4058,7 @@
       lastClockTime = now;
 
       processKeyboardInput(dt);
+      processGamepadInput(dt);
 
       const rateMult = simState.rate === 0 ? 0.45 : simState.rate === 1 ? 0.80 : 1.25;
 
@@ -3298,6 +4464,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       init3D();
       initSimGimbals();
+      checkGamepadsNow(true);
       requestAnimationFrame(flightLoop);
     });
   </script>
