@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Loom Akademi • BetaFPV LiteRadio 2 SE Tablet Kumandası (4. Hafta)</title>
+
+  <!-- PeerJS (WebRTC P2P İnternet Bağlantısı) -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #38bdf8;
+      --primary-light: #7dd3fc;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --bg-dark: #090e1a;
+      --sunny-yellow: #fbbf24;
+      --emerald-green: #34d399;
+      --candy-red: #fb7185;
+      --font-main: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none !important;
+      touch-action: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 50%, #172554 0%, #090e1a 100%);
+      color: #ffffff;
+      font-family: var(--font-main);
+    }
+
+    #tablet-app {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Top Bar */
+    header {
+      height: 48px;
+      min-height: 48px;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.14);
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .brand span { color: var(--sunny-yellow); font-weight: 700; font-size: 13px; }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 14px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .status-badge.connected {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: #22c55e;
+      color: #86efac;
+    }
+    .btn-hdr {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .btn-hdr:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+    .btn-hdr.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #042f2e;
+    }
+
+    /* Switches Bar (Birebir v2 Tasarımı) */
+    .switches-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(15, 23, 42, 0.75);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .sw-card {
+      background: rgba(30, 41, 65, 0.9);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 4px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .sw-card:active {
+      transform: scale(0.97);
+      background: rgba(56, 189, 248, 0.25);
+    }
+    .sw-code { font-size: 11px; font-weight: 900; color: var(--primary); }
+    .sw-val { font-size: 11px; font-weight: 800; }
+    .sw-val.on { color: #22c55e; }
+    .sw-val.off { color: #ef4444; }
+
+    /* Main Controller Area: BİREBİR v2 SVG KUMANDASI */
+    .controller-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 6px;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .sim-ctrl-svg {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.7));
+      touch-action: none;
+    }
+
+    #stick-action-hint {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      font-size: 12.5px;
+      font-weight: 800;
+      padding: 3px 14px;
+      border-radius: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 50;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    /* Modal Genel Stili */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 10, 20, 0.92);
+      backdrop-filter: blur(14px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background: rgba(15, 23, 42, 0.98);
+      border: 2px solid var(--primary);
+      border-radius: 22px;
+      padding: 24px 28px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.85);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .text-input {
+      background: rgba(30, 41, 65, 0.85);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 9px 12px;
+      border-radius: 10px;
+      width: 100%;
+      outline: none;
+    }
+    .text-input:focus { border-color: var(--primary); }
+
+    .slot-row {
+      display: flex;
+      gap: 10px;
+    }
+    .slot-choice {
+      flex: 1;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      background: rgba(30, 41, 65, 0.8);
+      color: #cbd5e1;
+      font-weight: 800;
+      font-size: 13px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .slot-choice.active {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border-color: var(--primary);
+      color: #fff;
+      transform: scale(1.02);
+    }
+
+    .color-picker {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+    }
+    .col-btn {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      border: 2.5px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .col-btn.active {
+      border-color: #ffffff;
+      transform: scale(1.15);
+      box-shadow: 0 0 12px currentColor;
+    }
+
+    .btn-save-modal {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: 1.5px solid #34d399;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 900;
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Gamepad Kalibrasyon Menüsü Stilleri (v2 ile Birebir) */
+    .gp-channel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .gp-channel-card {
+      background: rgba(30, 41, 65, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .gp-ch-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .gp-ch-meter {
+      height: 7px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .gp-ch-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+      transition: width 0.05s ease;
+    }
+    .gp-ch-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .gp-select {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 10.5px;
+      padding: 2px 4px;
+      outline: none;
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <div id="tablet-app">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <span>🎮</span> BETAFPV LiteRadio 2 SE • <span>Tablet Kumandası</span>
+      </div>
+      <div class="header-actions">
+        <!-- Gerçek Kumanda Durumu ve Ayarları -->
+        <button class="btn-hdr" id="btn-gamepad-cfg" onclick="toggleGamepadModal(true)">
+          <span id="gp-hdr-icon">🎮</span> <span id="gp-hdr-text">Kumanda Ayarları</span>
+        </button>
+        <!-- Profil & Renk -->
+        <button class="btn-hdr" onclick="openProfileModal()">
+          <span>🎨</span> <span id="btn-pilot-badge">Pilot 1</span>
+        </button>
+        <!-- Oda Bağlantı Rozeti -->
+        <div class="status-badge" id="status-badge" onclick="openProfileModal()">
+          <span id="status-dot">🔴</span> <span id="status-text">Oda Bekleniyor</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Switches Bar (v2 ile Birebir) -->
+    <div class="switches-bar">
+      <div class="sw-card" onclick="toggleSimSwitch('sa')">
+        <span class="sw-code">SA (ARM)</span>
+        <span class="sw-val on" id="sw-val-sa">ARMED</span>
+      </div>
+      <div class="sw-card" onclick="toggleSimSwitch('sb')">
+        <span class="sw-code">SB (MOD)</span>
+        <span class="sw-val" id="sw-val-sb">ANGLE</span>
+      </div>
+      <div class="sw-card" onclick="toggleSimSwitch('sc')">
+        <span class="sw-code">SC (RATE)</span>
+        <span class="sw-val" id="sw-val-sc">%70 DENGELİ</span>
+      </div>
+      <div class="sw-card" onclick="toggleSimSwitch('sd')">
+        <span class="sw-code">SD (TURTLE)</span>
+        <span class="sw-val off" id="sw-val-sd">OFF</span>
+      </div>
+    </div>
+
+    <!-- Main Controller Area: BİREBİR v2 SVG KUMANDASI -->
+    <div class="controller-area">
+      <div id="stick-action-hint"></div>
+
+      <svg id="betafpv-svg-ctrl" viewBox="0 0 560 420" class="sim-ctrl-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="ctrl-drop-shadow" x="-10%" y="-10%" width="120%" height="130%">
+            <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000000" flood-opacity="0.6"/>
+          </filter>
+          <linearGradient id="body-surface" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="45%" stop-color="#f8fafc"/>
+            <stop offset="100%" stop-color="#e2e8f0"/>
+          </linearGradient>
+          <radialGradient id="gimbal-well-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#0b0d12"/>
+            <stop offset="75%" stop-color="#14171f"/>
+            <stop offset="100%" stop-color="#282f3d"/>
+          </radialGradient>
+          <radialGradient id="metal-chrome" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="40%" stop-color="#cbd5e1"/>
+            <stop offset="85%" stop-color="#64748b"/>
+            <stop offset="100%" stop-color="#334155"/>
+          </radialGradient>
+          <radialGradient id="stick-knob-top" cx="40%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#64748b"/>
+            <stop offset="50%" stop-color="#334155"/>
+            <stop offset="100%" stop-color="#0f172a"/>
+          </radialGradient>
+        </defs>
+
+        <!-- CONTROLLER SHADOW -->
+        <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+              fill="rgba(0,0,0,0.38)" filter="url(#ctrl-drop-shadow)" transform="translate(0, 8)"/>
+
+        <!-- CONTROLLER MAIN BODY -->
+        <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+              fill="url(#body-surface)" stroke="#cbd5e1" stroke-width="2"/>
+
+        <!-- Ergonomic Contours -->
+        <path d="M 125 155 C 98 220, 96 300, 126 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 435 155 C 462 220, 464 300, 434 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Top Center Scoop Panel -->
+        <path d="M 215 108 C 235 120, 255 122, 280 122 C 305 122, 325 120, 345 108 C 356 101, 362 94, 370 88 C 310 85, 250 85, 190 88 C 198 94, 204 101, 215 108 Z"
+              fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>
+
+        <!-- BETAFPV Feather Logo & Text -->
+        <g transform="translate(244, 94)">
+          <path d="M 14 0 C 11 6, 7 9, 0 11 C 5 11, 10 9, 13 6 C 14 4, 15 2, 14 0 Z" fill="#94a3b8"/>
+          <path d="M 12 4 C 8 8, 4 9, 0 11 C 4 10, 8 8, 10 5 Z" fill="#64748b"/>
+          <text x="22" y="10" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="11.5" letter-spacing="2" fill="#94a3b8">BETAFPV</text>
+        </g>
+
+        <!-- SWITCHES (SA, SB, SC, SD) -->
+        <!-- SA (Sol Dış: Arm/Disarm) -->
+        <g id="svg-sw-sa" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sa')">
+          <ellipse cx="128" cy="92" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+          <ellipse cx="128" cy="91" rx="4.2" ry="2.2" fill="#64748b"/>
+          <text x="128" y="105" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#0284c7" letter-spacing="0.5">SA</text>
+          <g id="svg-lever-sa" transform="translate(128, 92) rotate(-22)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <line x1="0" y1="0" x2="0" y2="-17" stroke="url(#metal-chrome)" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="0" y="-17" r="3" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+          </g>
+          <circle cx="128" cy="84" r="28" fill="transparent" style="touch-action: none;"/>
+        </g>
+
+        <!-- SB (Sol İç: Uçuş Modu) -->
+        <g id="svg-sw-sb" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sb')">
+          <ellipse cx="160" cy="84" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+          <ellipse cx="160" cy="83" rx="4.2" ry="2.2" fill="#64748b"/>
+          <text x="160" y="97" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#d97706" letter-spacing="0.5">SB</text>
+          <g id="svg-lever-sb" transform="translate(160, 84) rotate(-20)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <line x1="0" y1="0" x2="0" y2="-20" stroke="url(#metal-chrome)" stroke-width="3.8" stroke-linecap="round"/>
+            <circle cx="0" y="-20" r="3.2" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+          </g>
+          <circle cx="160" cy="74" r="28" fill="transparent" style="touch-action: none;"/>
+        </g>
+
+        <!-- SC (Sağ İç: Hız Seviyesi) -->
+        <g id="svg-sw-sc" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sc')">
+          <ellipse cx="400" cy="84" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+          <ellipse cx="400" cy="83" rx="4.2" ry="2.2" fill="#64748b"/>
+          <text x="400" y="97" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#059669" letter-spacing="0.5">SC</text>
+          <g id="svg-lever-sc" transform="translate(400, 84) rotate(0)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <line x1="0" y1="0" x2="0" y2="-20" stroke="url(#metal-chrome)" stroke-width="3.8" stroke-linecap="round"/>
+            <circle cx="0" y="-20" r="3.2" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+          </g>
+          <circle cx="400" cy="74" r="28" fill="transparent" style="touch-action: none;"/>
+        </g>
+
+        <!-- SD (Sağ Dış: Turtle) -->
+        <g id="svg-sw-sd" style="cursor: pointer; touch-action: none;" onclick="toggleSimSwitch('sd')">
+          <ellipse cx="432" cy="92" rx="6.5" ry="3.8" fill="#334155" stroke="#94a3b8" stroke-width="1"/>
+          <ellipse cx="432" cy="91" rx="4.2" ry="2.2" fill="#64748b"/>
+          <text x="432" y="105" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="8.5" font-weight="900" fill="#7c3aed" letter-spacing="0.5">SD</text>
+          <g id="svg-lever-sd" transform="translate(432, 92) rotate(22)" style="transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <line x1="0" y1="0" x2="0" y2="-17" stroke="url(#metal-chrome)" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="0" y="-17" r="3" fill="#f8fafc" stroke="#475569" stroke-width="0.8"/>
+          </g>
+          <circle cx="432" cy="84" r="28" fill="transparent" style="touch-action: none;"/>
+        </g>
+
+        <!-- GIMBAL LEFT (Sol Kol: Gaz & Yaw) -->
+        <g id="gimbal-left-group" style="touch-action: none;">
+          <circle cx="175" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+          <circle cx="175" cy="215" r="52" fill="url(#gimbal-well-grad)" stroke="#334155" stroke-width="2"/>
+          <rect x="141" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+          <rect x="146" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+          <circle cx="147" cy="187" r="1.8" fill="#475569"/>
+          <circle cx="203" cy="187" r="1.8" fill="#475569"/>
+          <circle cx="147" cy="243" r="1.8" fill="#475569"/>
+          <circle cx="203" cy="243" r="1.8" fill="#475569"/>
+
+          <!-- Hareketli Sol Kol -->
+          <g id="svg-stick-left" style="cursor: grab; touch-action: none;" transform="translate(0, 32)">
+            <circle id="stick-glow-left" cx="175" cy="215" r="26" fill="none" stroke="#00f0ff" stroke-width="2.5" opacity="0" style="transition: opacity 0.15s ease; filter: drop-shadow(0 0 10px #00f0ff); pointer-events: none;"/>
+            <circle cx="175" cy="215" r="26" fill="transparent"/>
+            <circle cx="175" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+            <circle cx="175" cy="215" r="15" fill="url(#metal-chrome)" stroke="#334155" stroke-width="1"/>
+            <circle cx="175" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+            <circle cx="175" cy="215" r="11" fill="url(#stick-knob-top)"/>
+            <circle cx="175" cy="215" r="7" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="2 1.5"/>
+            <circle cx="175" cy="215" r="3" fill="#475569"/>
+          </g>
+          <text x="175" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#38bdf8" letter-spacing="0.5">⬆️ SOL KOL (Gaz &amp; Yaw)</text>
+        </g>
+
+        <!-- POWER BUTTON -->
+        <g id="svg-power-group" style="cursor: pointer; touch-action: none;" onclick="toggleSimPower()">
+          <circle cx="280" cy="232" r="26" fill="transparent" style="touch-action: none;"/>
+          <circle cx="280" cy="232" r="19" fill="#14171e" stroke="#334155" stroke-width="1.5"/>
+          <circle id="svg-pwr-led" cx="280" cy="232" r="14.5" fill="none" stroke="#22c55e" stroke-width="2.2" style="transition: all 0.3s ease;"/>
+          <circle id="svg-pwr-core" cx="280" cy="232" r="11.5" fill="#090b0e" stroke="#1e293b" stroke-width="1"/>
+          <path id="svg-pwr-icon" d="M 276 230 A 5.5 5.5 0 1 0 284 230 M 280 226 L 280 231"
+                fill="none" stroke="#22c55e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <text id="svg-pwr-label" x="280" y="263" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="9.5" font-weight="800" fill="#22c55e" letter-spacing="1">AÇIK</text>
+        </g>
+
+        <!-- GIMBAL RIGHT (Sağ Kol: Pitch & Roll) -->
+        <g id="gimbal-right-group" style="touch-action: none;">
+          <circle cx="385" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+          <circle cx="385" cy="215" r="52" fill="url(#gimbal-well-grad)" stroke="#334155" stroke-width="2"/>
+          <rect x="351" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+          <rect x="356" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+          <circle cx="357" cy="187" r="1.8" fill="#475569"/>
+          <circle cx="413" cy="187" r="1.8" fill="#475569"/>
+          <circle cx="357" cy="243" r="1.8" fill="#475569"/>
+          <circle cx="413" cy="243" r="1.8" fill="#475569"/>
+
+          <!-- Hareketli Sağ Kol -->
+          <g id="svg-stick-right" style="cursor: grab; touch-action: none;" transform="translate(0, 0)">
+            <circle id="stick-glow-right" cx="385" cy="215" r="26" fill="none" stroke="#fbbf24" stroke-width="2.5" opacity="0" style="transition: opacity 0.15s ease; filter: drop-shadow(0 0 10px #fbbf24); pointer-events: none;"/>
+            <circle cx="385" cy="215" r="26" fill="transparent"/>
+            <circle cx="385" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+            <circle cx="385" cy="215" r="15" fill="url(#metal-chrome)" stroke="#334155" stroke-width="1"/>
+            <circle cx="385" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+            <circle cx="385" cy="215" r="11" fill="url(#stick-knob-top)"/>
+            <circle cx="385" cy="215" r="7" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="2 1.5"/>
+            <circle cx="385" cy="215" r="3" fill="#475569"/>
+          </g>
+          <text x="385" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#fbbf24" letter-spacing="0.5">🕹️ SAĞ KOL (Pitch &amp; Roll)</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Profil & Oda Bağlantı Modalı -->
+  <div id="profile-modal" class="modal-overlay" onclick="if(event.target===this) closeProfileModal()">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:8px;">
+        <h3 style="font-size:17px; font-weight:900; color:var(--sunny-yellow); display:flex; align-items:center; gap:8px;">
+          <span>🎨</span> Pilot &amp; Drone Profil Ayarları
+        </h3>
+        <button class="btn-hdr" onclick="closeProfileModal()">✕</button>
+      </div>
+
+      <!-- Slot Seçimi -->
+      <div>
+        <div class="field-label">Yarışacak Drone Slotu</div>
+        <div class="slot-row">
+          <div class="slot-choice active" id="slot-1" onclick="chooseSlot(1)">
+            🔴 1. Drone (Şahin • Sol Yol)
+          </div>
+          <div class="slot-choice" id="slot-2" onclick="chooseSlot(2)">
+            🔵 2. Drone (Kartal • Sağ Yol)
+          </div>
+        </div>
+      </div>
+
+      <!-- Pilot Adı (Dronun Üzerinde Yazar!) -->
+      <div>
+        <div class="field-label">Pilot Adı (Tahtada Drone Üzerinde Görünür)</div>
+        <input type="text" id="inp-name" class="text-input" placeholder="Örn: Ahmet, Zeynep..." maxlength="15" value="Pilot 1">
+      </div>
+
+      <!-- Gövde Rengi -->
+      <div>
+        <div class="field-label">Drone Gövde Rengi Seçimi</div>
+        <div class="color-picker">
+          <button class="col-btn active" style="background:#ff1744;" onclick="chooseColor('#ff1744', this)"></button>
+          <button class="col-btn" style="background:#00e5ff;" onclick="chooseColor('#00e5ff', this)"></button>
+          <button class="col-btn" style="background:#fbbf24;" onclick="chooseColor('#fbbf24', this)"></button>
+          <button class="col-btn" style="background:#10b981;" onclick="chooseColor('#10b981', this)"></button>
+          <button class="col-btn" style="background:#a855f7;" onclick="chooseColor('#a855f7', this)"></button>
+          <button class="col-btn" style="background:#f97316;" onclick="chooseColor('#f97316', this)"></button>
+        </div>
+      </div>
+
+      <!-- Oda Kodu -->
+      <div>
+        <div class="field-label">Akıllı Tahta Oda Kodu</div>
+        <input type="text" id="inp-room" class="text-input" placeholder="LM-XXXX" value="LM-401">
+      </div>
+
+      <button class="btn-save-modal" onclick="startConnection()">
+        <span>🚀</span> Odaya Bağlan ve Uçuşa Başla
+      </button>
+    </div>
+  </div>
+
+  <!-- Gerçek Kumanda (Gamepad) Kalibrasyon & Konfigürasyon Modalı (v2 ile Birebir) -->
+  <div id="gamepad-modal" class="modal-overlay" onclick="if(event.target===this) toggleGamepadModal(false)">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:8px;">
+        <h3 style="font-size:17px; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:8px;">
+          <span>🎮</span> Gerçek Kumanda Konfigürasyon Ayarları
+        </h3>
+        <button class="btn-hdr" onclick="toggleGamepadModal(false)">✕</button>
+      </div>
+
+      <div id="gp-conn-card" style="background:rgba(30,41,65,0.7); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 14px; font-size:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span id="gp-status-desc">🔌 Kumanda Bekleniyor (Tablete OTG kablo ile USB kumanda bağlayın)</span>
+          <button class="btn-hdr" style="font-size:10.5px;" onclick="checkGamepadsNow()">Yenile</button>
+        </div>
+      </div>
+
+      <!-- 4 Kanal Canlı Metre ve Eksen Seçimleri -->
+      <div class="gp-channel-grid">
+        <!-- GAZ (Throttle) -->
+        <div class="gp-channel-card">
+          <div class="gp-ch-header">
+            <span>⬆️ GAZ (Throttle)</span>
+            <span id="gp-val-thr" style="color:#22c55e;">%0</span>
+          </div>
+          <div class="gp-ch-meter"><div id="gp-bar-thr" class="gp-ch-fill"></div></div>
+          <div class="gp-ch-controls">
+            <label>Eksen:
+              <select id="gp-sel-thr" class="gp-select" onchange="updateGamepadMapping()">
+                <option value="0">Eksen 0</option><option value="1">Eksen 1</option><option value="2" selected>Eksen 2</option><option value="3">Eksen 3</option><option value="4">Eksen 4</option>
+              </select>
+            </label>
+            <label><input type="checkbox" id="gp-inv-thr" onchange="updateGamepadMapping()"> Ters</label>
+          </div>
+        </div>
+
+        <!-- YAW -->
+        <div class="gp-channel-card">
+          <div class="gp-ch-header">
+            <span>↻ YAW (Dönüş)</span>
+            <span id="gp-val-yaw" style="color:#38bdf8;">0.00</span>
+          </div>
+          <div class="gp-ch-meter"><div id="gp-bar-yaw" class="gp-ch-fill"></div></div>
+          <div class="gp-ch-controls">
+            <label>Eksen:
+              <select id="gp-sel-yaw" class="gp-select" onchange="updateGamepadMapping()">
+                <option value="0">Eksen 0</option><option value="1">Eksen 1</option><option value="2">Eksen 2</option><option value="3" selected>Eksen 3</option><option value="4">Eksen 4</option>
+              </select>
+            </label>
+            <label><input type="checkbox" id="gp-inv-yaw" onchange="updateGamepadMapping()"> Ters</label>
+          </div>
+        </div>
+
+        <!-- PITCH -->
+        <div class="gp-channel-card">
+          <div class="gp-ch-header">
+            <span>↗️ PITCH (İleri/Geri)</span>
+            <span id="gp-val-pitch" style="color:#fbbf24;">0.00</span>
+          </div>
+          <div class="gp-ch-meter"><div id="gp-bar-pitch" class="gp-ch-fill"></div></div>
+          <div class="gp-ch-controls">
+            <label>Eksen:
+              <select id="gp-sel-pitch" class="gp-select" onchange="updateGamepadMapping()">
+                <option value="0">Eksen 0</option><option value="1" selected>Eksen 1</option><option value="2">Eksen 2</option><option value="3">Eksen 3</option><option value="4">Eksen 4</option>
+              </select>
+            </label>
+            <label><input type="checkbox" id="gp-inv-pitch" onchange="updateGamepadMapping()"> Ters</label>
+          </div>
+        </div>
+
+        <!-- ROLL -->
+        <div class="gp-channel-card">
+          <div class="gp-ch-header">
+            <span>➡️ ROLL (Sağ/Sol)</span>
+            <span id="gp-val-roll" style="color:#f43f5e;">0.00</span>
+          </div>
+          <div class="gp-ch-meter"><div id="gp-bar-roll" class="gp-ch-fill"></div></div>
+          <div class="gp-ch-controls">
+            <label>Eksen:
+              <select id="gp-sel-roll" class="gp-select" onchange="updateGamepadMapping()">
+                <option value="0" selected>Eksen 0</option><option value="1">Eksen 1</option><option value="2">Eksen 2</option><option value="3">Eksen 3</option><option value="4">Eksen 4</option>
+              </select>
+            </label>
+            <label><input type="checkbox" id="gp-inv-roll" onchange="updateGamepadMapping()"> Ters</label>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+        <button class="btn-hdr" onclick="resetGamepadDefault()">Varsayılana Sıfırla</button>
+        <button class="btn-save-modal" style="padding:8px 18px;" onclick="toggleGamepadModal(false)">Ayarları Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       1. GLOBAL STATE & BETAFPV V2 LOGIC
+       ========================================================================= */
+    let selectedSlot = 1;
+    let selectedColor = '#ff1744';
+    let pilotName = 'Pilot 1';
+    let roomCode = 'LM-401';
+    let peer = null;
+    let conn = null;
+
+    const simState = {
+      power: true,
+      armed: true,
+      mode: 0,   // 0: Angle, 1: Horizon, 2: Acro
+      rate: 1,   // 0: 40%, 1: 70%, 2: 100%
+      turtle: false,
+      throttle: 0,
+      yaw: 0,
+      pitch: 0,
+      roll: 0
+    };
+
+    const stickState = {
+      left: { active: false, pointerId: null, dx: 0, dy: 32 },
+      right: { active: false, pointerId: null, dx: 0, dy: 0 }
+    };
+
+    /* =========================================================================
+       2. SVG MULTI-TOUCH GIMBAL ENGINE (v2 ile Birebir Aynı)
+       ========================================================================= */
+    function getSvgPoint(svg, clientX, clientY) {
+      const pt = svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function initSimGimbals() {
+      const svg = document.getElementById('betafpv-svg-ctrl');
+      if (!svg) return;
+
+      const stickLeft = document.getElementById('svg-stick-left');
+      const stickRight = document.getElementById('svg-stick-right');
+      const glowLeft = document.getElementById('stick-glow-left');
+      const glowRight = document.getElementById('stick-glow-right');
+
+      const GIMBAL_LEFT_CENTER = { x: 175, y: 215, radius: 75 };
+      const GIMBAL_RIGHT_CENTER = { x: 385, y: 215, radius: 75 };
+      const POWER_CENTER = { x: 280, y: 232, radius: 32 };
+      const SWITCHES = [
+        { id: 'sa', x: 128, y: 92, radius: 34 },
+        { id: 'sb', x: 160, y: 84, radius: 34 },
+        { id: 'sc', x: 400, y: 84, radius: 34 },
+        { id: 'sd', x: 432, y: 92, radius: 34 }
+      ];
+
+      function dist(x1, y1, x2, y2) { return Math.hypot(x1 - x2, y1 - y2); }
+
+      function updateLeftStick(pt) {
+        let dx = pt.x - 175;
+        let dy = pt.y - 215;
+        const d = Math.hypot(dx, dy);
+        if (d > 32) {
+          dx = (dx / d) * 32;
+          dy = (dy / d) * 32;
+        }
+        stickState.left.dx = dx;
+        stickState.left.dy = dy;
+        stickLeft.setAttribute('transform', `translate(${dx}, ${dy})`);
+
+        // Gaz: Aşağıda 0, Yukarıda 1
+        simState.throttle = Math.max(0, Math.min(1, (32 - dy) / 64));
+        // Yaw: Sola -1, Sağa +1
+        simState.yaw = Math.max(-1, Math.min(1, dx / 32));
+
+        showStickHint(`⬆️ Gaz %${Math.round(simState.throttle * 100)} | ↻ Yaw: ${(simState.yaw).toFixed(2)}`);
+        sendState();
+      }
+
+      function updateRightStick(pt) {
+        let dx = pt.x - 385;
+        let dy = pt.y - 215;
+        const d = Math.hypot(dx, dy);
+        if (d > 32) {
+          dx = (dx / d) * 32;
+          dy = (dy / d) * 32;
+        }
+        stickState.right.dx = dx;
+        stickState.right.dy = dy;
+        stickRight.setAttribute('transform', `translate(${dx}, ${dy})`);
+
+        // Pitch: Yukarı itilince +1 (İLERİ), Aşağı çekilince -1 (GERİ)
+        simState.pitch = -dy / 32;
+        // Roll: Sağa itilince +1 (SAĞA), Sola itilince -1 (SOLA)
+        simState.roll = dx / 32;
+
+        showStickHint(`↗️ Pitch: ${(simState.pitch).toFixed(2)} | ➡️ Roll: ${(simState.roll).toFixed(2)}`);
+        sendState();
+      }
+
+      svg.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        try { svg.setPointerCapture(e.pointerId); } catch(err){}
+        const pt = getSvgPoint(svg, e.clientX, e.clientY);
+
+        if (dist(pt.x, pt.y, POWER_CENTER.x, POWER_CENTER.y) <= POWER_CENTER.radius) {
+          toggleSimPower();
+          return;
+        }
+
+        for (const sw of SWITCHES) {
+          if (dist(pt.x, pt.y, sw.x, sw.y) <= sw.radius) {
+            toggleSimSwitch(sw.id);
+            return;
+          }
+        }
+
+        if (dist(pt.x, pt.y, GIMBAL_LEFT_CENTER.x, GIMBAL_LEFT_CENTER.y) <= GIMBAL_LEFT_CENTER.radius) {
+          if (!simState.power) { showStickHint('⚠️ Önce Güç Tuşuna Basın!'); return; }
+          stickState.left.pointerId = e.pointerId;
+          stickState.left.active = true;
+          if (glowLeft) glowLeft.style.opacity = '1';
+          updateLeftStick(pt);
+          return;
+        }
+
+        if (dist(pt.x, pt.y, GIMBAL_RIGHT_CENTER.x, GIMBAL_RIGHT_CENTER.y) <= GIMBAL_RIGHT_CENTER.radius) {
+          if (!simState.power) { showStickHint('⚠️ Önce Güç Tuşuna Basın!'); return; }
+          stickState.right.pointerId = e.pointerId;
+          stickState.right.active = true;
+          if (glowRight) glowRight.style.opacity = '1';
+          updateRightStick(pt);
+          return;
+        }
+      }, { passive: false });
+
+      window.addEventListener('pointermove', e => {
+        if (!stickState.left.active && !stickState.right.active) return;
+        const pt = getSvgPoint(svg, e.clientX, e.clientY);
+
+        if (stickState.left.active && e.pointerId === stickState.left.pointerId) {
+          updateLeftStick(pt);
+        }
+        if (stickState.right.active && e.pointerId === stickState.right.rightPointerId || (stickState.right.active && e.pointerId === stickState.right.pointerId)) {
+          updateRightStick(pt);
+        }
+      }, { passive: false });
+
+      function endStickPointer(e) {
+        if (stickState.left.active && e.pointerId === stickState.left.pointerId) {
+          stickState.left.active = false;
+          stickState.left.pointerId = null;
+          if (glowLeft) glowLeft.style.opacity = '0';
+          // Yaw yatay eksende merkeze yaylanır (0), Gaz dikeyde durduğu yerde kalır
+          stickState.left.dx = 0;
+          stickLeft.style.transition = 'transform 0.12s ease-out';
+          stickLeft.setAttribute('transform', `translate(0, ${stickState.left.dy})`);
+          setTimeout(() => { stickLeft.style.transition = ''; }, 130);
+          simState.yaw = 0;
+          sendState();
+        }
+        if (stickState.right.active && e.pointerId === stickState.right.pointerId) {
+          stickState.right.active = false;
+          stickState.right.pointerId = null;
+          if (glowRight) glowRight.style.opacity = '0';
+          // Sağ kol (Pitch & Roll) merkeze yaylanır (0, 0)
+          stickState.right.dx = 0;
+          stickState.right.dy = 0;
+          stickRight.style.transition = 'transform 0.12s ease-out';
+          stickRight.setAttribute('transform', 'translate(0, 0)');
+          setTimeout(() => { stickRight.style.transition = ''; }, 130);
+          simState.pitch = 0;
+          simState.roll = 0;
+          sendState();
+        }
+      }
+
+      window.addEventListener('pointerup', endStickPointer);
+      window.addEventListener('pointercancel', endStickPointer);
+    }
+
+    function showStickHint(txt) {
+      const el = document.getElementById('stick-action-hint');
+      if (!el) return;
+      el.textContent = txt;
+      el.style.opacity = '1';
+      clearTimeout(window._hintTimer);
+      window._hintTimer = setTimeout(() => { el.style.opacity = '0'; }, 1800);
+    }
+
+    /* =========================================================================
+       3. SWITCHES & POWER
+       ========================================================================= */
+    function toggleSimPower() {
+      simState.power = !simState.power;
+      const led = document.getElementById('svg-pwr-led');
+      const lbl = document.getElementById('svg-pwr-label');
+      const icon = document.getElementById('svg-pwr-icon');
+      if (simState.power) {
+        if (led) led.setAttribute('stroke', '#22c55e');
+        if (lbl) { lbl.textContent = 'AÇIK'; lbl.setAttribute('fill', '#22c55e'); }
+        if (icon) icon.setAttribute('stroke', '#22c55e');
+        showStickHint('🟢 Kumanda Açıldı');
+      } else {
+        if (led) led.setAttribute('stroke', '#ef4444');
+        if (lbl) { lbl.textContent = 'KAPALI'; lbl.setAttribute('fill', '#ef4444'); }
+        if (icon) icon.setAttribute('stroke', '#94a3b8');
+        simState.throttle = 0;
+        showStickHint('🔴 Kumanda Kapatıldı');
+      }
+      sendState();
+    }
+
+    function toggleSimSwitch(sw) {
+      if (sw === 'sa') {
+        simState.armed = !simState.armed;
+        const el = document.getElementById('sw-val-sa');
+        const lev = document.getElementById('svg-lever-sa');
+        if (el) { el.textContent = simState.armed ? 'ARMED' : 'DISARM'; el.className = simState.armed ? 'sw-val on' : 'sw-val off'; }
+        if (lev) lev.setAttribute('transform', `translate(128, 92) rotate(${simState.armed ? -22 : 22})`);
+        showStickHint(simState.armed ? '🟢 SA: Motorlar Devrede (ARMED)' : '🔴 SA: Motorlar Kilitlendi');
+      } else if (sw === 'sb') {
+        simState.mode = (simState.mode + 1) % 3;
+        const modes = ['ANGLE', 'HORIZON', 'ACRO'];
+        const rot = [-20, 0, 20];
+        const el = document.getElementById('sw-val-sb');
+        const lev = document.getElementById('svg-lever-sb');
+        if (el) el.textContent = modes[simState.mode];
+        if (lev) lev.setAttribute('transform', `translate(160, 84) rotate(${rot[simState.mode]})`);
+        showStickHint('🟡 SB: Mod ' + modes[simState.mode]);
+      } else if (sw === 'sc') {
+        simState.rate = (simState.rate + 1) % 3;
+        const rates = ['%40 HASSAS', '%70 DENGELİ', '%100 PRO'];
+        const rot = [-20, 0, 20];
+        const el = document.getElementById('sw-val-sc');
+        const lev = document.getElementById('svg-lever-sc');
+        if (el) el.textContent = rates[simState.rate];
+        if (lev) lev.setAttribute('transform', `translate(400, 84) rotate(${rot[simState.rate]})`);
+        showStickHint('🟢 SC: Hız ' + rates[simState.rate]);
+      } else if (sw === 'sd') {
+        simState.turtle = !simState.turtle;
+        const el = document.getElementById('sw-val-sd');
+        const lev = document.getElementById('svg-lever-sd');
+        if (el) { el.textContent = simState.turtle ? 'TURTLE ON' : 'OFF'; el.className = simState.turtle ? 'sw-val on' : 'sw-val off'; }
+        if (lev) lev.setAttribute('transform', `translate(432, 92) rotate(${simState.turtle ? -22 : 22})`);
+        showStickHint(simState.turtle ? '🐢 SD: Kaplumbağa Modu Aktif' : 'SD: Normal Uçuş');
+      }
+      sendState();
+    }
+
+    /* =========================================================================
+       4. PROFIL, ODA & SLOT SEÇİMİ
+       ========================================================================= */
+    function openProfileModal() {
+      document.getElementById('profile-modal').classList.add('open');
+    }
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.remove('open');
+    }
+
+    function chooseSlot(slot) {
+      selectedSlot = slot;
+      document.getElementById('slot-1').classList.toggle('active', slot === 1);
+      document.getElementById('slot-2').classList.toggle('active', slot === 2);
+      document.getElementById('btn-pilot-badge').textContent = `Pilot ${slot}`;
+
+      if (slot === 2 && selectedColor === '#ff1744') {
+        chooseColor('#00e5ff', document.querySelectorAll('.col-btn')[1]);
+      } else if (slot === 1 && selectedColor === '#00e5ff') {
+        chooseColor('#ff1744', document.querySelectorAll('.col-btn')[0]);
+      }
+    }
+
+    function chooseColor(color, btn) {
+      selectedColor = color;
+      document.querySelectorAll('.col-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      sendState();
+    }
+
+    function startConnection() {
+      pilotName = document.getElementById('inp-name').value.trim() || `Pilot ${selectedSlot}`;
+      roomCode = document.getElementById('inp-room').value.trim() || 'LM-401';
+      document.getElementById('btn-pilot-badge').textContent = pilotName;
+
+      closeProfileModal();
+
+      // WebRTC Bağlantısını Kur
+      connectPeer();
+    }
+
+    function connectPeer() {
+      const targetId = 'loom-room-' + roomCode;
+      try {
+        if (peer) peer.destroy();
+        peer = new Peer();
+
+        peer.on('open', () => {
+          conn = peer.connect(targetId);
+          conn.on('open', () => {
+            const badge = document.getElementById('status-badge');
+            badge.classList.add('connected');
+            document.getElementById('status-dot').textContent = '🟢';
+            document.getElementById('status-text').textContent = `${roomCode} (Bağlı)`;
+            sendState();
+          });
+          conn.on('close', () => {
+            const badge = document.getElementById('status-badge');
+            badge.classList.remove('connected');
+            document.getElementById('status-dot').textContent = '🔴';
+            document.getElementById('status-text').textContent = 'Koptu';
+          });
+        });
+      } catch(e) {
+        console.warn('Peer error:', e);
+      }
+    }
+
+    function sendState() {
+      const payload = {
+        player: selectedSlot,
+        name: pilotName,
+        color: selectedColor,
+        throttle: simState.power ? simState.throttle : 0,
+        yaw: simState.yaw,
+        pitch: simState.pitch,
+        roll: simState.roll,
+        sa: simState.armed ? 1 : 0,
+        sb: simState.mode,
+        sc: simState.rate,
+        sd: simState.turtle ? 1 : 0
+      };
+
+      if (conn && conn.open) {
+        conn.send(payload);
+      }
+      try {
+        const bc = new BroadcastChannel('loom_drone_duo');
+        bc.postMessage(payload);
+      } catch(e) {}
+    }
+
+    /* =========================================================================
+       5. GERÇEK KUMANDA (GAMEPAD API) ENGINE & KONFİGÜRASYON (v2 Portu)
+       ========================================================================= */
+    const DEFAULT_GAMEPAD_CONFIG = {
+      throttleAxis: 2,
+      throttleInvert: false,
+      yawAxis: 3,
+      yawInvert: false,
+      pitchAxis: 1,
+      pitchInvert: false,
+      rollAxis: 0,
+      rollInvert: false,
+      deadzone: 0.04
+    };
+
+    let gamepadConfig = { ...DEFAULT_GAMEPAD_CONFIG };
+    try {
+      const saved = localStorage.getItem('tablet_gamepad_cfg');
+      if (saved) gamepadConfig = Object.assign({}, DEFAULT_GAMEPAD_CONFIG, JSON.parse(saved));
+    } catch(e) {}
+
+    function toggleGamepadModal(open) {
+      document.getElementById('gamepad-modal').classList.toggle('open', open);
+      if (open) {
+        syncGamepadModalUI();
+      }
+    }
+
+    function syncGamepadModalUI() {
+      document.getElementById('gp-sel-thr').value = gamepadConfig.throttleAxis;
+      document.getElementById('gp-inv-thr').checked = gamepadConfig.throttleInvert;
+      document.getElementById('gp-sel-yaw').value = gamepadConfig.yawAxis;
+      document.getElementById('gp-inv-yaw').checked = gamepadConfig.yawInvert;
+      document.getElementById('gp-sel-pitch').value = gamepadConfig.pitchAxis;
+      document.getElementById('gp-inv-pitch').checked = gamepadConfig.pitchInvert;
+      document.getElementById('gp-sel-roll').value = gamepadConfig.rollAxis;
+      document.getElementById('gp-inv-roll').checked = gamepadConfig.rollInvert;
+    }
+
+    function updateGamepadMapping() {
+      gamepadConfig.throttleAxis = parseInt(document.getElementById('gp-sel-thr').value);
+      gamepadConfig.throttleInvert = document.getElementById('gp-inv-thr').checked;
+      gamepadConfig.yawAxis = parseInt(document.getElementById('gp-sel-yaw').value);
+      gamepadConfig.yawInvert = document.getElementById('gp-inv-yaw').checked;
+      gamepadConfig.pitchAxis = parseInt(document.getElementById('gp-sel-pitch').value);
+      gamepadConfig.pitchInvert = document.getElementById('gp-inv-pitch').checked;
+      gamepadConfig.rollAxis = parseInt(document.getElementById('gp-sel-roll').value);
+      gamepadConfig.rollInvert = document.getElementById('gp-inv-roll').checked;
+
+      try {
+        localStorage.setItem('tablet_gamepad_cfg', JSON.stringify(gamepadConfig));
+      } catch(e) {}
+    }
+
+    function resetGamepadDefault() {
+      gamepadConfig = { ...DEFAULT_GAMEPAD_CONFIG };
+      syncGamepadModalUI();
+      try {
+        localStorage.setItem('tablet_gamepad_cfg', JSON.stringify(gamepadConfig));
+      } catch(e) {}
+    }
+
+    function checkGamepadsNow() {
+      const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+      let found = false;
+      for (let g of gps) {
+        if (g && g.connected) {
+          found = true;
+          document.getElementById('gp-hdr-text').textContent = 'Kumanda: ' + (g.id.split('(')[0].trim() || 'USB');
+          document.getElementById('btn-gamepad-cfg').classList.add('active');
+          document.getElementById('gp-status-desc').textContent = '🟢 Algılandı: ' + g.id;
+          break;
+        }
+      }
+      if (!found) {
+        document.getElementById('gp-hdr-text').textContent = 'Kumanda Ayarları';
+        document.getElementById('btn-gamepad-cfg').classList.remove('active');
+        document.getElementById('gp-status-desc').textContent = '🔌 Kumanda Henüz Algılanmadı (OTG kablosuyla takın)';
+      }
+    }
+
+    // Klavye Kontrolleri Desteği (W/A/S/D & Yön Tuşları & Boşluk)
+    const keys = {};
+    window.addEventListener('keydown', e => {
+      const k = e.key.toLowerCase();
+      keys[k] = true;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        toggleSimSwitch('sa');
+      }
+    });
+    window.addEventListener('keyup', e => {
+      const k = e.key.toLowerCase();
+      keys[k] = false;
+    });
+
+    let lastKeyboardTime = performance.now();
+    function processKeyboard(now) {
+      const dt = Math.min((now - lastKeyboardTime) / 1000, 0.1);
+      lastKeyboardTime = now;
+      if (!simState.power) return;
+
+      let changed = false;
+
+      // Throttle W / S
+      if (keys['w']) {
+        simState.throttle = Math.min(1, simState.throttle + dt * 1.8);
+        changed = true;
+      } else if (keys['s']) {
+        simState.throttle = Math.max(0, simState.throttle - dt * 1.8);
+        changed = true;
+      }
+
+      // Yaw A / D
+      if (keys['a']) {
+        simState.yaw = -1.0;
+        changed = true;
+      } else if (keys['d']) {
+        simState.yaw = 1.0;
+        changed = true;
+      } else if (!stickState.left.active) {
+        if (simState.yaw !== 0) { simState.yaw = 0; changed = true; }
+      }
+
+      // Pitch ArrowUp / ArrowDown
+      if (keys['arrowup']) {
+        simState.pitch = 1.0;
+        changed = true;
+      } else if (keys['arrowdown']) {
+        simState.pitch = -1.0;
+        changed = true;
+      } else if (!stickState.right.active) {
+        if (simState.pitch !== 0) { simState.pitch = 0; changed = true; }
+      }
+
+      // Roll ArrowRight / ArrowLeft
+      if (keys['arrowright']) {
+        simState.roll = 1.0;
+        changed = true;
+      } else if (keys['arrowleft']) {
+        simState.roll = -1.0;
+        changed = true;
+      } else if (!stickState.right.active) {
+        if (simState.roll !== 0) { simState.roll = 0; changed = true; }
+      }
+
+      if (changed && !stickState.left.active && !stickState.right.active) {
+        const stickL = document.getElementById('svg-stick-left');
+        const stickR = document.getElementById('svg-stick-right');
+        if (stickL) {
+          stickState.left.dx = simState.yaw * 32;
+          stickState.left.dy = 32 - simState.throttle * 64;
+          stickL.setAttribute('transform', `translate(${stickState.left.dx}, ${stickState.left.dy})`);
+        }
+        if (stickR) {
+          stickState.right.dx = simState.roll * 32;
+          stickState.right.dy = -simState.pitch * 32;
+          stickR.setAttribute('transform', `translate(${stickState.right.dx}, ${stickState.right.dy})`);
+        }
+        sendState();
+      }
+    }
+
+    // Gerçek Kumanda Okuma Döngüsü (Gamepad Polling)
+    function pollGamepad() {
+      const now = performance.now();
+      processKeyboard(now);
+
+      const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+      let gp = null;
+      for (let g of gps) {
+        if (g && g.connected) { gp = g; break; }
+      }
+
+      if (gp && gp.axes && gp.axes.length >= 2) {
+        const axes = gp.axes;
+        const cfg = gamepadConfig;
+
+        // 1. Roll (Sağ kol yatay)
+        let rawRoll = axes[cfg.rollAxis] !== undefined ? axes[cfg.rollAxis] : 0;
+        if (Math.abs(rawRoll) < cfg.deadzone) rawRoll = 0;
+        simState.roll = cfg.rollInvert ? -rawRoll : rawRoll;
+
+        // 2. Pitch (Sağ kol dikey: İleri itince raw negatif -> Pitch pozitif)
+        let rawPitch = axes[cfg.pitchAxis] !== undefined ? axes[cfg.pitchAxis] : 0;
+        if (Math.abs(rawPitch) < cfg.deadzone) rawPitch = 0;
+        simState.pitch = cfg.pitchInvert ? rawPitch : -rawPitch;
+
+        // 3. Throttle (Sol kol dikey)
+        let rawThr = axes[cfg.throttleAxis] !== undefined ? axes[cfg.throttleAxis] : 1;
+        let thrNorm;
+        if (cfg.throttleInvert) {
+          // Kol yukarı (-1.0) -> %100, Kol aşağı (+1.0) -> %0
+          thrNorm = (1.0 - rawThr) / 2.0;
+        } else {
+          // Kol yukarı (+1.0) -> %100, Kol aşağı (-1.0) -> %0
+          thrNorm = (rawThr + 1.0) / 2.0;
+        }
+        simState.throttle = Math.max(0, Math.min(1, thrNorm));
+
+        // 4. Yaw (Sol kol yatay)
+        let rawYaw = axes[cfg.yawAxis] !== undefined ? axes[cfg.yawAxis] : 0;
+        if (Math.abs(rawYaw) < cfg.deadzone) rawYaw = 0;
+        simState.yaw = cfg.yawInvert ? -rawYaw : rawYaw;
+
+        // SVG Kolları Canlı Hareket Ettir
+        const stickL = document.getElementById('svg-stick-left');
+        const stickR = document.getElementById('svg-stick-right');
+        if (stickL && !stickState.left.active) {
+          const ldx = simState.yaw * 32;
+          const ldy = 32 - simState.throttle * 64;
+          stickL.setAttribute('transform', `translate(${ldx}, ${ldy})`);
+        }
+        if (stickR && !stickState.right.active) {
+          const rdx = simState.roll * 32;
+          const rdy = -simState.pitch * 32;
+          stickR.setAttribute('transform', `translate(${rdx}, ${rdy})`);
+        }
+
+        // Modal Canlı Metreleri Güncelle
+        const barThr = document.getElementById('gp-bar-thr');
+        const valThr = document.getElementById('gp-val-thr');
+        if (barThr) barThr.style.width = Math.round(simState.throttle * 100) + '%';
+        if (valThr) valThr.textContent = Math.round(simState.throttle * 100) + '%';
+
+        const barYaw = document.getElementById('gp-bar-yaw');
+        const valYaw = document.getElementById('gp-val-yaw');
+        if (barYaw) barYaw.style.width = Math.round(((simState.yaw + 1) / 2) * 100) + '%';
+        if (valYaw) valYaw.textContent = simState.yaw.toFixed(2);
+
+        const barPitch = document.getElementById('gp-bar-pitch');
+        const valPitch = document.getElementById('gp-val-pitch');
+        if (barPitch) barPitch.style.width = Math.round(((simState.pitch + 1) / 2) * 100) + '%';
+        if (valPitch) valPitch.textContent = simState.pitch.toFixed(2);
+
+        const barRoll = document.getElementById('gp-bar-roll');
+        const valRoll = document.getElementById('gp-val-roll');
+        if (barRoll) barRoll.style.width = Math.round(((simState.roll + 1) / 2) * 100) + '%';
+        if (valRoll) valRoll.textContent = simState.roll.toFixed(2);
+      }
+
+      requestAnimationFrame(pollGamepad);
+    }
+
+    // Sayfa Yüklenişi
+    window.addEventListener('DOMContentLoaded', () => {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get('room')) document.getElementById('inp-room').value = p.get('room');
+      if (p.get('slot')) chooseSlot(parseInt(p.get('slot')));
+
+      initSimGimbals();
+      checkGamepadsNow();
+      requestAnimationFrame(pollGamepad);
+
+      // Otomatik 40Hz Veri Yayını (25ms)
+      setInterval(sendState, 25);
+    });
+  </script>
+</body>
+</html>

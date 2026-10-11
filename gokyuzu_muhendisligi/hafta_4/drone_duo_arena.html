@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Loom Akademi • 2 Oyunculu Bölünmüş Ekran Çifte Drone Yarışı (4. Hafta)</title>
+
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- PeerJS (WebRTC P2P İnternet Bağlantısı) -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #38bdf8;
+      --primary-light: #7dd3fc;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --bg-dark: #090e1a;
+      --sunny-yellow: #fbbf24;
+      --emerald-green: #34d399;
+      --candy-red: #fb7185;
+      --p1-color: #ff1744;
+      --p2-color: #00e5ff;
+      --font-main: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none !important;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #020617;
+      color: #ffffff;
+      font-family: var(--font-main);
+      touch-action: none;
+    }
+
+    #sim-app {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Top Navigation Header */
+    #sim-header {
+      height: 52px;
+      min-height: 52px;
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(12px);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      z-index: 100;
+    }
+    .sim-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 14.5px;
+      white-space: nowrap;
+    }
+    .sim-brand span.hl { color: var(--sunny-yellow); font-size: 12.5px; }
+    .sim-badge {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+
+    .header-center-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-right-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .header-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #e2e8f0;
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .header-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .header-btn.mode-toggle {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+    .header-btn.mode-toggle.tablet {
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      border-color: #c084fc;
+      box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+    }
+
+    .header-btn.btn-green {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: #34d399;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+    .header-btn.btn-red {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+    .header-btn.btn-red:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    #gamepad-status-pill {
+      font-size: 11px;
+      background: rgba(56,189,248,0.12);
+      border: 1px solid var(--primary);
+      padding: 4px 8px;
+      border-radius: 8px;
+      color: var(--primary);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    /* Arena Main Content: 3D Üst Bölge + Kumanda Alt Bölge */
+    #arena-main-content {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 3D Canvas Container */
+    #canvas-container {
+      width: 100%;
+      position: relative;
+      background: #020617;
+      overflow: hidden;
+    }
+
+    /* 4'lü Bölünmüş Ekran Modunda Canvas Yüksekliği: %52 */
+    .split4-mode #canvas-container {
+      height: 52% !important;
+    }
+
+    /* Tablet Modunda Canvas Yüksekliği: %100 Tam Ekran */
+    .tablet-mode #canvas-container {
+      height: 100% !important;
+    }
+
+    /* Bölünmüş Ekran Orta Çizgisi (Split-Screen Divider) */
+    .screen-divider {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 3px;
+      background: linear-gradient(180deg, #38bdf8 0%, rgba(255,255,255,0.4) 50%, #38bdf8 100%);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+      z-index: 20;
+      pointer-events: none;
+      transform: translateX(-50%);
+    }
+    .divider-vs-badge {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      border: 2px solid var(--sunny-yellow);
+      color: var(--sunny-yellow);
+      font-size: 11px;
+      font-weight: 900;
+      padding: 2px 9px;
+      border-radius: 10px;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.6);
+      z-index: 25;
+      pointer-events: none;
+    }
+
+    /* BÖLÜNMÜŞ EKRAN BAŞLIK VE KONTROL PANELLERİ (SOL = 2. OYUNCU, SAĞ = 1. OYUNCU) */
+    .split-hud-container {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .player-hud-box {
+      background: rgba(15, 23, 42, 0.92);
+      border: 2px solid;
+      border-radius: 14px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 270px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      pointer-events: auto;
+      backdrop-filter: blur(10px);
+    }
+    .player-hud-box.p1 {
+      border-color: var(--p1-color);
+      box-shadow: 0 0 18px rgba(255, 23, 68, 0.35);
+    }
+    .player-hud-box.p2 {
+      border-color: var(--p2-color);
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.35);
+    }
+
+    .p-avatar-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 16px;
+      color: #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
+    .p-meta { flex: 1; }
+    .p-title-text { font-size: 13px; font-weight: 900; }
+    .p-sub-stat { font-size: 10px; color: #94a3b8; font-weight: 700; }
+
+    .cam-mode-toggle {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 10.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .cam-mode-toggle:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateY(-1px);
+    }
+    .cam-mode-toggle.fpv {
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      border-color: #c084fc;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+    }
+
+    .gate-stat-pill {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--sunny-yellow);
+      text-align: right;
+    }
+
+    /* Orta Süre Sayacı */
+    .center-timer-wrap {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      border-radius: 14px;
+      padding: 4px 16px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      z-index: 35;
+      pointer-events: auto;
+    }
+    .timer-digits {
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+    }
+    .timer-label {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--sunny-yellow);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* DOKUNMATİK TAHTA KUMANDALARI ALANI (ALT BÖLÜM: %48) */
+    #onboard-controllers-bar {
+      width: 100%;
+      height: 48%;
+      background: #090e1a;
+      border-top: 2px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      position: relative;
+      z-index: 50;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6);
+      touch-action: none;
+    }
+
+    .tablet-mode #onboard-controllers-bar {
+      display: none !important;
+    }
+
+    .onboard-ctrl-col {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 4px 10px 4px 10px;
+      background: radial-gradient(circle at 50% 50%, #0f172a 0%, #090e1a 100%);
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .onboard-divider-line {
+      width: 3px;
+      background: linear-gradient(180deg, #38bdf8 0%, rgba(255,255,255,0.4) 50%, #38bdf8 100%);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+      z-index: 60;
+    }
+
+    .ctrl-header-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 2px;
+      min-height: 26px;
+    }
+
+    .ctrl-player-badge {
+      font-size: 11.5px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+    .ctrl-player-badge.p1 { color: #ff1744; }
+    .ctrl-player-badge.p2 { color: #00e5ff; }
+
+    .ctrl-switches-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .ctrl-sw-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-sw-btn:hover { background: rgba(255, 255, 255, 0.18); }
+    .ctrl-sw-btn.active {
+      background: rgba(34, 197, 94, 0.25);
+      border-color: #22c55e;
+      color: #86efac;
+    }
+    .ctrl-sw-btn.off {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+
+    .onboard-svg-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      touch-action: none;
+      overflow: hidden;
+      padding: 2px;
+    }
+
+    .onboard-svg-ctrl {
+      max-width: 100%;
+      max-height: 100%;
+      height: 100%;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.7));
+      touch-action: none;
+    }
+
+    /* QR Kod Modalı */
+    #qr-modal {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 10, 20, 0.92);
+      backdrop-filter: blur(16px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s;
+    }
+    #qr-modal.show { opacity: 1; pointer-events: auto; }
+    .qr-card {
+      background: rgba(15, 23, 42, 0.98);
+      border: 2.5px solid var(--primary);
+      border-radius: 26px;
+      padding: 30px 36px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      max-width: 480px;
+    }
+    .qr-white-box { background: #fff; padding: 14px; border-radius: 18px; }
+
+    /* Kazanan Ekranı Modalı */
+    #winner-modal {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: rgba(15, 23, 42, 0.98);
+      border: 4px solid var(--sunny-yellow);
+      border-radius: 30px;
+      padding: 36px 50px;
+      text-align: center;
+      z-index: 250;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 0 70px rgba(251, 191, 36, 0.65);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #winner-modal.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+    .trophy-anim { font-size: 64px; animation: bounce 1s infinite alternate; }
+    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+
+    /* Collision Flash */
+    #impact-flash {
+      position: absolute;
+      inset: 0;
+      background: rgba(239, 68, 68, 0.3);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 40;
+      transition: opacity 0.1s ease;
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <div id="sim-app" class="split4-mode">
+    <!-- Header -->
+    <header id="sim-header">
+      <div class="sim-brand">
+        <span>🏁</span> 2 Oyunculu Drone Arenası <span class="hl">(Sol: 2. Oyuncu • Sağ: 1. Oyuncu)</span>
+        <span class="sim-badge" id="layout-badge">4'LÜ EKRAN</span>
+      </div>
+
+      <div class="header-center-actions">
+        <!-- Tahta Modu / Tablet Modu Değiştirme Butonu -->
+        <button id="btn-layout-mode" class="header-btn mode-toggle" onclick="toggleArenaLayout()">
+          🖥️ Tahtadan Kumanda Modu (4'lü)
+        </button>
+
+        <button class="header-btn" onclick="toggleQrModal(true)" title="Tablet ile bağlanmak için tıklayın">
+          📱 Tablet Oda Kodu: <b style="color:var(--sunny-yellow);" id="hdr-room-code">LM-401</b>
+        </button>
+
+        <span id="gamepad-status-pill">🎮 Kumanda: Bağlı Değil</span>
+      </div>
+
+      <div class="header-right-actions">
+        <button class="header-btn btn-green" onclick="startRaceCountdown()">🏁 Başlat</button>
+        <button class="header-btn btn-red" onclick="resetRace()">🔄 Sıfırla</button>
+        <a href="index.html" class="header-btn">🏠 Sunuma Dön</a>
+      </div>
+    </header>
+
+    <!-- Arena Main Content (3D Görünümler + Dokunmatik Kumandalar) -->
+    <div id="arena-main-content">
+      <!-- Üst Bölüm: Bölünmüş 3D Sahne -->
+      <div id="canvas-container">
+        <div id="impact-flash"></div>
+
+        <!-- Bölünmüş Ekran Çizgisi ve VS Rozeti -->
+        <div class="screen-divider"></div>
+        <div class="divider-vs-badge">⚡ VS ⚡</div>
+
+        <!-- BÖLÜNMÜŞ EKRAN HUD (SOL: 2. OYUNCU KARTAL, SAĞ: 1. OYUNCU ŞAHİN) -->
+        <div class="split-hud-container">
+          <!-- SOL EKRAN: 2. OYUNCU (KARTAL / SAĞ YOL) -->
+          <div class="player-hud-box p2" id="box-p2">
+            <div class="p-avatar-circle" id="avatar-2" style="background: #00e5ff;">2</div>
+            <div class="p-meta">
+              <div class="p-title-text" id="title-p2">2. Drone (Kartal)</div>
+              <div class="p-sub-stat" id="stat-2">Tahta / Tablet Hazır 🟢</div>
+            </div>
+            <button class="cam-mode-toggle" id="btn-cam-p2" onclick="togglePlayerCam(2)">
+              <span>🎥</span> <span id="lbl-cam-p2">Takip Modu</span>
+            </button>
+            <div>
+              <div style="font-size: 9px; color: #94a3b8; font-weight: 800;">KAPI</div>
+              <div class="gate-stat-pill" id="gate-2">0 / 3</div>
+            </div>
+          </div>
+
+          <!-- SAĞ EKRAN: 1. OYUNCU (ŞAHİN / SOL YOL) -->
+          <div class="player-hud-box p1" id="box-p1">
+            <div class="p-avatar-circle" id="avatar-1" style="background: #ff1744;">1</div>
+            <div class="p-meta">
+              <div class="p-title-text" id="title-p1">1. Drone (Şahin)</div>
+              <div class="p-sub-stat" id="stat-1">Tahta / Tablet Hazır 🟢</div>
+            </div>
+            <button class="cam-mode-toggle" id="btn-cam-p1" onclick="togglePlayerCam(1)">
+              <span>🎥</span> <span id="lbl-cam-p1">Takip Modu</span>
+            </button>
+            <div>
+              <div style="font-size: 9px; color: #94a3b8; font-weight: 800;">KAPI</div>
+              <div class="gate-stat-pill" id="gate-1">0 / 3</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orta Süre Göstergesi -->
+        <div class="center-timer-wrap">
+          <div class="timer-label" id="race-state-txt">YARIŞA HAZIR</div>
+          <div class="timer-digits" id="race-timer">00:00.0</div>
+        </div>
+      </div>
+
+      <!-- Alt Bölüm: 2 Bağımsız LiteRadio 2 SE Dokunmatik Kumanda (Akıllı Tahta İçin) -->
+      <div id="onboard-controllers-bar">
+        <!-- SOL KUMANDA: 2. OYUNCU (KARTAL • SAĞ YOL) -->
+        <div class="onboard-ctrl-col p2" id="onboard-ctrl-p2">
+          <div class="ctrl-header-strip">
+            <span class="ctrl-player-badge p2">🦅 2. OYUNCU KUMANDASI (KARTAL)</span>
+            <div class="ctrl-switches-group">
+              <button class="ctrl-sw-btn active" id="sw-p2-sa" onclick="toggleOnboardSwitch(2, 'sa')">SA: ARMED</button>
+              <button class="ctrl-sw-btn" id="sw-p2-sb" onclick="toggleOnboardSwitch(2, 'sb')">SB: ANGLE</button>
+              <button class="ctrl-sw-btn" id="sw-p2-sc" onclick="toggleOnboardSwitch(2, 'sc')">SC: %70 HIZ</button>
+            </div>
+          </div>
+          <div class="onboard-svg-box">
+            <!-- Player 2 SVG LiteRadio -->
+            <svg id="ob-svg-p2" viewBox="0 0 560 400" class="onboard-svg-ctrl" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="shadow-p2" x="-10%" y="-10%" width="120%" height="130%">
+                  <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.6"/>
+                </filter>
+                <linearGradient id="body-grad-p2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="45%" stop-color="#f8fafc"/>
+                  <stop offset="100%" stop-color="#e2e8f0"/>
+                </linearGradient>
+                <radialGradient id="well-grad-p2" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#0b0d12"/>
+                  <stop offset="75%" stop-color="#14171f"/>
+                  <stop offset="100%" stop-color="#282f3d"/>
+                </radialGradient>
+                <radialGradient id="chrome-p2" cx="35%" cy="35%" r="65%">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="40%" stop-color="#cbd5e1"/>
+                  <stop offset="85%" stop-color="#64748b"/>
+                  <stop offset="100%" stop-color="#334155"/>
+                </radialGradient>
+                <radialGradient id="knob-p2" cx="40%" cy="40%" r="60%">
+                  <stop offset="0%" stop-color="#64748b"/>
+                  <stop offset="50%" stop-color="#334155"/>
+                  <stop offset="100%" stop-color="#0f172a"/>
+                </radialGradient>
+              </defs>
+
+              <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+                    fill="rgba(0,0,0,0.35)" filter="url(#shadow-p2)" transform="translate(0, 6)"/>
+
+              <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+                    fill="url(#body-grad-p2)" stroke="#cbd5e1" stroke-width="2"/>
+
+              <path d="M 125 155 C 98 220, 96 300, 126 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+              <path d="M 435 155 C 462 220, 464 300, 434 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+
+              <g transform="translate(244, 94)">
+                <text x="22" y="10" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="11" letter-spacing="2" fill="#94a3b8">BETAFPV</text>
+              </g>
+
+              <!-- SOL KOL (Gaz & Yaw) -->
+              <g id="ob-p2-gimbal-l" style="touch-action: none;">
+                <circle cx="175" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+                <circle cx="175" cy="215" r="52" fill="url(#well-grad-p2)" stroke="#334155" stroke-width="2"/>
+                <rect x="141" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+                <rect x="146" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+                <g id="ob-p2-stick-l" style="cursor: grab; touch-action: none;" transform="translate(0, 32)">
+                  <circle cx="175" cy="215" r="26" fill="transparent"/>
+                  <circle cx="175" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+                  <circle cx="175" cy="215" r="15" fill="url(#chrome-p2)" stroke="#334155" stroke-width="1"/>
+                  <circle cx="175" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+                  <circle cx="175" cy="215" r="11" fill="url(#knob-p2)"/>
+                </g>
+                <text x="175" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#00e5ff">⬆️ GAZ &amp; YAW</text>
+              </g>
+
+              <!-- GÜÇ DÜĞMESİ -->
+              <g id="ob-p2-pwr-group" style="cursor: pointer; touch-action: none;">
+                <circle cx="280" cy="232" r="24" fill="transparent"/>
+                <circle cx="280" cy="232" r="18" fill="#14171e" stroke="#334155" stroke-width="1.5"/>
+                <circle id="ob-p2-pwr-led" cx="280" cy="232" r="14" fill="none" stroke="#22c55e" stroke-width="2.2"/>
+                <circle cx="280" cy="232" r="11" fill="#090b0e"/>
+                <path d="M 276 230 A 5 5 0 1 0 284 230 M 280 226 L 280 231" fill="none" stroke="#22c55e" stroke-width="1.6" stroke-linecap="round"/>
+                <text id="ob-p2-pwr-txt" x="280" y="262" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="9" font-weight="800" fill="#22c55e">AÇIK</text>
+              </g>
+
+              <!-- SAĞ KOL (Pitch & Roll) -->
+              <g id="ob-p2-gimbal-r" style="touch-action: none;">
+                <circle cx="385" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+                <circle cx="385" cy="215" r="52" fill="url(#well-grad-p2)" stroke="#334155" stroke-width="2"/>
+                <rect x="351" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+                <rect x="356" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+                <g id="ob-p2-stick-r" style="cursor: grab; touch-action: none;" transform="translate(0, 0)">
+                  <circle cx="385" cy="215" r="26" fill="transparent"/>
+                  <circle cx="385" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+                  <circle cx="385" cy="215" r="15" fill="url(#chrome-p2)" stroke="#334155" stroke-width="1"/>
+                  <circle cx="385" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+                  <circle cx="385" cy="215" r="11" fill="url(#knob-p2)"/>
+                </g>
+                <text x="385" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#38bdf8">🕹️ PITCH &amp; ROLL</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- ORTA AYIRICI ÇİZGİ -->
+        <div class="onboard-divider-line"></div>
+
+        <!-- SAĞ KUMANDA: 1. OYUNCU (ŞAHİN • SOL YOL) -->
+        <div class="onboard-ctrl-col p1" id="onboard-ctrl-p1">
+          <div class="ctrl-header-strip">
+            <span class="ctrl-player-badge p1">🦅 1. OYUNCU KUMANDASI (ŞAHİN)</span>
+            <div class="ctrl-switches-group">
+              <button class="ctrl-sw-btn active" id="sw-p1-sa" onclick="toggleOnboardSwitch(1, 'sa')">SA: ARMED</button>
+              <button class="ctrl-sw-btn" id="sw-p1-sb" onclick="toggleOnboardSwitch(1, 'sb')">SB: ANGLE</button>
+              <button class="ctrl-sw-btn" id="sw-p1-sc" onclick="toggleOnboardSwitch(1, 'sc')">SC: %70 HIZ</button>
+            </div>
+          </div>
+          <div class="onboard-svg-box">
+            <!-- Player 1 SVG LiteRadio -->
+            <svg id="ob-svg-p1" viewBox="0 0 560 400" class="onboard-svg-ctrl" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="shadow-p1" x="-10%" y="-10%" width="120%" height="130%">
+                  <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.6"/>
+                </filter>
+                <linearGradient id="body-grad-p1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="45%" stop-color="#f8fafc"/>
+                  <stop offset="100%" stop-color="#e2e8f0"/>
+                </linearGradient>
+                <radialGradient id="well-grad-p1" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#0b0d12"/>
+                  <stop offset="75%" stop-color="#14171f"/>
+                  <stop offset="100%" stop-color="#282f3d"/>
+                </radialGradient>
+                <radialGradient id="chrome-p1" cx="35%" cy="35%" r="65%">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="40%" stop-color="#cbd5e1"/>
+                  <stop offset="85%" stop-color="#64748b"/>
+                  <stop offset="100%" stop-color="#334155"/>
+                </radialGradient>
+                <radialGradient id="knob-p1" cx="40%" cy="40%" r="60%">
+                  <stop offset="0%" stop-color="#64748b"/>
+                  <stop offset="50%" stop-color="#334155"/>
+                  <stop offset="100%" stop-color="#0f172a"/>
+                </radialGradient>
+              </defs>
+
+              <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+                    fill="rgba(0,0,0,0.35)" filter="url(#shadow-p1)" transform="translate(0, 6)"/>
+
+              <path d="M 225 106 C 245 116, 260 118, 280 118 C 300 118, 315 116, 335 106 C 355 96, 370 82, 395 82 C 418 82, 436 94, 452 114 C 475 145, 498 200, 502 265 C 506 325, 488 382, 452 400 C 430 410, 404 396, 388 355 C 372 315, 350 270, 315 270 L 245 270 C 210 270, 188 315, 172 355 C 156 396, 130 410, 108 400 C 72 382, 54 325, 58 265 C 62 200, 85 145, 108 114 C 124 94, 142 82, 165 82 C 190 82, 205 96, 225 106 Z"
+                    fill="url(#body-grad-p1)" stroke="#cbd5e1" stroke-width="2"/>
+
+              <path d="M 125 155 C 98 220, 96 300, 126 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+              <path d="M 435 155 C 462 220, 464 300, 434 365" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+
+              <g transform="translate(244, 94)">
+                <text x="22" y="10" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="11" letter-spacing="2" fill="#94a3b8">BETAFPV</text>
+              </g>
+
+              <!-- SOL KOL (Gaz & Yaw) -->
+              <g id="ob-p1-gimbal-l" style="touch-action: none;">
+                <circle cx="175" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+                <circle cx="175" cy="215" r="52" fill="url(#well-grad-p1)" stroke="#334155" stroke-width="2"/>
+                <rect x="141" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+                <rect x="146" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+                <g id="ob-p1-stick-l" style="cursor: grab; touch-action: none;" transform="translate(0, 32)">
+                  <circle cx="175" cy="215" r="26" fill="transparent"/>
+                  <circle cx="175" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+                  <circle cx="175" cy="215" r="15" fill="url(#chrome-p1)" stroke="#334155" stroke-width="1"/>
+                  <circle cx="175" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+                  <circle cx="175" cy="215" r="11" fill="url(#knob-p1)"/>
+                </g>
+                <text x="175" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#38bdf8">⬆️ GAZ &amp; YAW</text>
+              </g>
+
+              <!-- GÜÇ DÜĞMESİ -->
+              <g id="ob-p1-pwr-group" style="cursor: pointer; touch-action: none;">
+                <circle cx="280" cy="232" r="24" fill="transparent"/>
+                <circle cx="280" cy="232" r="18" fill="#14171e" stroke="#334155" stroke-width="1.5"/>
+                <circle id="ob-p1-pwr-led" cx="280" cy="232" r="14" fill="none" stroke="#22c55e" stroke-width="2.2"/>
+                <circle cx="280" cy="232" r="11" fill="#090b0e"/>
+                <path d="M 276 230 A 5 5 0 1 0 284 230 M 280 226 L 280 231" fill="none" stroke="#22c55e" stroke-width="1.6" stroke-linecap="round"/>
+                <text id="ob-p1-pwr-txt" x="280" y="262" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="9" font-weight="800" fill="#22c55e">AÇIK</text>
+              </g>
+
+              <!-- SAĞ KOL (Pitch & Roll) -->
+              <g id="ob-p1-gimbal-r" style="touch-action: none;">
+                <circle cx="385" cy="215" r="70" fill="transparent" style="touch-action: none; cursor: grab;"/>
+                <circle cx="385" cy="215" r="52" fill="url(#well-grad-p1)" stroke="#334155" stroke-width="2"/>
+                <rect x="351" y="181" width="68" height="68" rx="8" fill="#181b22" stroke="#252a35" stroke-width="1.5"/>
+                <rect x="356" y="211" width="58" height="8" rx="4" fill="#0b0d11"/>
+                <g id="ob-p1-stick-r" style="cursor: grab; touch-action: none;" transform="translate(0, 0)">
+                  <circle cx="385" cy="215" r="26" fill="transparent"/>
+                  <circle cx="385" cy="215" r="18" fill="rgba(0,0,0,0.55)"/>
+                  <circle cx="385" cy="215" r="15" fill="url(#chrome-p1)" stroke="#334155" stroke-width="1"/>
+                  <circle cx="385" cy="215" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.2"/>
+                  <circle cx="385" cy="215" r="11" fill="url(#knob-p1)"/>
+                </g>
+                <text x="385" y="284" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#fbbf24">🕹️ PITCH &amp; ROLL</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Kod Modalı -->
+    <div id="qr-modal" onclick="if(event.target===this) toggleQrModal(false)">
+      <div class="qr-card">
+        <h2 style="font-size: 20px; font-weight: 900;">📲 Tabletle Odaya Bağlanın</h2>
+        <p style="font-size: 13px; color: #cbd5e1;">
+          Tabletin kamerasını aşağıdaki QR koda tutarak sanal LiteRadio kumandayı açın:
+        </p>
+        <div class="qr-white-box" id="qrcode-box"></div>
+        <div style="font-size: 13px; color: #94a3b8;">
+          Veya tablet tarayıcısında açıp oda kodunu girin: <strong style="color: var(--sunny-yellow);" id="modal-room-text">LM-401</strong>
+        </div>
+        <button class="header-btn btn-red" style="width: 100%; justify-content: center;" onclick="toggleQrModal(false)">Kapat</button>
+      </div>
+    </div>
+
+    <!-- Kazanan İlanı Modalı -->
+    <div id="winner-modal">
+      <div class="trophy-anim">🏆</div>
+      <h2 style="font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 6px;">BİTİŞ ÇİZGİSİ GEÇİLDİ!</h2>
+      <div style="font-size: 22px; font-weight: 900; color: var(--sunny-yellow); margin-bottom: 10px;" id="winner-title">
+        1. DRONE KAZANDI!
+      </div>
+      <div style="font-size: 14px; color: #cbd5e1; margin-bottom: 18px;" id="winner-details">
+        Süre: 18.4 sn | Çarpışma: 0
+      </div>
+      <button class="header-btn btn-green" style="margin: 0 auto; font-size: 14px; padding: 8px 20px;" onclick="resetRace()">
+        <span>🔄</span> Yeniden Yarış
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       1. UNIQUE ODA KODU & SES SENTEZLEYİCİ
+       ========================================================================= */
+    const UNIQUE_ROOM_CODE = 'LM-' + Math.floor(1000 + Math.random() * 9000);
+    const roomCodeEl = document.getElementById('hdr-room-code');
+    if (roomCodeEl) roomCodeEl.innerText = UNIQUE_ROOM_CODE;
+    const modalRoomEl = document.getElementById('modal-room-text');
+    if (modalRoomEl) modalRoomEl.innerText = UNIQUE_ROOM_CODE;
+
+    const AudioSynth = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) this.ctx = new AC();
+        }
+      },
+      beep(freq, dur = 0.15) {
+        if (!this.ctx) this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+          osc.connect(g); g.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + dur + 0.05);
+        } catch(e) {}
+      },
+      clank() {
+        if (!this.ctx) this.init();
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(280, now);
+          osc.frequency.exponentialRampToValueAtTime(50, now + 0.15);
+          g.gain.setValueAtTime(0.3, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+          osc.connect(g); g.connect(this.ctx.destination);
+          osc.start(); osc.stop(now + 0.16);
+
+          const flash = document.getElementById('impact-flash');
+          if (flash) {
+            flash.style.opacity = '1';
+            setTimeout(() => { flash.style.opacity = '0'; }, 100);
+          }
+        } catch(e) {}
+      },
+      victory() {
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => this.beep(f, 0.28), i * 140));
+      }
+    };
+
+    /* =========================================================================
+       2. BÖLÜNMÜŞ EKRAN (SPLIT SCREEN) & 3D SAHNE TANIMLARI
+       ========================================================================= */
+    let scene, renderer;
+    let camera1, camera2; // 1. Oyuncu ve 2. Oyuncu Bağımsız Kameraları
+    let camMode1 = 'chase'; // 'chase' veya 'fpv'
+    let camMode2 = 'chase';
+
+    let solidObstacles = [];
+    let cloudMeshes = [];
+
+    let raceStatus = 'idle'; // 'idle', 'racing', 'finished'
+    let raceStartTime = 0;
+    let raceTimer = 0;
+
+    // Şeritler: Sol Yol: X = -4.5 (Drone 1), Sağ Yol: X = +4.5 (Drone 2)
+    const LANE_X = { 1: -4.5, 2: 4.5 };
+    const GATE_Z_LIST = [-4, 10, 24];
+    const FINISH_Z = 35;
+
+    // 2 DRONE VERİSİ
+    const drones = [
+      {
+        id: 1,
+        name: 'Pilot 1',
+        lane: 1,
+        color: 0xff1744, // Varsayılan Kırmızı
+        pos: new THREE.Vector3(-4.5, 0.08, -20),
+        vel: new THREE.Vector3(0, 0, 0),
+        rot: new THREE.Euler(0, 0, 0, 'YXZ'),
+        power: true, armed: true, mode: 0, rateMult: 1.0,
+        throttle: 0, yaw: 0, pitch: 0, roll: 0,
+        mesh: null, innerMesh: null, bodyMeshes: [], props: [],
+        nameSprite: null, nameCanvas: null, nameCtx: null,
+        nextGate: 0, crashes: 0, finished: false, time: 0
+      },
+      {
+        id: 2,
+        name: 'Pilot 2',
+        lane: 2,
+        color: 0x00e5ff, // Varsayılan Camgöbeği Mavi
+        pos: new THREE.Vector3(4.5, 0.08, -20),
+        vel: new THREE.Vector3(0, 0, 0),
+        rot: new THREE.Euler(0, 0, 0, 'YXZ'),
+        power: true, armed: true, mode: 0, rateMult: 1.0,
+        throttle: 0, yaw: 0, pitch: 0, roll: 0,
+        mesh: null, innerMesh: null, bodyMeshes: [], props: [],
+        nameSprite: null, nameCanvas: null, nameCtx: null,
+        nextGate: 0, crashes: 0, finished: false, time: 0
+      }
+    ];
+
+    function createGrassTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#15803d';
+      ctx.fillRect(0, 0, 512, 512);
+
+      for (let i = 0; i < 3500; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const r = Math.random() * 2.2 + 0.8;
+        ctx.fillStyle = Math.random() > 0.45 ? '#166534' : '#22c55e';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(120, 120);
+      return texture;
+    }
+
+    function init3D() {
+      const container = document.getElementById('canvas-container');
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x38bdf8);
+      scene.fog = new THREE.FogExp2(0x7dd3fc, 0.0035);
+
+      // İki Oyuncu İçin İki Ayrı Kamera (Genişlik: w / 2)
+      const aspectHalf = (container.clientWidth / 2) / (container.clientHeight || 1);
+      camera1 = new THREE.PerspectiveCamera(58, aspectHalf, 0.05, 700);
+      camera2 = new THREE.PerspectiveCamera(58, aspectHalf, 0.05, 700);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setSize(container.clientWidth, container.clientHeight, false);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.domElement.style.display = 'block';
+      renderer.domElement.style.width = '100%';
+      renderer.domElement.style.height = '100%';
+      container.appendChild(renderer.domElement);
+
+      if (window.ResizeObserver) {
+        const ro = new ResizeObserver(() => onResize());
+        ro.observe(container);
+      }
+
+      // Aydınlatma
+      scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+      const hemiLight = new THREE.HemisphereLight(0xbbeafe, 0x166534, 0.55);
+      scene.add(hemiLight);
+
+      const sun = new THREE.DirectionalLight(0xfffbeb, 1.25);
+      sun.position.set(40, 90, 60);
+      sun.castShadow = true;
+      scene.add(sun);
+
+      create3DOutdoorEnvironment();
+      createMeteorDrones();
+
+      window.addEventListener('resize', onResize);
+    }
+
+    /* =========================================================================
+       3. AÇIK HAVA PİSTİ, AĞAÇLAR & KATI KAPILAR
+       ========================================================================= */
+    function create3DOutdoorEnvironment() {
+      // 1. Çim Zemin
+      const grassTexture = createGrassTexture();
+      const groundGeo = new THREE.PlaneGeometry(1600, 1600);
+      const groundMat = new THREE.MeshStandardMaterial({
+        map: grassTexture,
+        roughness: 0.92,
+        metalness: 0.04
+      });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      // 2. Yan Yana 2 Yol Asfalt Pisti
+      const runwayGeo = new THREE.PlaneGeometry(18, 75);
+      const runwayMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.75, metalness: 0.15 });
+      const runway = new THREE.Mesh(runwayGeo, runwayMat);
+      runway.rotation.x = -Math.PI / 2;
+      runway.position.set(0, 0.015, 8.5);
+      runway.receiveShadow = true;
+      scene.add(runway);
+
+      // Orta Şerit Sarı Kesik Çizgiler
+      for (let z = -24; z <= 40; z += 4) {
+        const line = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.3, 2.2),
+          new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+        );
+        line.rotation.x = -Math.PI / 2;
+        line.position.set(0, 0.025, z);
+        scene.add(line);
+      }
+
+      // Yan Beyaz Çizgiler
+      [-8.5, 8.5].forEach(x => {
+        const sideLine = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.35, 74),
+          new THREE.MeshBasicMaterial({ color: 0xffffff })
+        );
+        sideLine.rotation.x = -Math.PI / 2;
+        sideLine.position.set(x, 0.025, 8.5);
+        scene.add(sideLine);
+      });
+
+      // 3. Başlangıç Helipadleri
+      [
+        { lane: 1, x: -4.5, z: -20, col: 0xff1744 },
+        { lane: 2, x: 4.5, z: -20, col: 0x00e5ff }
+      ].forEach(p => {
+        const pad = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.6, 1.6, 0.04, 32),
+          new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 })
+        );
+        pad.position.set(p.x, 0.02, p.z);
+        scene.add(pad);
+
+        const ring = new THREE.Mesh(
+          new THREE.RingGeometry(1.3, 1.5, 32),
+          new THREE.MeshBasicMaterial({ color: p.col, side: THREE.DoubleSide })
+        );
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.set(p.x, 0.045, p.z);
+        scene.add(ring);
+      });
+
+      // 4. Sıralı 3 Yarış Kapısı (Her İki Yol İçin Katı Çerçeveler)
+      solidObstacles = [];
+      GATE_Z_LIST.forEach((gz, gIdx) => {
+        const gateColor = gIdx === 0 ? 0x38bdf8 : gIdx === 1 ? 0xf59e0b : 0xa855f7;
+        [LANE_X[1], LANE_X[2]].forEach(gx => {
+          createSolidRaceGate(gx, 2.2, gz, gateColor, `Kapı ${gIdx + 1}`);
+        });
+      });
+
+      // 5. Bitiş Çizgisi ve Kemeri (Z = +35)
+      createFinishLineArch();
+
+      // 6. Ağaçlar ve Bulutlar
+      createTreeGrove();
+      createCloudLayer();
+    }
+
+    function createSolidRaceGate(x, y, z, colorHex, label) {
+      const gateGroup = new THREE.Group();
+      gateGroup.position.set(x, 0, z);
+
+      const mat = new THREE.MeshStandardMaterial({
+        color: colorHex,
+        roughness: 0.3,
+        emissive: colorHex,
+        emissiveIntensity: 0.65
+      });
+
+      // Sol Direk
+      const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 16), mat);
+      postL.position.set(-1.8, 1.6, 0);
+      gateGroup.add(postL);
+
+      // Sağ Direk
+      const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 16), mat);
+      postR.position.set(1.8, 1.6, 0);
+      gateGroup.add(postR);
+
+      // Üst Bar
+      const crossbar = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.22, 0.22), mat);
+      crossbar.position.set(0, 3.15, 0);
+      gateGroup.add(crossbar);
+
+      const gateLight = new THREE.PointLight(colorHex, 0.9, 7);
+      gateLight.position.set(0, 3.1, 0);
+      gateGroup.add(gateLight);
+
+      scene.add(gateGroup);
+
+      // Katı Çarpışma Engelleri
+      solidObstacles.push({
+        name: `${label} Sol Direk`,
+        type: 'post',
+        pos: new THREE.Vector3(x - 1.8, 1.6, z),
+        radius: 0.35,
+        minY: 0, maxY: 3.3
+      });
+      solidObstacles.push({
+        name: `${label} Sağ Direk`,
+        type: 'post',
+        pos: new THREE.Vector3(x + 1.8, 1.6, z),
+        radius: 0.35,
+        minY: 0, maxY: 3.3
+      });
+      solidObstacles.push({
+        name: `${label} Üst Kiriş`,
+        type: 'crossbar',
+        minX: x - 1.9, maxX: x + 1.9,
+        minY: 3.0, maxY: 3.35,
+        minZ: z - 0.2, maxZ: z + 0.2
+      });
+    }
+
+    function createFinishLineArch() {
+      const z = FINISH_Z;
+      for (let row = 0; row < 2; row++) {
+        for (let col = -8; col < 8; col++) {
+          const isWhite = (row + col) % 2 === 0;
+          const tile = new THREE.Mesh(
+            new THREE.PlaneGeometry(1.0, 1.0),
+            new THREE.MeshBasicMaterial({ color: isWhite ? 0xffffff : 0x090e1a })
+          );
+          tile.rotation.x = -Math.PI / 2;
+          tile.position.set(col + 0.5, 0.035, z + row * 1.0);
+          scene.add(tile);
+        }
+      }
+
+      [LANE_X[1], LANE_X[2]].forEach((gx) => {
+        const archGrp = new THREE.Group();
+        archGrp.position.set(gx, 0, z);
+
+        const goldMat = new THREE.MeshStandardMaterial({
+          color: 0xfbbf24,
+          roughness: 0.2,
+          metalness: 0.8,
+          emissive: 0xf59e0b,
+          emissiveIntensity: 0.5
+        });
+
+        const pL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.6, 0.3), goldMat);
+        pL.position.set(-2.0, 1.8, 0);
+        archGrp.add(pL);
+
+        const pR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.6, 0.3), goldMat);
+        pR.position.set(2.0, 1.8, 0);
+        archGrp.add(pR);
+
+        const banner = new THREE.Mesh(
+          new THREE.BoxGeometry(4.3, 0.7, 0.25),
+          new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.5 })
+        );
+        banner.position.set(0, 3.5, 0);
+        archGrp.add(banner);
+
+        scene.add(archGrp);
+
+        solidObstacles.push({
+          name: `Bitiş Sol Direk`,
+          type: 'post',
+          pos: new THREE.Vector3(gx - 2.0, 1.8, z),
+          radius: 0.45,
+          minY: 0, maxY: 3.8
+        });
+        solidObstacles.push({
+          name: `Bitiş Sağ Direk`,
+          type: 'post',
+          pos: new THREE.Vector3(gx + 2.0, 1.8, z),
+          radius: 0.45,
+          minY: 0, maxY: 3.8
+        });
+      });
+    }
+
+    function createTreeGrove() {
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.9 });
+      const foliageMat = new THREE.MeshStandardMaterial({ color: 0x14532d, roughness: 0.8 });
+
+      const trunkGeo = new THREE.CylinderGeometry(0.25, 0.35, 1.8, 8);
+      const c1Geo = new THREE.ConeGeometry(2.2, 2.6, 8);
+      const c2Geo = new THREE.ConeGeometry(1.7, 2.2, 8);
+      const c3Geo = new THREE.ConeGeometry(1.2, 1.8, 8);
+
+      for (let i = 0; i < 70; i++) {
+        let x = (Math.random() - 0.5) * 350;
+        let z = (Math.random() - 0.5) * 350;
+        if (Math.abs(x) < 14 && z > -35 && z < 55) continue;
+
+        const tree = new THREE.Group();
+        tree.position.set(x, 0, z);
+        const s = 0.75 + Math.random() * 0.6;
+        tree.scale.set(s, s, s);
+
+        const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+        trunk.position.y = 0.9;
+        tree.add(trunk);
+
+        const foliage1 = new THREE.Mesh(c1Geo, foliageMat);
+        foliage1.position.y = 2.4;
+        tree.add(foliage1);
+
+        const foliage2 = new THREE.Mesh(c2Geo, foliageMat);
+        foliage2.position.y = 3.6;
+        tree.add(foliage2);
+
+        const foliage3 = new THREE.Mesh(c3Geo, foliageMat);
+        foliage3.position.y = 4.7;
+        tree.add(foliage3);
+
+        scene.add(tree);
+      }
+    }
+
+    function createCloudLayer() {
+      const cloudGeo = new THREE.SphereGeometry(3.5, 12, 10);
+      const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, transparent: true, opacity: 0.82 });
+
+      cloudMeshes = [];
+      for (let i = 0; i < 35; i++) {
+        const cloudGroup = new THREE.Group();
+        cloudGroup.position.set((Math.random() - 0.5) * 450, 20 + Math.random() * 14, (Math.random() - 0.5) * 450);
+
+        for (let j = 0; j < 5; j++) {
+          const m = new THREE.Mesh(cloudGeo, cloudMat);
+          m.position.set((Math.random() - 0.5) * 4.5, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 4.5);
+          const sc = 0.7 + Math.random() * 0.6;
+          m.scale.set(sc, sc * 0.6, sc);
+          cloudGroup.add(m);
+        }
+        scene.add(cloudGroup);
+        cloudMeshes.push({ group: cloudGroup, speed: 0.02 + Math.random() * 0.02 });
+      }
+    }
+
+    /* =========================================================================
+       4. DRONELAR VE ZARİF, KÜÇÜK 3D PİLOT ADI TABELASI (GÖRÜŞÜ KAPATMAZ!)
+       ========================================================================= */
+    function createMeteorDrones() {
+      drones.forEach(d => {
+        const droneGroup = new THREE.Group();
+        droneGroup.position.copy(d.pos);
+        scene.add(droneGroup);
+        d.mesh = droneGroup;
+
+        const droneMesh = new THREE.Group();
+        droneGroup.add(droneMesh);
+        d.innerMesh = droneMesh;
+
+        // Malzemeler
+        const frameMaterial = new THREE.MeshStandardMaterial({ color: d.color, roughness: 0.5, metalness: 0.2 });
+        d.bodyMeshes.push(frameMaterial);
+
+        const canopyMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.2 });
+        const motorMaterial = new THREE.MeshStandardMaterial({ color: 0xd8e0e8, roughness: 0.25, metalness: 0.85 });
+        const propMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, transparent: true, opacity: 0.85, side: THREE.DoubleSide });
+
+        // Gövde
+        const bodyGeo = new THREE.BoxGeometry(1.2, 0.16, 1.2);
+        const body = new THREE.Mesh(bodyGeo, frameMaterial);
+        body.position.y = 0.15;
+        droneMesh.add(body);
+
+        // Kanopi
+        const canopyGroup = new THREE.Group();
+        canopyGroup.position.set(0, 0.26, 0);
+
+        const canopyGeo = new THREE.SphereGeometry(0.66, 24, 16, 0, Math.PI * 2, 0, Math.PI / 1.8);
+        const canopy = new THREE.Mesh(canopyGeo, canopyMaterial);
+        canopy.scale.set(0.92, 0.92, 1.32);
+        canopy.rotation.x = THREE.MathUtils.degToRad(-15);
+        canopyGroup.add(canopy);
+
+        // İleri Oku
+        const arrow = new THREE.Mesh(
+          new THREE.ConeGeometry(0.18, 0.45, 16),
+          new THREE.MeshStandardMaterial({ color: d.color, emissive: d.color, emissiveIntensity: 0.8 })
+        );
+        arrow.rotation.x = -Math.PI / 2;
+        arrow.position.set(0, 0.58, 0.15);
+        canopyGroup.add(arrow);
+        d.bodyMeshes.push(arrow.material);
+
+        droneMesh.add(canopyGroup);
+
+        // FPV Kamera
+        const camMesh = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.36, 0.44), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+        camMesh.position.set(0, 0.45, 0.82);
+        camMesh.rotation.x = THREE.MathUtils.degToRad(-25);
+        droneMesh.add(camMesh);
+
+        // LED Işık
+        const ledLight = new THREE.PointLight(d.color, 1.4, 6);
+        ledLight.position.set(0, 0.1, 0);
+        droneMesh.add(ledLight);
+        d.ledLight = ledLight;
+
+        // 4 Ducts & Pervaneler
+        d.props = [];
+        const ductRadius = 0.95;
+        const motorRadius = 0.24;
+        const motorHeight = 0.32;
+        const ductPositions = [
+          { x: 1.35, z: 1.35, dir: 1 },
+          { x: -1.35, z: 1.35, dir: -1 },
+          { x: 1.35, z: -1.35, dir: -1 },
+          { x: -1.35, z: -1.35, dir: 1 }
+        ];
+
+        ductPositions.forEach((pos) => {
+          const ductGeo = new THREE.CylinderGeometry(ductRadius, ductRadius, 0.28, 24, 1, true);
+          const duct = new THREE.Mesh(ductGeo, frameMaterial);
+          duct.position.set(pos.x, 0.16, pos.z);
+          droneMesh.add(duct);
+
+          const lipGeo = new THREE.TorusGeometry(ductRadius, 0.035, 8, 24);
+          const lipTop = new THREE.Mesh(lipGeo, frameMaterial);
+          lipTop.position.set(pos.x, 0.3, pos.z);
+          lipTop.rotation.x = Math.PI / 2;
+          droneMesh.add(lipTop);
+
+          const motor = new THREE.Mesh(
+            new THREE.CylinderGeometry(motorRadius * 0.9, motorRadius * 0.9, motorHeight, 16),
+            motorMaterial
+          );
+          motor.position.set(pos.x, 0.3, pos.z);
+          droneMesh.add(motor);
+
+          const propGroup = new THREE.Group();
+          propGroup.position.set(pos.x, 0.45, pos.z);
+
+          for (let b = 0; b < 3; b++) {
+            const blade = new THREE.Mesh(
+              new THREE.BoxGeometry(ductRadius * 0.9, 0.02, 0.18),
+              propMaterial
+            );
+            blade.rotation.y = (b * Math.PI * 2) / 3;
+            propGroup.add(blade);
+          }
+          droneMesh.add(propGroup);
+          d.props.push({ mesh: propGroup, dir: pos.dir });
+        });
+
+        // 3D KÜÇÜK VE ZARİF PİLOT ADI TABELASI (Görüşü kesinlikle tıkamaz!)
+        createDroneNameSprite(d);
+      });
+    }
+
+    // Dronun üzerinde canlı yazan kompakt ve zarif Pilot Adı Tabelası
+    function createDroneNameSprite(drone) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+
+      drone.nameCanvas = canvas;
+      drone.nameCtx = ctx;
+
+      updateDroneNamePlate(drone);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const mat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: true });
+      const sprite = new THREE.Sprite(mat);
+      // Kompakt ve küçük boyut (görüşü kapamaz!)
+      sprite.scale.set(1.1, 0.28, 1);
+      sprite.position.set(0, 0.52, 0); // Dronun hemen üstünde zarif durur
+      drone.mesh.add(sprite);
+      drone.nameSprite = sprite;
+    }
+
+    function updateDroneNamePlate(drone) {
+      if (!drone.nameCanvas || !drone.nameCtx) return;
+      const ctx = drone.nameCtx;
+      const cvs = drone.nameCanvas;
+
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      // Koyu Arka Plan Kapsülü
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+      roundRect(ctx, 8, 8, cvs.width - 16, cvs.height - 16, 16);
+      ctx.fill();
+
+      // Takım Rengi Çerçeve
+      const hex = '#' + drone.color.toString(16).padStart(6, '0');
+      ctx.strokeStyle = hex;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Pilot İkonu & Adı
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`🚁 ${drone.name}`, cvs.width / 2, cvs.height / 2);
+
+      if (drone.nameSprite && drone.nameSprite.material.map) {
+        drone.nameSprite.material.map.needsUpdate = true;
+      }
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    /* =========================================================================
+       5. DOĞRU FİZİK, ÖZGÜR UÇUŞ (SINIRSIZ) & GERÇEKÇİ ÇARPIŞMALAR
+       ========================================================================= */
+    let lastTime = performance.now();
+
+    function updatePhysics(dt) {
+      if (raceStatus === 'racing') {
+        raceTimer = (performance.now() - raceStartTime) / 1000;
+        const tmrEl = document.getElementById('race-timer');
+        if (tmrEl) tmrEl.innerText = formatTime(raceTimer);
+      }
+
+      cloudMeshes.forEach(c => {
+        c.group.position.x += c.speed;
+        if (c.group.position.x > 250) c.group.position.x = -250;
+      });
+
+      // DRONE - DRONE ÇARPIŞMA FİZİĞİ (GERÇEKÇİ İTME, İRTİFA KAYBI & SAVRULMA)
+      const d1 = drones[0];
+      const d2 = drones[1];
+      const distDrones = d1.pos.distanceTo(d2.pos);
+      if (distDrones < 1.7) {
+        // Çarpışma normal vektörü
+        const normal = d1.pos.clone().sub(d2.pos).normalize();
+        if (normal.lengthSq() < 0.001) normal.set(1, 0, 0);
+
+        const overlap = 1.7 - distDrones;
+        const pushMag = overlap * 0.6 + 0.35;
+        d1.pos.x += normal.x * pushMag;
+        d1.pos.z += normal.z * pushMag;
+        d2.pos.x -= normal.x * pushMag;
+        d2.pos.z -= normal.z * pushMag;
+
+        // Pervane türbülansı ve hava akımı bozulmasıyla ani irtifa kaybı
+        d1.pos.y = Math.max(0.08, d1.pos.y - 0.45);
+        d2.pos.y = Math.max(0.08, d2.pos.y - 0.45);
+
+        // Dinamik savrulma ve takla açısal sarsıntısı
+        d1.rot.x += (Math.random() - 0.5) * 0.85;
+        d1.rot.z += (Math.random() - 0.5) * 0.85;
+        d2.rot.x += (Math.random() - 0.5) * 0.85;
+        d2.rot.z += (Math.random() - 0.5) * 0.85;
+
+        d1.crashes++;
+        d2.crashes++;
+
+        AudioSynth.clank();
+      }
+
+      drones.forEach(d => {
+        if (!d.power || !d.armed) {
+          d.throttle = 0;
+          d.yaw = 0;
+          d.pitch = 0;
+          d.roll = 0;
+        }
+
+        // Pervaneler
+        const propSpeed = 20 + d.throttle * 90;
+        d.props.forEach(p => p.mesh.rotation.y += propSpeed * dt * p.dir);
+
+        // Dikey Gaz ve Yerçekimi (Hızlı ve Atik İrtifa Tepkisi - TAVAN SINIRI YOKTUR!)
+        const gravityForce = 4.8;
+        const liftForce = d.throttle * 15.5;
+        const vertVelocity = liftForce - gravityForce; // m/sn
+
+        // Dikey Konum Güncelleme (Sadece zemin altına inemez, yukarıda özgürdür!)
+        if (d.pos.y > 0.08 || d.throttle > 0.32) {
+          d.pos.y = Math.max(0.08, d.pos.y + vertVelocity * dt);
+        } else {
+          d.pos.y = 0.08;
+        }
+
+        // Havadayken Dönüş ve İleri/Yanal Hareket
+        if (d.pos.y > 0.12) {
+          // Yaw (Dönüş): Sol kol sağa itilince sağa, sola itilince sola döner
+          d.rot.y += -d.yaw * 3.4 * d.rateMult * dt;
+
+          // Pitch & Roll Gövde Yatış Açıları (Dinamik eğim)
+          // DOĞRU BANKING: Sağa çekildiğinde (roll > 0) sağ kanat aşağı yatar (rot.z pozitif)
+          const targetPitch = d.pitch * 0.55 * d.rateMult;
+          const targetRoll = d.roll * 0.55 * d.rateMult;
+          d.rot.x += (targetPitch - d.rot.x) * 14 * dt;
+          d.rot.z += (targetRoll - d.rot.z) * 14 * dt;
+
+          // DOĞRU İLERİ / GERİ & SAĞA / SOLA HAREKET (+Z: İLERİ, -Z: GERİ, -X: EKRANDA SAĞA, +X: EKRANDA SOLA)
+          const yawRad = d.rot.y;
+          const fwdSpeed = d.pitch * 14.5 * d.rateMult; // pitch > 0 -> ileri (+Z yönü)
+          const latSpeed = d.roll * 14.5 * d.rateMult;  // roll > 0 -> sağa (ekranda sağa gitmesi için -X yönü)
+
+          let deltaZ = (Math.cos(yawRad) * fwdSpeed + Math.sin(yawRad) * latSpeed) * dt;
+          let deltaX = (Math.sin(yawRad) * fwdSpeed - Math.cos(yawRad) * latSpeed) * dt;
+
+          let nextX = d.pos.x + deltaX;
+          let nextZ = d.pos.z + deltaZ;
+
+          // Katı Engel Çarpışmaları (Kapı Direkleri ve Üst Bar)
+          for (let obs of solidObstacles) {
+            if (obs.type === 'post') {
+              const dx = nextX - obs.pos.x;
+              const dz = nextZ - obs.pos.z;
+              const dist = Math.sqrt(dx * dx + dz * dz);
+              const minDist = obs.radius + 0.85;
+              if (dist < minDist && d.pos.y >= obs.minY && d.pos.y <= obs.maxY) {
+                const nx = dx / (dist || 1);
+                const nz = dz / (dist || 1);
+                nextX = obs.pos.x + nx * (minDist + 0.05);
+                nextZ = obs.pos.z + nz * (minDist + 0.05);
+                d.crashes++;
+                AudioSynth.clank();
+                break;
+              }
+            } else if (obs.type === 'crossbar') {
+              if (nextX >= obs.minX && nextX <= obs.maxX &&
+                  nextZ >= obs.minZ && nextZ <= obs.maxZ &&
+                  d.pos.y >= obs.minY && d.pos.y <= obs.maxY) {
+                d.pos.y = Math.max(0.08, obs.minY - 0.2);
+                nextZ = d.pos.z - 0.5;
+                d.crashes++;
+                AudioSynth.clank();
+                break;
+              }
+            }
+          }
+
+          // ÖZGÜR UÇUŞ: Sağa, sola ve yukarıya yapay kısıtlama duvarı YOKTUR!
+          d.pos.x = nextX;
+          d.pos.z = nextZ;
+        } else {
+          // Yerdeyken gövde düzelir
+          d.rot.x *= 0.85;
+          d.rot.z *= 0.85;
+        }
+
+        // 3D Model Koordinat ve Dönüş Senkronizasyonu
+        d.mesh.position.copy(d.pos);
+        d.mesh.rotation.y = d.rot.y;
+        if (d.innerMesh) {
+          d.innerMesh.rotation.x = d.rot.x;
+          d.innerMesh.rotation.z = d.rot.z;
+        }
+
+        checkGateAndFinish(d);
+      });
+    }
+
+    function checkGateAndFinish(d) {
+      if (raceStatus !== 'racing' || d.finished) return;
+      const laneX = LANE_X[d.lane];
+
+      if (d.nextGate < 3) {
+        const targetGateZ = GATE_Z_LIST[d.nextGate];
+        const inGateX = Math.abs(d.pos.x - laneX) < 1.6;
+        const inGateY = d.pos.y >= 0.2 && d.pos.y <= 3.2;
+        const crossedZ = Math.abs(d.pos.z - targetGateZ) < 0.75;
+
+        if (inGateX && inGateY && crossedZ) {
+          d.nextGate++;
+          AudioSynth.beep(660 + d.nextGate * 110, 0.2);
+          const gateEl = document.getElementById(`gate-${d.id}`);
+          if (gateEl) gateEl.innerText = `${d.nextGate} / 3`;
+        }
+      } else {
+        const inFinishX = Math.abs(d.pos.x - laneX) < 2.0;
+        const inFinishY = d.pos.y >= 0.15 && d.pos.y <= 3.6;
+        const crossedFinish = (d.pos.z >= FINISH_Z);
+
+        if (inFinishX && inFinishY && crossedFinish) {
+          d.finished = true;
+          d.time = raceTimer;
+          const gateEl = document.getElementById(`gate-${d.id}`);
+          if (gateEl) gateEl.innerText = `🏁 BİTTİ!`;
+          declareWinner(d);
+        }
+      }
+    }
+
+    function declareWinner(winner) {
+      raceStatus = 'finished';
+      AudioSynth.victory();
+
+      const modal = document.getElementById('winner-modal');
+      const hexStr = '#' + winner.color.toString(16).padStart(6, '0');
+      document.getElementById('winner-title').innerText = `🏆 ${winner.name.toUpperCase()} KAZANDI!`;
+      document.getElementById('winner-title').style.color = hexStr;
+      document.getElementById('winner-details').innerText = `⏱️ Bitiş Süresi: ${winner.time.toFixed(1)} sn | 💥 Çarpışma: ${winner.crashes}`;
+      modal.classList.add('show');
+    }
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      const ms = Math.floor((s * 10) % 10);
+      return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${ms}`;
+    }
+
+    /* =========================================================================
+       6. KAMERA GÜNCELLEMESİ (TAKİP MODU & FPV GÖZLÜK MODU)
+       ========================================================================= */
+    function togglePlayerCam(player) {
+      if (player === 1) {
+        camMode1 = (camMode1 === 'chase') ? 'fpv' : 'chase';
+        const lbl = document.getElementById('lbl-cam-p1');
+        const btn = document.getElementById('btn-cam-p1');
+        if (lbl) lbl.textContent = (camMode1 === 'chase') ? 'Takip Modu' : 'FPV Gözlük';
+        if (btn) btn.classList.toggle('fpv', camMode1 === 'fpv');
+      } else {
+        camMode2 = (camMode2 === 'chase') ? 'fpv' : 'chase';
+        const lbl = document.getElementById('lbl-cam-p2');
+        const btn = document.getElementById('btn-cam-p2');
+        if (lbl) lbl.textContent = (camMode2 === 'chase') ? 'Takip Modu' : 'FPV Gözlük';
+        if (btn) btn.classList.toggle('fpv', camMode2 === 'fpv');
+      }
+    }
+
+    function updatePlayerCamera(cam, drone, mode) {
+      if (!drone || !cam) return;
+      const yaw = drone.rot.y;
+
+      if (mode === 'chase') {
+        // TAKİP KAMERASI: Drone'un arkasından süzülerek takip eder
+        const dist = 3.8;
+        const height = 1.5;
+        const targetX = drone.pos.x - Math.sin(yaw) * dist;
+        const targetZ = drone.pos.z - Math.cos(yaw) * dist;
+        const targetY = drone.pos.y + height;
+
+        cam.position.x += (targetX - cam.position.x) * 0.22;
+        cam.position.y += (targetY - cam.position.y) * 0.22;
+        cam.position.z += (targetZ - cam.position.z) * 0.22;
+
+        cam.up.set(0, 1, 0);
+        cam.lookAt(
+          drone.pos.x + Math.sin(yaw) * 4.0,
+          drone.pos.y + 0.3,
+          drone.pos.z + Math.cos(yaw) * 4.0
+        );
+
+      } else if (mode === 'fpv') {
+        // FPV GÖZLÜK MODU: Drone'un tam burun ucundan ön görüş (parçalar render pass'te gizlenir)
+        cam.position.set(
+          drone.pos.x + Math.sin(yaw) * 0.45,
+          drone.pos.y + 0.22,
+          drone.pos.z + Math.cos(yaw) * 0.45
+        );
+        cam.up.set(0, 1, 0);
+        cam.lookAt(
+          drone.pos.x + Math.sin(yaw) * 25.0,
+          drone.pos.y + 0.22,
+          drone.pos.z + Math.cos(yaw) * 25.0
+        );
+      }
+    }
+
+    /* =========================================================================
+       7. BÖLÜNMÜŞ EKRAN RENDER DÖNGÜSÜ & FPV PARÇA GİZLEME (SIFIR KIRPMA)
+       ========================================================================= */
+    function renderSplitScreen() {
+      if (!renderer || !scene) return;
+      const container = document.getElementById('canvas-container');
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+
+      if (w === 0 || h === 0) return;
+
+      // Anında boyut doğrulaması (Tablet/Tahta modu değişimlerinde sıfır gecikme)
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const targetBufferW = Math.floor(w * dpr);
+      const targetBufferH = Math.floor(h * dpr);
+      if (renderer.domElement.width !== targetBufferW || renderer.domElement.height !== targetBufferH) {
+        renderer.setSize(w, h, false);
+      }
+
+      updatePlayerCamera(camera1, drones[0], camMode1);
+      updatePlayerCamera(camera2, drones[1], camMode2);
+
+      renderer.setScissorTest(true);
+
+      // SOL EKRAN: 2. OYUNCU (KARTAL / SAĞ YOL)
+      const leftW = Math.floor(w / 2);
+      renderer.setViewport(0, 0, leftW, h);
+      renderer.setScissor(0, 0, leftW, h);
+      camera2.aspect = leftW / h;
+      camera2.updateProjectionMatrix();
+
+      // FPV modunda kendi gövde parçalarını gizle (Gözlük modunda kristal net ön görüş)
+      if (camMode2 === 'fpv') {
+        if (drones[1].innerMesh) drones[1].innerMesh.visible = false;
+        if (drones[1].nameSprite) drones[1].nameSprite.visible = false;
+      }
+      renderer.render(scene, camera2);
+      if (camMode2 === 'fpv') {
+        if (drones[1].innerMesh) drones[1].innerMesh.visible = true;
+        if (drones[1].nameSprite) drones[1].nameSprite.visible = true;
+      }
+
+      // SAĞ EKRAN: 1. OYUNCU (ŞAHİN / SOL YOL)
+      const rightW = w - leftW;
+      renderer.setViewport(leftW, 0, rightW, h);
+      renderer.setScissor(leftW, 0, rightW, h);
+      camera1.aspect = rightW / h;
+      camera1.updateProjectionMatrix();
+
+      // FPV modunda kendi gövde parçalarını gizle
+      if (camMode1 === 'fpv') {
+        if (drones[0].innerMesh) drones[0].innerMesh.visible = false;
+        if (drones[0].nameSprite) drones[0].nameSprite.visible = false;
+      }
+      renderer.render(scene, camera1);
+      if (camMode1 === 'fpv') {
+        if (drones[0].innerMesh) drones[0].innerMesh.visible = true;
+        if (drones[0].nameSprite) drones[0].nameSprite.visible = true;
+      }
+
+      renderer.setScissorTest(false);
+    }
+
+    function onResize() {
+      const c = document.getElementById('canvas-container');
+      if (renderer && c && c.clientWidth > 0 && c.clientHeight > 0) {
+        renderer.setSize(c.clientWidth, c.clientHeight, false);
+        const leftW = Math.floor(c.clientWidth / 2);
+        const rightW = c.clientWidth - leftW;
+        if (camera2) {
+          camera2.aspect = leftW / c.clientHeight;
+          camera2.updateProjectionMatrix();
+        }
+        if (camera1) {
+          camera1.aspect = rightW / c.clientHeight;
+          camera1.updateProjectionMatrix();
+        }
+      }
+    }
+
+    /* =========================================================================
+       8. TAHTA DOKUNMATİK KUMANDA MOTORU (ÇOKLU DOKUNUŞ DESTEĞİ)
+       ========================================================================= */
+    let currentLayoutMode = 'split4'; // 'split4' veya 'tablet'
+
+    function toggleArenaLayout() {
+      currentLayoutMode = (currentLayoutMode === 'split4') ? 'tablet' : 'split4';
+      const app = document.getElementById('sim-app');
+      const btn = document.getElementById('btn-layout-mode');
+      const badge = document.getElementById('layout-badge');
+      const container = document.getElementById('canvas-container');
+      const ctrlBar = document.getElementById('onboard-controllers-bar');
+
+      if (currentLayoutMode === 'split4') {
+        app.classList.remove('tablet-mode');
+        app.classList.add('split4-mode');
+        if (ctrlBar) ctrlBar.style.display = 'flex';
+        if (container) container.style.height = '52%';
+        if (btn) {
+          btn.innerHTML = '🖥️ Tahtadan Kumanda Modu (4\'lü)';
+          btn.classList.remove('tablet');
+        }
+        if (badge) badge.innerText = '4\'LÜ EKRAN';
+      } else {
+        app.classList.remove('split4-mode');
+        app.classList.add('tablet-mode');
+        if (ctrlBar) ctrlBar.style.display = 'none';
+        if (container) container.style.height = '100%';
+        if (btn) {
+          btn.innerHTML = '📱 Tablet Kumanda Modu (Tam Ekran 3D)';
+          btn.classList.add('tablet');
+        }
+        if (badge) badge.innerText = 'TAM EKRAN 3D';
+      }
+
+      onResize();
+      requestAnimationFrame(() => onResize());
+    }
+
+    function toggleOnboardSwitch(playerNum, sw) {
+      const d = (playerNum === 1) ? drones[0] : drones[1];
+      const btn = document.getElementById(`sw-p${playerNum}-${sw}`);
+
+      if (sw === 'sa') {
+        d.armed = !d.armed;
+        if (btn) {
+          btn.textContent = d.armed ? 'SA: ARMED' : 'SA: DISARM';
+          btn.className = d.armed ? 'ctrl-sw-btn active' : 'ctrl-sw-btn off';
+        }
+      } else if (sw === 'sb') {
+        d.mode = (d.mode + 1) % 3;
+        const modes = ['ANGLE', 'HORIZON', 'ACRO'];
+        if (btn) btn.textContent = `SB: ${modes[d.mode]}`;
+      } else if (sw === 'sc') {
+        if (d.rateMult === 0.6) { d.rateMult = 1.0; }
+        else if (d.rateMult === 1.0) { d.rateMult = 1.4; }
+        else { d.rateMult = 0.6; }
+
+        const rateTxt = d.rateMult === 0.6 ? '%40 HASSAS' : d.rateMult === 1.0 ? '%70 HIZ' : '%100 PRO';
+        if (btn) btn.textContent = `SC: ${rateTxt}`;
+      }
+    }
+
+    function setupOnboardController(playerNum) {
+      const d = (playerNum === 1) ? drones[0] : drones[1];
+      const svgId = (playerNum === 1) ? 'ob-svg-p1' : 'ob-svg-p2';
+      const svg = document.getElementById(svgId);
+      if (!svg) return;
+
+      const stickL = document.getElementById(`ob-p${playerNum}-stick-l`);
+      const stickR = document.getElementById(`ob-p${playerNum}-stick-r`);
+
+      const pointerState = {
+        leftId: null,
+        rightId: null,
+        leftDy: 32 // Varsayılan gaz en altta (0)
+      };
+
+      function getPt(e) {
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        return pt.matrixTransform(svg.getScreenCTM().inverse());
+      }
+
+      svg.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        try { svg.setPointerCapture(e.pointerId); } catch(err){}
+        const pt = getPt(e);
+
+        // Güç düğmesi
+        if (Math.hypot(pt.x - 280, pt.y - 232) <= 30) {
+          d.power = !d.power;
+          const led = document.getElementById(`ob-p${playerNum}-pwr-led`);
+          const txt = document.getElementById(`ob-p${playerNum}-pwr-txt`);
+          if (led) led.setAttribute('stroke', d.power ? '#22c55e' : '#ef4444');
+          if (txt) {
+            txt.textContent = d.power ? 'AÇIK' : 'KAPALI';
+            txt.setAttribute('fill', d.power ? '#22c55e' : '#ef4444');
+          }
+          if (!d.power) d.throttle = 0;
+          return;
+        }
+
+        // Sol Kol (Gaz & Yaw)
+        if (Math.hypot(pt.x - 175, pt.y - 215) <= 75) {
+          if (!d.power) return;
+          pointerState.leftId = e.pointerId;
+          updateLeftStick(pt);
+          return;
+        }
+
+        // Sağ Kol (Pitch & Roll)
+        if (Math.hypot(pt.x - 385, pt.y - 215) <= 75) {
+          if (!d.power) return;
+          pointerState.rightId = e.pointerId;
+          updateRightStick(pt);
+          return;
+        }
+      }, { passive: false });
+
+      svg.addEventListener('pointermove', e => {
+        if (e.pointerId === pointerState.leftId) {
+          updateLeftStick(getPt(e));
+        } else if (e.pointerId === pointerState.rightId) {
+          updateRightStick(getPt(e));
+        }
+      }, { passive: false });
+
+      function releaseStick(e) {
+        if (e.pointerId === pointerState.leftId) {
+          pointerState.leftId = null;
+          // Yaw merkeze yaylanır (0), Gaz dikey pozisyonda durduğu yerde kalır
+          stickL.setAttribute('transform', `translate(0, ${pointerState.leftDy})`);
+          d.yaw = 0;
+        }
+        if (e.pointerId === pointerState.rightId) {
+          pointerState.rightId = null;
+          // Pitch ve Roll merkeze döner (0, 0)
+          stickR.setAttribute('transform', 'translate(0, 0)');
+          d.pitch = 0;
+          d.roll = 0;
+        }
+      }
+
+      svg.addEventListener('pointerup', releaseStick);
+      svg.addEventListener('pointercancel', releaseStick);
+
+      function updateLeftStick(pt) {
+        let dx = pt.x - 175;
+        let dy = pt.y - 215;
+        const len = Math.hypot(dx, dy);
+        if (len > 32) {
+          dx = (dx / len) * 32;
+          dy = (dy / len) * 32;
+        }
+        pointerState.leftDy = dy;
+        stickL.setAttribute('transform', `translate(${dx}, ${dy})`);
+
+        // Gaz: Aşağıda 0, Yukarıda 1
+        d.throttle = Math.max(0, Math.min(1, (32 - dy) / 64));
+        // Yaw: Sola itince -1, Sağa itince +1
+        d.yaw = Math.max(-1, Math.min(1, dx / 32));
+      }
+
+      function updateRightStick(pt) {
+        let dx = pt.x - 385;
+        let dy = pt.y - 215;
+        const len = Math.hypot(dx, dy);
+        if (len > 32) {
+          dx = (dx / len) * 32;
+          dy = (dy / len) * 32;
+        }
+        stickR.setAttribute('transform', `translate(${dx}, ${dy})`);
+
+        // Pitch: Yukarı itilince +1 (İLERİ), Aşağı çekilince -1 (GERİ)
+        d.pitch = -dy / 32;
+        // Roll: Sağa itilince +1 (SAĞA), Sola itilince -1 (SOLA)
+        d.roll = dx / 32;
+      }
+    }
+
+    /* =========================================================================
+       9. GERÇEK KUMANDA VE WEBRTC TABLET BAĞLANTILARI
+       ========================================================================= */
+    function checkGamepads() {
+      const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+      let activeCount = 0;
+      for (let i = 0; i < gps.length; i++) {
+        const gp = gps[i];
+        if (gp && gp.connected && gp.axes && gp.axes.length >= 2) {
+          let hasStickInput = false;
+          for (let k = 0; k < gp.axes.length; k++) {
+            if (Math.abs(gp.axes[k]) > 0.08) { hasStickInput = true; break; }
+          }
+          if (hasStickInput) {
+            activeCount++;
+            const targetDrone = (activeCount === 1) ? drones[0] : (activeCount === 2) ? drones[1] : null;
+            if (targetDrone) {
+              const rawRoll = gp.axes[0] !== undefined ? gp.axes[0] : 0;
+              const rawPitch = gp.axes[1] !== undefined ? gp.axes[1] : 0;
+              const rawThr = gp.axes[2] !== undefined ? gp.axes[2] : 1;
+              const rawYaw = gp.axes[3] !== undefined ? gp.axes[3] : 0;
+
+              targetDrone.roll = (Math.abs(rawRoll) > 0.08) ? rawRoll : 0;
+              targetDrone.pitch = (Math.abs(rawPitch) > 0.08) ? -rawPitch : 0;
+              targetDrone.throttle = Math.max(0, Math.min(1, (1.0 - rawThr) / 2.0));
+              targetDrone.yaw = (Math.abs(rawYaw) > 0.08) ? -rawYaw : 0;
+            }
+          }
+        }
+      }
+
+      const pill = document.getElementById('gamepad-status-pill');
+      if (pill) {
+        if (activeCount > 0) {
+          pill.innerText = `🎮 ${activeCount} Kumanda Aktif ✅`;
+          pill.style.color = '#34d399';
+          pill.style.borderColor = '#10b981';
+        } else {
+          pill.innerText = '🎮 Kumanda: Bağlı Değil';
+          pill.style.color = 'var(--primary)';
+          pill.style.borderColor = 'var(--primary)';
+        }
+      }
+    }
+
+    function setupNetworking() {
+      const myId = 'loom-room-' + UNIQUE_ROOM_CODE;
+      try {
+        const peer = new Peer(myId);
+        peer.on('connection', conn => {
+          conn.on('data', data => {
+            handleTablet(data);
+          });
+        });
+      } catch(e) {}
+
+      try {
+        const bc = new BroadcastChannel('loom_drone_duo');
+        bc.onmessage = ev => handleTablet(ev.data);
+      } catch(e) {}
+    }
+
+    function handleTablet(data) {
+      if (!data || !data.player) return;
+      const d = drones.find(x => x.id === data.player);
+      if (!d) return;
+
+      d.throttle = data.throttle || 0;
+      d.yaw = data.yaw || 0;
+      d.pitch = data.pitch || 0;
+      d.roll = data.roll || 0;
+
+      // Pilot Adı Güncelleme (Drone Üzerinde Canlı Yazar!)
+      if (data.name && data.name !== d.name) {
+        d.name = data.name;
+        const titleEl = document.getElementById(`title-p${data.player}`);
+        if (titleEl) titleEl.innerText = `${data.name} (${d.lane === 1 ? 'Sol Yol' : 'Sağ Yol'})`;
+        updateDroneNamePlate(d);
+      }
+
+      // Renk Güncelleme
+      if (data.color) {
+        const cHex = parseInt(data.color.replace('#', '0x'));
+        if (d.color !== cHex) {
+          d.color = cHex;
+          d.bodyMeshes.forEach(mat => mat.color.setHex(cHex));
+          if (d.ledLight) d.ledLight.color.setHex(cHex);
+          const av = document.getElementById(`avatar-${data.player}`);
+          if (av) av.style.background = data.color;
+          const box = document.getElementById(`box-p${data.player}`);
+          if (box) box.style.borderColor = data.color;
+          updateDroneNamePlate(d);
+        }
+      }
+      const statEl = document.getElementById(`stat-${data.player}`);
+      if (statEl) statEl.innerText = 'Tablet Bağlı 🟢';
+    }
+
+    function startRaceCountdown() {
+      if (raceStatus === 'racing') return;
+      resetRace();
+      raceStatus = 'racing';
+      raceStartTime = performance.now();
+      const stEl = document.getElementById('race-state-txt');
+      if (stEl) stEl.innerText = 'YARIŞ DEVAM EDİYOR';
+      AudioSynth.beep(880, 0.3);
+    }
+
+    function resetRace() {
+      raceStatus = 'idle';
+      raceTimer = 0;
+      const tmrEl = document.getElementById('race-timer');
+      if (tmrEl) tmrEl.innerText = '00:00.0';
+      const stEl = document.getElementById('race-state-txt');
+      if (stEl) stEl.innerText = 'YARIŞA HAZIR';
+      document.getElementById('winner-modal').classList.remove('show');
+
+      drones[0].pos.set(-4.5, 0.08, -20);
+      drones[0].vel.set(0, 0, 0);
+      drones[0].rot.set(0, 0, 0);
+      drones[0].nextGate = 0;
+      drones[0].crashes = 0;
+      drones[0].finished = false;
+      const g1 = document.getElementById('gate-1');
+      if (g1) g1.innerText = '0 / 3';
+
+      drones[1].pos.set(4.5, 0.08, -20);
+      drones[1].vel.set(0, 0, 0);
+      drones[1].rot.set(0, 0, 0);
+      drones[1].nextGate = 0;
+      drones[1].crashes = 0;
+      drones[1].finished = false;
+      const g2 = document.getElementById('gate-2');
+      if (g2) g2.innerText = '0 / 3';
+    }
+
+    function toggleQrModal(show) {
+      const m = document.getElementById('qr-modal');
+      m.classList.toggle('show', show);
+      if (show) {
+        const box = document.getElementById('qrcode-box');
+        box.innerHTML = '';
+        const url = window.location.href.replace('drone_duo_arena.html', 'kumanda.html') + `?room=${UNIQUE_ROOM_CODE}`;
+        new QRCode(box, { text: url, width: 180, height: 180 });
+      }
+    }
+
+    function loop(now) {
+      requestAnimationFrame(loop);
+      const dt = Math.min((now - lastTime) / 1000, 0.08);
+      lastTime = now;
+
+      checkGamepads();
+      updatePhysics(dt);
+      renderSplitScreen();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      init3D();
+      setupNetworking();
+      setupOnboardController(1);
+      setupOnboardController(2);
+      loop(performance.now());
+    });
+  </script>
+</body>
+</html>
