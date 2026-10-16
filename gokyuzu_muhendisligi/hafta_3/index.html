@@ -33,7 +33,16 @@
       overflow: hidden;
       width: 100vw; height: 100vh;
       display: flex; flex-direction: column;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    ::selection {
+      background: rgba(56, 189, 248, 0.45);
+      color: #ffffff;
+    }
+    .portal-nav-btn, .grade-badge, .tool-btn, .nav-btn, .slide-counter, .lock-btn {
       user-select: none;
+      -webkit-user-select: none;
     }
 
     /* Top Progress Bar */
@@ -292,11 +301,64 @@
       -webkit-touch-callout: none !important;
       -webkit-tap-highlight-color: transparent !important;
     }
-    body {
-      -webkit-user-select: none !important;
-      -moz-user-select: none !important;
-      -ms-user-select: none !important;
-      user-select: none !important;
+    /* Görsel Büyütme (Lightbox) Stilleri */
+    #image-lightbox-modal {
+      position: fixed; inset: 0;
+      background: rgba(4, 8, 18, 0.88);
+      backdrop-filter: blur(12px);
+      z-index: 10000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s;
+      padding: 24px;
+    }
+    #image-lightbox-modal.active {
+      opacity: 1; pointer-events: auto; visibility: visible;
+    }
+    #lightbox-img-container {
+      position: relative;
+      max-width: 94vw; max-height: 90vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #lightbox-img {
+      max-width: 92vw; max-height: 84vh;
+      width: auto; height: auto;
+      object-fit: contain;
+      border-radius: 16px;
+      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.9);
+      border: 2.5px solid rgba(255, 255, 255, 0.25);
+      transform: scale(0.96);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #image-lightbox-modal.active #lightbox-img {
+      transform: scale(1);
+    }
+    #lightbox-close-btn {
+      position: absolute; top: 18px; right: 24px;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      color: #ffffff; font-size: 22px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+      z-index: 10001;
+    }
+    #lightbox-close-btn:hover {
+      background: #ef4444; border-color: #f87171; transform: scale(1.1);
+    }
+    #lightbox-caption {
+      margin-top: 12px; font-size: 14.5px; font-weight: 700;
+      color: #e2e8f0; text-align: center; max-width: 80vw;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .slide img, .hero-centered-card img, .fun-box img {
+      cursor: zoom-in;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .slide img:hover, .hero-centered-card img:hover, .fun-box img:hover {
+      filter: brightness(1.06);
     }
     img:not([draggable="true"]) {
       -webkit-user-drag: none;
@@ -1483,31 +1545,43 @@
     </div>
   </div>
 
+  <!-- Görsel Büyütme (Lightbox) Modalı -->
+  <div id="image-lightbox-modal" onclick="closeLightbox(event)">
+    <button id="lightbox-close-btn" onclick="closeLightbox(event)" title="Kapat (ESC veya Dışarı Tıkla)">✕</button>
+    <div id="lightbox-img-container" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="">
+      <div id="lightbox-caption"></div>
+    </div>
+  </div>
+
   <script>
-    /* ===== AKILLI TAHTA KORUMASI: SAĞ TIK VE UZUN BASMA (İNCELE) MENÜSÜNÜ ENGELLEME ===== */
-    window.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }, { capture: true, passive: false });
+    function openLightbox(src, alt) {
+      const modal = document.getElementById('image-lightbox-modal');
+      const img = document.getElementById('lightbox-img');
+      const caption = document.getElementById('lightbox-caption');
+      if (!modal || !img) return;
+      img.src = src;
+      img.alt = alt || '';
+      if (caption) caption.textContent = alt || '';
+      modal.classList.add('active');
+    }
 
-    document.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }, { capture: true, passive: false });
+    function closeLightbox(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const modal = document.getElementById('image-lightbox-modal');
+      if (modal) modal.classList.remove('active');
+    }
 
-    window.addEventListener('keydown', function (e) {
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) ||
-        (e.ctrlKey && ['u', 'U', 's', 'S'].includes(e.key))
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-    }, { capture: true });
+    function initImageZoom() {
+      document.querySelectorAll('.slide img, main img, .hero-centered-card img, .fun-box img').forEach(img => {
+        if (img.classList.contains('no-zoom') || img.dataset.zoomBound) return;
+        img.dataset.zoomBound = 'true';
+        img.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openLightbox(img.src, img.alt || img.getAttribute('title') || '');
+        });
+      });
+    }
 
     let currentSlide = 1;
     const totalSlides = 7;
@@ -1762,7 +1836,7 @@
         case 'n': case 'N': e.preventDefault(); toggleNotes(); break;
         case 'o': case 'O': e.preventDefault(); toggleOverview(); break;
         case 'm': case 'M': e.preventDefault(); toggleSound(); break;
-        case 'Escape': toggleOverview(false); const dr = document.getElementById('notes-drawer'); if (dr) dr.classList.remove('open'); break;
+        case 'Escape': closeLightbox(); toggleOverview(false); const dr = document.getElementById('notes-drawer'); if (dr) dr.classList.remove('open'); break;
       }
     });
 
@@ -2154,7 +2228,11 @@
     function initPresentation() {
       updateSlide();
       renderMillionaire();
+      initImageZoom();
     }
+
+    // Akıllı Tahta Sağ Tık / Uzun Basma Engelleme
+    window.addEventListener('contextmenu', e => e.preventDefault());
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initPresentation);

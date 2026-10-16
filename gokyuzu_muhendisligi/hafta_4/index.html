@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loom Akademi • Gökyüzü Mühendisliği - 4. Hafta: Kumanda Hassasiyeti & Çifte Yarış Arenası</title>
+  <title>Loom Akademi • Gökyüzü Mühendisliği - 4. Hafta: Kumanda Hassasiyeti & FPV Skydive Simülasyonu</title>
   <style>
     :root {
       --primary: #38bdf8;
@@ -33,7 +33,16 @@
       overflow: hidden;
       width: 100vw; height: 100vh;
       display: flex; flex-direction: column;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    ::selection {
+      background: rgba(56, 189, 248, 0.45);
+      color: #ffffff;
+    }
+    .portal-nav-btn, .grade-badge, .tool-btn, .nav-btn, .slide-counter, .lock-btn {
       user-select: none;
+      -webkit-user-select: none;
     }
 
     /* Top Progress Bar */
@@ -376,6 +385,66 @@
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     #smartboard-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Görsel Büyütme (Lightbox) Stilleri */
+    #image-lightbox-modal {
+      position: fixed; inset: 0;
+      background: rgba(4, 8, 18, 0.88);
+      backdrop-filter: blur(12px);
+      z-index: 10000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s;
+      padding: 24px;
+    }
+    #image-lightbox-modal.active {
+      opacity: 1; pointer-events: auto; visibility: visible;
+    }
+    #lightbox-img-container {
+      position: relative;
+      max-width: 94vw; max-height: 90vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #lightbox-img {
+      max-width: 92vw; max-height: 84vh;
+      width: auto; height: auto;
+      object-fit: contain;
+      border-radius: 16px;
+      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.9);
+      border: 2.5px solid rgba(255, 255, 255, 0.25);
+      transform: scale(0.96);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #image-lightbox-modal.active #lightbox-img {
+      transform: scale(1);
+    }
+    #lightbox-close-btn {
+      position: absolute; top: 18px; right: 24px;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      color: #ffffff; font-size: 22px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+      z-index: 10001;
+    }
+    #lightbox-close-btn:hover {
+      background: #ef4444; border-color: #f87171; transform: scale(1.1);
+    }
+    #lightbox-caption {
+      margin-top: 12px; font-size: 14.5px; font-weight: 700;
+      color: #e2e8f0; text-align: center; max-width: 80vw;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .slide img, .hero-centered-card img, .fun-box img {
+      cursor: zoom-in;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .slide img:hover, .hero-centered-card img:hover, .fun-box img:hover {
+      filter: brightness(1.06);
+    }
   </style>
 </head>
 <body oncontextmenu="return false;">
@@ -391,11 +460,10 @@
         <span>Loom Portalı</span>
       </a>
       <div class="grade-badge">✈️ 4. HAFTA</div>
-      <div class="brand-title">LOOM AKADEMİ • GÖKYÜZÜ MÜHENDİSLERİ <span>• 4. HAFTA: KUMANDA HASSASİYETİ & ÇİFTE YARIŞ</span></div>
+      <div class="brand-title">LOOM AKADEMİ • GÖKYÜZÜ MÜHENDİSLERİ <span>• 4. HAFTA: KUMANDA HASSASİYETİ & FPV SKYDIVE</span></div>
     </div>
     <div class="header-tools">
       <a href="sinif_simulasyonu.html" target="_blank" class="tool-btn" style="text-decoration:none;" title="Sınıf Simülasyonu (Yeni Sekme)">🏫</a>
-      <a href="drone_duo_arena.html" target="_blank" class="tool-btn" style="text-decoration:none;" title="Çifte Yarış Arenası (Yeni Sekme)">🏁</a>
       <button class="tool-btn" id="btn-nav-lock" onclick="toggleSlideLock()" title="Sayfayı Kilitle / Kilidi Aç (L)">🔓</button>
       <button class="tool-btn" id="btn-sound" onclick="toggleSound()" title="Sesi Aç/Kapat">🔊</button>
       <button class="tool-btn" id="btn-notes" onclick="toggleNotes()" title="Öğretmen Notları (N)">📋</button>
@@ -411,8 +479,8 @@
       <!-- ==================== SLAYT 1: SOLDA GEÇEN HAFTA, SAĞDA BU HAFTA ==================== -->
       <section class="slide active" data-slide="1">
         <div class="slide-badge">🚁 4. HAFTA • HANGAR AÇILIŞI</div>
-        <h1 class="slide-title">Kuş Tüyü Dokunuşu & Çifte Yarış Arenası ⚡🎮</h1>
-        <p class="slide-subtitle">Kumanda hassasiyeti, kontrollü kalkış-iniş ve tabletlerle akıllı tahta yarışları!</p>
+        <h1 class="slide-title">Kuş Tüyü Dokunuşu & Tablette FPV Skydive Simülasyonu 🎮📱</h1>
+        <p class="slide-subtitle">Kumanda hassasiyeti, kontrollü kalkış-iniş ve tabletlerle FPV Skydive uçuş antrenmanı!</p>
 
         <div class="slide-content">
           <!-- SOL TARAF: GEÇEN HAFTANIN HATIRLATMASI (3. HAFTA) -->
@@ -475,17 +543,17 @@
 
                   <!-- 2. Ders -->
                   <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--emerald-green);">
-                    <div style="font-size: 11px; color: var(--emerald-green); font-weight: 800;">2. DERS: ÇİFTE YARIŞ ARENASI</div>
-                    <strong style="color: #fff; font-size: 14px;">🏁 Tablet Kumandalarla 2 Oyunculu Yarış</strong>
+                    <div style="font-size: 11px; color: var(--emerald-green); font-weight: 800;">2. DERS: TABLETTE FPV SİMÜLASYONU</div>
+                    <strong style="color: #fff; font-size: 14px;">🎮 FPV Skydive Uygulaması ile Uçuş</strong>
                     <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 3px; line-height: 1.35;">
-                      Akıllı tahtada açılan odaya tabletlerle bağlanıyoruz. Cisimlerin içinden geçmeden 4 kapılı parkuru ilk bitiren kazanıyor!
+                      Play Store üzerinden tabletlerimize yüklediğimiz FPV Skydive uygulamasını açıyoruz! Geniş açık alanda serbest uçuş ve kapı geçiş antrenmanı yapıyoruz.
                     </p>
                   </div>
                 </div>
               </div>
 
               <div style="background: rgba(16,185,129,0.15); padding: 8px 12px; border-radius: 8px; font-size: 12px; color: #a7f3d0;">
-                ⭐ <strong>Hedef:</strong> Tavana çarpmadan uçmak & Usta Pilot kaşesini almak!
+                ⭐ <strong>Hedef:</strong> Tavana çarpmadan dengeli kalkış yapmak & FPV Skydive'da akıcı uçuş becerisi kazanmak!
               </div>
             </div>
           </div>
@@ -605,163 +673,190 @@
       </section>
 
       <!-- ==================== SLAYT 4: KUMANDA TUTUŞ SANATI ==================== -->
-      <section class="slide" data-slide="4">
+      <section class="slide" data-slide="4" style="padding: 14px 26px;">
         <div class="slide-badge">🖐️ PİLOTAJ TEKNİĞİ</div>
-        <h1 class="slide-title">Kumanda Tutuş Sanatı: Kıstırma (Pinch) vs Başparmak (Thumb) 🎮</h1>
-        <p class="slide-subtitle">Oyun konsolu gibi mi tutmalıyız, yoksa bir cerrah gibi mi?</p>
+        <h1 class="slide-title" style="font-size: 25px; margin-bottom: 2px;">Kumanda Tutuş Sanatı: Kıstırma (Pinch) vs Başparmak (Thumb) 🎮</h1>
+        <p class="slide-subtitle" style="font-size: 13.5px; margin-bottom: 6px;">Oyun konsolu gibi mi tutmalıyız, yoksa bir cerrah gibi mi?</p>
 
-        <div class="slide-content">
+        <div class="slide-content" style="gap: 16px;">
+          <!-- SOL SÜTUN: KISTIRMA TUTUŞU -->
           <div class="col-half">
-            <div class="fun-box" style="flex: 1; border-color: var(--emerald-green); justify-content: space-between;">
-              <div>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                  <h3 style="font-size: 18px; color: var(--emerald-green); display: flex; align-items: center; gap: 8px;">
-                    <span>🤏</span> Kıstırma Tutuşu (Pinch Grip)
-                  </h3>
-                  <span style="font-size: 11px; background: rgba(16,185,129,0.25); color: #86efac; padding: 2px 8px; border-radius: 8px; font-weight: 800;">ALTIN KURAL ⭐</span>
-                </div>
-                <p style="font-size: 14px; color: #cbd5e1; line-height: 1.45; margin-bottom: 12px;">
-                  Kolu başparmak ve işaret parmağı ile kurşun kalem tutar gibi araya sıkıştırmaktır.
-                </p>
-                <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #94a3b8;">
-                  <li>✔️ <strong>Cerrah Hassasiyeti:</strong> Milimetrik gaz ayarı sağlar.</li>
-                  <li>✔️ <strong>Titreme Engeli:</strong> Kolun aniden fırlamasını önler.</li>
-                  <li>✔️ <strong>Tavan Çarpmalarını Önler:</strong> Aşırı gaz verme riskini %80 azaltır!</li>
-                </ul>
+            <div class="fun-box" style="flex: 1; border-color: var(--emerald-green); justify-content: space-between; padding: 10px 14px; background: rgba(22, 31, 54, 0.96);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <h3 style="font-size: 16px; color: var(--emerald-green); display: flex; align-items: center; gap: 6px;">
+                  <span>🤏</span> Kıstırma Tutuşu (Pinch Grip)
+                </h3>
+                <span style="font-size: 11px; background: rgba(16,185,129,0.25); color: #86efac; padding: 2px 8px; border-radius: 6px; font-weight: 800;">ALTIN KURAL ⭐</span>
               </div>
-              <div style="background: rgba(16,185,129,0.15); padding: 8px 12px; border-radius: 8px; font-size: 12px; color: #a7f3d0;">
-                💡 <strong>Tavsiye:</strong> Yarışta ve simülasyonda iki parmakla kıstırarak uçun!
+              
+              <!-- DEVA BÜYÜK GÖRSEL -->
+              <div style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; padding: 2px 0;">
+                <img src="images/kistirma_tutusu.png" alt="Kıstırma Tutuşu (Pinch Grip)" style="height: 435px; max-height: 440px; width: auto; max-width: 100%; object-fit: contain; border-radius: 14px; border: 2.5px solid rgba(52, 211, 153, 0.55); box-shadow: 0 10px 30px rgba(0,0,0,0.65);">
+              </div>
+
+              <!-- GÖRSEL ALTI AÇIKLAMA -->
+              <div style="background: rgba(16,185,129,0.16); border: 1.5px solid rgba(52, 211, 153, 0.4); padding: 7px 12px; border-radius: 10px; font-size: 13px; color: #a7f3d0; text-align: center; margin-top: 4px; font-weight: 700;">
+                💡 <strong>Cerrah Hassasiyeti:</strong> Kurşun kalem tutar gibi araya sıkıştırın • Tavan çarpmalarını %80 önler!
               </div>
             </div>
           </div>
 
+          <!-- SAĞ SÜTUN: BAŞPARMAK TUTUŞU -->
           <div class="col-half">
-            <div class="fun-box" style="flex: 1; border-color: var(--sunny-yellow); justify-content: space-between;">
-              <div>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                  <h3 style="font-size: 18px; color: var(--sunny-yellow); display: flex; align-items: center; gap: 8px;">
-                    <span>👍</span> Başparmak Tutuşu (Thumb Grip)
-                  </h3>
-                  <span style="font-size: 11px; background: rgba(251,191,36,0.2); color: #fde68a; padding: 2px 8px; border-radius: 8px; font-weight: 800;">OYUN KONSOLLARI</span>
-                </div>
-                <p style="font-size: 14px; color: #cbd5e1; line-height: 1.45; margin-bottom: 12px;">
-                  PlayStation kolundaki gibi sadece başparmağın altıyla kolu itmektir.
-                </p>
-                <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #94a3b8;">
-                  <li>⚠️ <strong>Refleks Odaklı:</strong> Hızlıdır ancak milimetrik kontrol zordur.</li>
-                  <li>⚠️ <strong>Fırlama Riski:</strong> Heyecanlanınca gazı aniden sonuna kadar itebilirsiniz!</li>
-                </ul>
+            <div class="fun-box" style="flex: 1; border-color: var(--sunny-yellow); justify-content: space-between; padding: 10px 14px; background: rgba(22, 31, 54, 0.96);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <h3 style="font-size: 16px; color: var(--sunny-yellow); display: flex; align-items: center; gap: 6px;">
+                  <span>👍</span> Başparmak Tutuşu (Thumb Grip)
+                </h3>
+                <span style="font-size: 11px; background: rgba(251,191,36,0.2); color: #fde68a; padding: 2px 8px; border-radius: 6px; font-weight: 800;">OYUN KONSOLLARI 🎮</span>
               </div>
-              <div style="background: rgba(245,158,11,0.15); padding: 8px 12px; border-radius: 8px; font-size: 12px; color: #fde68a;">
-                🎮 <strong>Sonuç:</strong> Gerçek pilotlar her zaman kıstırma tutuşunu tercih eder.
+
+              <!-- DEVA BÜYÜK GÖRSEL -->
+              <div style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; padding: 2px 0;">
+                <img src="images/basparmak_tutusu.png" alt="Başparmak Tutuşu (Thumb Grip)" style="height: 435px; max-height: 440px; width: auto; max-width: 100%; object-fit: contain; border-radius: 14px; border: 2.5px solid rgba(251, 191, 36, 0.55); box-shadow: 0 10px 30px rgba(0,0,0,0.65);">
+              </div>
+
+              <!-- GÖRSEL ALTI AÇIKLAMA -->
+              <div style="background: rgba(245,158,11,0.16); border: 1.5px solid rgba(251, 191, 36, 0.4); padding: 7px 12px; border-radius: 10px; font-size: 13px; color: #fde68a; text-align: center; margin-top: 4px; font-weight: 700;">
+                ⚠️ <strong>Fırlama Riski:</strong> PlayStation kolu gibidir • Hızlı refleks sağlar fakat milimetrik kontrol zordur!
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ==================== SLAYT 5: 2. DERS — MÜKEMMEL ORTALANMIŞ YARIŞ BRİFİNGİ ==================== -->
+      <!-- ==================== SLAYT 5: 2. DERS — TABLETTE FPV SKYDIVE ==================== -->
       <section class="slide" data-slide="5">
-        <div class="slide-badge">🏆 2. DERS BÜYÜK YARIŞ • TABLET ODASI</div>
-        <h1 class="slide-title">Çifte Drone Yarış Arenası: Tabletlerle Odaya Katılın! 🏁📱</h1>
-        <p class="slide-subtitle">Yan yana iki şeritli v2 FPV açık hava pisti! 3 kapıyı geçip bitiş çizgisine ilk ulaşan kazanır!</p>
+        <div class="slide-badge">📱 2. DERS UYGULAMASI • TABLET KOKPİTİ</div>
+        <h1 class="slide-title">Tablette FPV Skydive Simülatörü: Gerçekçi Açık Hava Uçuşu! 🎮🚁</h1>
+        <p class="slide-subtitle">Play Store üzerinden tabletlerimize yüklediğimiz FPV Skydive ile açık dünya haritasında uçuş antrenmanına başlıyoruz!</p>
 
         <div class="slide-content">
           <div class="col-full">
-            <div class="hero-centered-card racing">
-              <!-- Üst 3 Yarış Adımı -->
+            <div class="hero-centered-card" style="background: radial-gradient(circle at 50% 30%, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.96) 100%); border-color: rgba(56, 189, 248, 0.45);">
+              <!-- Üst 3 Uygulama Adımı -->
               <div class="feature-steps-row">
                 <div class="step-badge-box">
-                  <span class="step-badge-icon">📱</span>
-                  <div class="step-badge-title">1. QR Kodu Okut</div>
-                  <div class="step-badge-desc">Tablet kamerasıyla tahtadaki kodu tara ve kumandayı aç.</div>
-                </div>
-                <div class="step-badge-box" style="border-color: var(--sunny-yellow);">
-                  <span class="step-badge-icon">🎨</span>
-                  <div class="step-badge-title" style="color: var(--sunny-yellow);">2. Renk & Slot Seç</div>
-                  <div class="step-badge-desc">Kendi pilot rengini seç (Kırmızı, Mavi, Sarı, Yeşil, Mor, Turuncu).</div>
+                  <span class="step-badge-icon">📲</span>
+                  <div class="step-badge-title">1. Uygulamayı Başlat</div>
+                  <div class="step-badge-desc">Tabletinizde <strong>FPV Skydive</strong> uygulamasını açın ve tableti iki elinizle yatay tutun.</div>
                 </div>
                 <div class="step-badge-box" style="border-color: var(--emerald-green);">
-                  <span class="step-badge-icon">🏁</span>
-                  <div class="step-badge-title" style="color: var(--emerald-green);">3. 3 Kapı + Bitiş</div>
-                  <div class="step-badge-desc">Yan yana şeritte kapıları sırayla geç, bitiş çizgisini ilk geçip kazan!</div>
+                  <span class="step-badge-icon">🤏</span>
+                  <div class="step-badge-title" style="color: var(--emerald-green);">2. Kıstırma ile Kalkış</div>
+                  <div class="step-badge-desc">Sol gaz koluna (Throttle) nazikçe dokunun. Kuş tüyü kuralıyla sakin ve kontrollü havalanın!</div>
+                </div>
+                <div class="step-badge-box" style="border-color: var(--sunny-yellow);">
+                  <span class="step-badge-icon">🎯</span>
+                  <div class="step-badge-title" style="color: var(--sunny-yellow);">3. Serbest Uçuş & Kapılar</div>
+                  <div class="step-badge-desc">Açık hava haritasında süzülün, binaların etrafından dönün ve parkur kapılarından geçin!</div>
                 </div>
               </div>
 
-              <!-- Orta Çift Başlatma Buton Grubu -->
-              <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 12px 0;">
-                <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center;">
-                  <a href="drone_duo_arena.html" target="_blank" class="btn-giant-launcher racing">
-                    <span>🏁</span> Akıllı Tahta Yarış Arenasını Başlat <span>➔</span>
-                  </a>
-                  <a href="kumanda.html" target="_blank" class="btn-sub-launcher">
-                    <span>📱</span> Tablet Kumandası (kumanda.html)
-                  </a>
+              <!-- Orta Öne Çıkan Görev Kartı -->
+              <div style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(56, 189, 248, 0.35); border-radius: 18px; padding: 20px 32px; max-width: 920px; width: 100%; margin: 8px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 8px;">
+                  <span style="font-size: 30px;">🎮📱</span>
+                  <span style="font-size: 21px; font-weight: 900; color: #ffffff;">Bugünkü Tablet Görevi: Kas Hafızası & Yumuşak Manevra</span>
                 </div>
-                <div style="font-size: 13px; color: #86efac; font-weight: 700;">
-                  ✨ v2 Doğal Çim ve Ağaçlar Ortamı • Katı Kapı Çerçeveleri • Tabletle Canlı Renk Değişimi
-                </div>
+                <p style="font-size: 14.5px; color: #cbd5e1; line-height: 1.5; max-width: 820px; margin: 0 auto; text-align: center;">
+                  Gerçek drone'u kırma veya bataryayı bitirme kaygısı yok! FPV Skydive simülasyonunda gaz ve yön kollarını milimetrik kullanarak havada takla atmadan dengede kalmayı öğreniyoruz. Usta pilot ani hareket etmez, kumandayı adeta okşar!
+                </p>
               </div>
 
               <!-- Alt Bilgilendirme Şeridi -->
-              <div style="display: flex; gap: 20px; font-size: 12.5px; color: #cbd5e1; border-top: 1px solid rgba(255,255,255,0.14); padding-top: 10px; width: 100%; justify-content: center;">
-                <span>🛑 Kapı Direklerine Çarpınca Geri Sekme</span>
+              <div style="display: flex; gap: 20px; font-size: 12.5px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 10px; width: 100%; justify-content: center;">
+                <span>✨ Google Play Store • Hazır Profesyonel Simülasyon</span>
                 <span>•</span>
-                <span>🏆 Canlı Süre & Kazanan İlanı</span>
+                <span>🪶 Kuş Tüyü Gaz: Ani İtme Yok, Milimetrik Ayar</span>
                 <span>•</span>
-                <span>🎮 Tahtaya Takılan USB LiteRadio Kumandalar da Yarışabilir</span>
+                <span>🔁 Sınırsız Tekrar: Düşsen de Anında Yeniden Havalan!</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ==================== SLAYT 6: UÇUŞ KARNESİ & BÜYÜK MÜJDE ==================== -->
+      <!-- ==================== SLAYT 6: GÜNÜN DEĞERLENDİRMESİ & 5. HAFTA ÖN BAKIŞ ==================== -->
       <section class="slide" data-slide="6">
-        <div class="slide-badge">🎖️ GÜNÜN DEĞERLENDİRMESİ • LİSANS DEFTERİ</div>
-        <h1 class="slide-title">Pilot Uçuş Karnesi & Gelecek Haftanın Sürprizi! 📜✨</h1>
-        <p class="slide-subtitle">Tebrikler pilotlar! 4. Hafta eğitimini başarıyla tamamladınız!</p>
+        <div class="slide-badge">🎖️ GÜNÜN DEĞERLENDİRMESİ & GELECEK HAFTA</div>
+        <h1 class="slide-title">Günün Özeti & 5. Hafta: Uçuş Modlarına Giriş! 🚀✨</h1>
+        <p class="slide-subtitle">Tebrikler pilotlar! 4. Hafta kumanda hassasiyeti ve tablet simülasyonu etabını tamamladınız!</p>
 
         <div class="slide-content">
+          <!-- SOL SÜTUN: BUGÜNÜN KAZANIMLARI -->
           <div class="col-half">
-            <div class="fun-box" style="flex: 1; justify-content: space-between; border-color: var(--primary);">
+            <div class="fun-box" style="flex: 1; border-color: var(--primary); justify-content: space-between;">
               <div>
-                <h3 style="font-size: 18px; color: var(--primary); margin-bottom: 10px;">
-                  📋 4. Hafta Resmi Mührü
-                </h3>
-                <p style="font-size: 13.5px; color: #cbd5e1; line-height: 1.45; margin-bottom: 14px;">
-                  Resmi pilot karnelerinizdeki <strong>4. Hafta kutucuğuna</strong> bugünkü başarılarınız mühürlendi:
-                </p>
-                <div style="background: rgba(15,23,42,0.9); border: 2px dashed var(--sunny-yellow); border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 12px;">
-                  <div style="font-size: 28px; margin-bottom: 4px;">🦅⭐</div>
-                  <div style="font-size: 15px; font-weight: 900; color: var(--sunny-yellow);">USTA PİLOT MÜHRÜ</div>
-                  <div style="font-size: 12px; color: #cbd5e1; margin-top: 2px;">Kumanda Hassasiyeti & Kontrollü Kalkış-İniş</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(56,189,248,0.3); padding-bottom: 8px; margin-bottom: 12px;">
+                  <h3 style="font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                    <span>⭐</span> Bugünkü Uçuş Başarılarımız
+                  </h3>
+                  <span style="font-size: 11px; background: rgba(56,189,248,0.2); color: #7dd3fc; padding: 2px 8px; border-radius: 8px; font-weight: 800;">4. HAFTA ÖZETİ</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--primary);">
+                    <strong style="color: #fff; font-size: 13.5px;">🪶 Kuş Tüyü Gaz Hassasiyeti:</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 3px; line-height: 1.35;">
+                      Gaz kolunu milimetrik açarak tavana ve lambalara çarpmadan 1.0m–1.5m yeşil bölgede sabit durmayı (Hover) öğrendik.
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--emerald-green);">
+                    <strong style="color: var(--emerald-green); font-size: 13.5px;">🤏 Kıstırma (Pinch) Tutuş Sanatı:</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 3px; line-height: 1.35;">
+                      Kumandayı bir cerrah hassasiyetiyle iki parmak arasında kavrayarak kontrol hakimiyetimizi ve reflekslerimizi geliştirdik.
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--sunny-yellow);">
+                    <strong style="color: var(--sunny-yellow); font-size: 13.5px;">📱 Tablette FPV Skydive Deneyimi:</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 3px; line-height: 1.35;">
+                      Açık alanda serbest uçuş ve kapı geçiş alıştırmalarıyla parmak kas hafızamızı güvenle güçlendirdik.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <a href="../hafta_3/Pilot_Ucus_Gunlugu_A4.html" target="_blank" class="nav-btn primary" style="text-align: center; text-decoration: none; padding: 10px;">
-                🖨️ Pilot Uçuş Günlüğünü Yazdır (A4)
-              </a>
+
+              <div style="background: rgba(56,189,248,0.12); padding: 10px 14px; border-radius: 10px; font-size: 12.5px; color: #bae6fd; text-align: center;">
+                💡 <strong>Usta Pilot Sözü:</strong> Gerçek usta hız yapan değil, drona havada kuş tüyü gibi sakin hükmedendir!
+              </div>
             </div>
           </div>
 
+          <!-- SAĞ SÜTUN: 5. HAFTA ÖN BAKIŞ -->
           <div class="col-half">
-            <div class="fun-box" style="flex: 1; border-color: var(--emerald-green); justify-content: space-between; background: radial-gradient(circle at top right, rgba(16,185,129,0.2) 0%, rgba(15,23,42,0.95) 100%);">
+            <div class="fun-box" style="flex: 1; border-color: var(--cute-purple); justify-content: space-between; background: radial-gradient(circle at top right, rgba(192,132,252,0.15) 0%, rgba(22,31,54,0.95) 100%);">
               <div>
-                <div style="font-size: 11.5px; font-weight: 800; color: var(--emerald-green); text-transform: uppercase; margin-bottom: 4px;">
-                  🚀 5. HAFTA BÜYÜK SÜRPRİZİ
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(192,132,252,0.3); padding-bottom: 8px; margin-bottom: 12px;">
+                  <h3 style="font-size: 18px; color: var(--cute-purple); display: flex; align-items: center; gap: 8px;">
+                    <span>🚀</span> Gelecek Hafta (5. Hafta) Ne Var?
+                  </h3>
+                  <span style="font-size: 11px; background: rgba(192,132,252,0.25); color: #e9d5ff; padding: 2px 8px; border-radius: 8px; font-weight: 800;">YAKINDA</span>
                 </div>
-                <h3 style="font-size: 21px; color: #ffffff; font-weight: 900; line-height: 1.25; margin-bottom: 10px;">
-                  Yeni Başlangıç Drone'umuz Filomuza Katılıyor! 🎉🚁
-                </h3>
-                <p style="font-size: 13.5px; color: #cbd5e1; line-height: 1.45; margin-bottom: 12px;">
-                  Önümüzdeki hafta sınıfımıza kullanımı çok kolay, otomatik irtifa sabitlemeli (Optical Flow) yepyeni bir eğitim drone'u geliyor!
-                </p>
-                <div style="background: rgba(16,185,129,0.15); border: 1.5px solid var(--emerald-green); border-radius: 12px; padding: 10px 14px; font-size: 12.5px; color: #a7f3d0;">
-                  ✨ <strong>İlk Test Pilotları:</strong> Bugün simülasyonda parmak hassasiyetini kanıtlayan pilotlar, yeni drone'un ilk test uçuşunu yapacak!
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="background: rgba(15,23,42,0.85); padding: 12px 14px; border-radius: 10px; border-left: 3px solid var(--cute-purple);">
+                    <strong style="color: #fff; font-size: 14px;">🧭 Uçuş Modlarını Keşfediyoruz:</strong>
+                    <div style="font-size: 12.5px; color: #cbd5e1; margin-top: 4px; line-height: 1.4;">
+                      • <strong>Açı Modu (Angle/Level):</strong> Bırakınca kendini otomatik düzelten güvenli başlangıç modu.<br>
+                      • <strong>Ufuk Modu (Horizon):</strong> Hem dengeli hem de takla atmaya izin veren melez mod.<br>
+                      • <strong>Akrobasi Modu (Acro/Rate):</strong> Tam manuel kontrol ve sınırsız FPV serbestliği!
+                    </div>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 12px 14px; border-radius: 10px; border-left: 3px solid var(--emerald-green);">
+                    <strong style="color: var(--emerald-green); font-size: 14px;">🎮 Tablet Simülasyonuyla Devam:</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 3px; line-height: 1.4;">
+                      Öğrendiğimiz uçuş modlarının drone üzerindeki etkisini yine tabletlerimizdeki simülasyon üzerinden test edip yeni parkurlarda yarışacağız!
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div style="text-align: center; font-size: 12.5px; color: #94a3b8; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                Gelecek haftaya kadar parmak kas hafızanızı koruyun! 🦅
+
+              <div style="background: rgba(192,132,252,0.15); padding: 10px 14px; border-radius: 10px; font-size: 12.5px; color: #e9d5ff; text-align: center;">
+                🦅 Gelecek haftaya kadar parmak kas hafızanızı ve kıstırma tutuşu alışkanlığınızı koruyun!
               </div>
             </div>
           </div>
@@ -809,13 +904,22 @@
       <div class="overview-card" onclick="goToSlide(1)"><strong>1.</strong> Hangar Açılışı: Geçen Hafta & Bu Hafta</div>
       <div class="overview-card" onclick="goToSlide(2)"><strong>2.</strong> Pilotaj Beyin Fırtınası Soruları</div>
       <div class="overview-card" onclick="goToSlide(3)"><strong>3.</strong> 1. Ders: Sınıf İçi İrtifa Simülasyonu</div>
-      <div class="overview-card" onclick="goToSlide(4)"><strong>4.</strong> Kumanda Tutuş Sanatı (Pinch Grip)</div>
-      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> 2. Ders: Çifte Drone Yarış Arenası</div>
-      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Pilot Uçuş Karnesi & Büyük Müjde</div>
+      <div class="overview-card" onclick="goToSlide(4)"><strong>4.</strong> Kumanda Tutuş Sanatı: Kıstırma vs Başparmak</div>
+      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> 2. Ders: Tablette FPV Skydive Simülatörü</div>
+      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Günün Özeti & 5. Hafta: Uçuş Modları</div>
     </div>
   </div>
 
   <div id="smartboard-toast"></div>
+
+  <!-- Görsel Büyütme (Lightbox) Modalı -->
+  <div id="image-lightbox-modal" onclick="closeLightbox(event)">
+    <button id="lightbox-close-btn" onclick="closeLightbox(event)" title="Kapat (ESC veya Dışarı Tıkla)">✕</button>
+    <div id="lightbox-img-container" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="">
+      <div id="lightbox-caption"></div>
+    </div>
+  </div>
 
   <!-- Slayt Yürütücü Scripti -->
   <script>
@@ -823,16 +927,48 @@
     const totalSlides = 6;
     let isSlideLocked = false;
     let soundEnabled = true;
+
+    function openLightbox(src, alt) {
+      const modal = document.getElementById('image-lightbox-modal');
+      const img = document.getElementById('lightbox-img');
+      const caption = document.getElementById('lightbox-caption');
+      if (!modal || !img) return;
+      img.src = src;
+      img.alt = alt || '';
+      if (caption) caption.textContent = alt || '';
+      modal.classList.add('active');
+    }
+
+    function closeLightbox(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const modal = document.getElementById('image-lightbox-modal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function initImageZoom() {
+      document.querySelectorAll('.slide img, main img, .hero-centered-card img, .fun-box img').forEach(img => {
+        if (img.classList.contains('no-zoom') || img.dataset.zoomBound) return;
+        img.dataset.zoomBound = 'true';
+        img.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openLightbox(img.src, img.alt || img.getAttribute('title') || '');
+        });
+      });
+    }
+
+    /* Akıllı Tahta Sağ Tık / Uzun Basma Engelleme */
+    window.addEventListener('contextmenu', e => e.preventDefault());
+
     let audioCtx = null;
     let toastTimer = null;
 
     const slideNotes = {
-      "1": "<h4>1. Hangar Açılışı: Geçen Hafta & Bu Hafta (5 Dk)</h4><p>Sol taraftaki kutudan geçen haftaki 5 temel organı hızlıca hatırlatın. Sağ tarafta ise bu hafta gerçek drone uçurmayıp simülasyon üzerinden gideceğimizi ve 2. derste tabletlerle yarış yapacağımızı duyurun.</p>",
+      "1": "<h4>1. Hangar Açılışı: Geçen Hafta & Bu Hafta (5 Dk)</h4><p>Sol taraftaki kutudan geçen haftaki 5 temel organı hızlıca hatırlatın. Sağ tarafta ise bu hafta 1. derste sınıf içi irtifa testi yapacağımızı, 2. derste ise tabletlerdeki FPV Skydive uygulamasıyla açık alan uçuş simülasyonuna geçeceğimizi duyurun.</p>",
       "2": "<h4>2. Pilotaj Beyin Fırtınası (7 Dk)</h4><p>Kartlara tıklamadan önce öğrencilere soruyu yöneltin. 'Gazı aniden sonuna kadar itersek ne olur?' tartışmasını yaptırın, ardından kartı açıp mühendislik cevabını pekiştirin.</p>",
       "3": "<h4>3. 1. Ders: Sınıf İçi İrtifa Simülasyonu (25 Dk)</h4><p>'Simülatörü Yeni Sekmede Başlat' butonuna tıklayın. Öğrencileri sırayla tahtaya veya kumandaya alarak yeşil bölgede (1.0m-1.5m) 3 sn hover yaptırın. Tavana çarpma anındaki ses dersi çok eğlenceli kılacaktır.</p>",
-      "4": "<h4>4. Kumanda Tutuş Sanatı (5 Dk)</h4><p>Öğrencilere kumandayı bir PlayStation kolu gibi değil, cerrah gibi başparmak ve işaret parmağı ile 'kıstırarak' tutmalarını gösterin.</p>",
-      "5": "<h4>5. 2. Ders: Çifte Drone Yarış Arenası (30 Dk)</h4><p>'Yarış Arenasını Yeni Sekmede Aç' butonuna basarak odayı açın. Tabletlere kumanda.html sayfasını açtırın veya QR kodu okutun. 2'şerli pilotlar yarışırken diğer öğrenciler kapı hakemliği yapsın.</p>",
-      "6": "<h4>6. Uçuş Karnesi & Yeni Drone Müjdesi (5 Dk)</h4><p>Öğrencilerin uçuş günlüklerine 4. hafta kaşesini vurun. Önümüzdeki hafta kutusundan çıkacak yeni başlangıç drone'unun ilk test pilotları olacaklarını söyleyerek motivasyonu zirveye taşıyın!</p>"
+      "4": "<h4>4. Kumanda Tutuş Sanatı (5 Dk)</h4><p>Görseller üzerinden kıstırma (pinch) ve başparmak (thumb) tutuşlarını karşılaştırın. Öğrencilere bir cerrah gibi iki parmakla kıstırarak kumandayı kavramalarını gösterin.</p>",
+      "5": "<h4>5. 2. Ders: Tablette FPV Skydive Simülasyonu (30 Dk)</h4><p>Öğrencilere tabletlerini açtırıp Play Store üzerinden kurulu olan FPV Skydive uygulamasını başlatmalarını söyleyin. Açık alanda serbest uçuş ve kapı geçiş alıştırmaları yaptırın.</p>",
+      "6": "<h4>6. Günün Özeti & Gelecek Hafta (5 Dk)</h4><p>Günün kazanımlarını özetleyin. 5. haftada drone'un uçuş modlarından (Açı, Ufuk, Acro) bahsedeceğimizi ve tablet üzerinden simülasyon antrenmanlarına devam edeceğimizi müjdeleyerek dersi tamamlayın.</p>"
     };
 
     function initAudio() {
@@ -960,6 +1096,7 @@
 
     window.addEventListener('keydown', e => {
       if (e.target.tagName === 'INPUT') return;
+      if (e.key === 'Escape') closeLightbox();
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') nextSlide();
       if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevSlide();
       if (e.key === 'l' || e.key === 'L') toggleSlideLock();
@@ -968,8 +1105,12 @@
       if (e.key === 'f' || e.key === 'F') toggleFullscreen();
     });
 
+    // Akıllı Tahta Sağ Tık / Uzun Basma Engelleme
+    window.addEventListener('contextmenu', e => e.preventDefault());
+
     window.addEventListener('DOMContentLoaded', () => {
       updateSlide();
+      initImageZoom();
     });
   </script>
 </body>
