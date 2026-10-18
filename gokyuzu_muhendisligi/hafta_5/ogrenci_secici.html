@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gökyüzü Mühendisliği - Akıllı Tahta Pilot Seçici ve Puan Ağacı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0a0e17;
+      --bg-card: rgba(23, 34, 56, 0.9);
+      --cyan: #00f0ff;
+      --blue: #2563eb;
+      --green: #10b981;
+      --red: #ef4444;
+      --gold: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 50% 10%, #172554 0%, var(--bg-dark) 70%);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Üst Kontrol Paneli */
+    header {
+      background: rgba(10, 15, 29, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid rgba(0, 240, 255, 0.2);
+      padding: 12px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    }
+
+    .brand-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      background: linear-gradient(to right, #00f0ff, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Kontrol Butonları */
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    select.class-select {
+      background: #1e293b;
+      color: #fff;
+      border: 1.5px solid var(--cyan);
+      padding: 10px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+      max-width: 280px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      outline: none;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00f0ff, #0284c7);
+      color: #051329;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+
+    .btn-secondary {
+      background: #1e293b;
+      color: #cbd5e1;
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    .btn-leaderboard {
+      background: linear-gradient(135deg, #eab308, #ca8a04);
+      color: #1e1b4b;
+      font-weight: 800;
+      box-shadow: 0 0 18px rgba(234, 179, 8, 0.45);
+      border-color: #fef08a;
+    }
+
+    .btn-leaderboard:hover {
+      box-shadow: 0 0 25px rgba(234, 179, 8, 0.7);
+      transform: translateY(-2px);
+    }
+
+    /* Büyük Çekiliş Butonları */
+    .btn-spin-single {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+      padding: 11px 22px;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+      border: 1px solid #fef08a;
+    }
+
+    .btn-spin-double {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+      padding: 11px 22px;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(2, 132, 199, 0.5);
+      border: 1px solid #7dd3fc;
+    }
+
+    .btn-spin-single:hover, .btn-spin-double:hover {
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+    }
+
+    /* İstatistik Çubuğu */
+    .stats-bar {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 8px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .stats-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .badge-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .badge-dot.blue { background: #38bdf8; box-shadow: 0 0 8px #38bdf8; }
+    .badge-dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+    /* Öğrenci Izgarası (Grid) */
+    main {
+      flex: 1;
+      padding: 24px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .students-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 16px;
+    }
+
+    /* Öğrenci Kartı */
+    .student-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid transparent;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+      min-height: 160px;
+      justify-content: space-between;
+    }
+
+    .student-card:active {
+      transform: scale(0.97);
+    }
+
+    /* 🟢 Yeşil: Bekliyor / Uçuşa Hazır */
+    .student-card.status-ready {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.85) 100%);
+    }
+
+    .student-card.status-ready:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      transform: translateY(-3px);
+    }
+
+    /* 🔵 Mavi: Uçuş Yaptı / Seçildi */
+    .student-card.status-completed {
+      border-color: #0284c7;
+      background: linear-gradient(180deg, rgba(2, 132, 199, 0.25) 0%, rgba(15, 23, 42, 0.9) 100%);
+      box-shadow: 0 0 15px rgba(2, 132, 199, 0.35);
+    }
+
+    /* 🔴 Kırmızı: Gelmeyen / Devamsız */
+    .student-card.status-absent {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(30, 20, 25, 0.7);
+      opacity: 0.6;
+      filter: grayscale(40%);
+    }
+
+    /* Çekiliş Canlı Parlama */
+    .student-card.anim-highlight {
+      border-color: #f59e0b !important;
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.7) 0%, rgba(234, 88, 12, 0.95) 100%) !important;
+      transform: scale(1.08) !important;
+      box-shadow: 0 0 35px #f59e0b !important;
+      z-index: 10;
+    }
+
+    .student-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .student-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      word-break: break-word;
+      margin-bottom: 6px;
+    }
+
+    .status-pill {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .student-card.status-completed .status-pill {
+      background: #0284c7;
+      color: white;
+    }
+
+    .student-card.status-absent .status-pill {
+      background: #dc2626;
+      color: white;
+    }
+
+    /* Yıldız Puan Göstergesi (Kartın altında) */
+    .student-stars {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-top: 8px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      font-size: 13px;
+      color: #fbbf24;
+      font-weight: 800;
+    }
+
+    .student-stars.no-score {
+      color: #64748b;
+      border-color: rgba(255,255,255,0.06);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Modal Genel Stili */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 10, 20, 0.85);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #111827;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 50px rgba(0, 240, 255, 0.3);
+      border-radius: 24px;
+      padding: 28px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      color: white;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .modal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      color: var(--cyan);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 28px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #94a3b8;
+    }
+
+    .form-control {
+      width: 100%;
+      background: #1f2937;
+      border: 1px solid #374151;
+      padding: 12px;
+      border-radius: 10px;
+      color: white;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--cyan);
+    }
+
+    /* Kazanan / Seçilen Pilot Duyuru Ekranı */
+    .winner-modal {
+      text-align: center;
+      padding: 20px 10px;
+    }
+
+    .winner-badge {
+      display: inline-block;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      letter-spacing: 2px;
+      color: #00f0ff;
+      background: rgba(0, 240, 255, 0.15);
+      padding: 6px 16px;
+      border-radius: 30px;
+      margin-bottom: 14px;
+      border: 1px solid var(--cyan);
+    }
+
+    .winner-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 34px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 25px rgba(0, 240, 255, 0.8);
+      margin-bottom: 10px;
+    }
+
+    .winner-duo-names {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .winner-duo-box {
+      background: rgba(2, 132, 199, 0.2);
+      border: 2px solid #38bdf8;
+      border-radius: 16px;
+      padding: 14px 20px;
+      min-width: 170px;
+    }
+
+    .winner-duo-label {
+      font-size: 12px;
+      color: #93c5fd;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .winner-duo-pilot {
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+    }
+
+    /* Yıldız Puanlama Modalı */
+    .star-rating-box {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1.5px solid rgba(245, 158, 11, 0.4);
+      border-radius: 18px;
+      padding: 20px;
+      text-align: center;
+      margin: 16px 0;
+    }
+
+    .star-picker {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .star-btn {
+      background: #1e293b;
+      border: 1.5px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .star-btn:hover, .star-btn.active {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #1e1b4b;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+      border-color: #fef08a;
+      transform: scale(1.05);
+    }
+
+    /* Puan Ağacı (Liderlik / Sıralama Tablosu) */
+    .leaderboard-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: #1e293b;
+      border: 1.5px solid rgba(255,255,255,0.08);
+      transition: all 0.2s;
+    }
+
+    .leaderboard-item.rank-1 {
+      border-color: #eab308;
+      background: linear-gradient(90deg, rgba(234, 179, 8, 0.25) 0%, #1e293b 100%);
+      box-shadow: 0 0 20px rgba(234, 179, 8, 0.3);
+    }
+
+    .leaderboard-item.rank-2 {
+      border-color: #94a3b8;
+      background: linear-gradient(90deg, rgba(148, 163, 184, 0.2) 0%, #1e293b 100%);
+    }
+
+    .leaderboard-item.rank-3 {
+      border-color: #b45309;
+      background: linear-gradient(90deg, rgba(180, 83, 9, 0.2) 0%, #1e293b 100%);
+    }
+
+    .rank-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 18px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.1);
+      margin-right: 14px;
+    }
+
+    /* Popover Hızlı Durum Menüsü */
+    .popover-menu {
+      position: fixed;
+      background: #0f172a;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      border-radius: 16px;
+      padding: 10px;
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 200px;
+    }
+
+    .popover-menu.active {
+      display: flex;
+    }
+
+    .popover-item {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: none;
+      background: transparent;
+      color: white;
+      text-align: left;
+    }
+
+    .popover-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .students-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      }
+      .brand-title {
+        font-size: 16px;
+      }
+      .btn-spin-single, .btn-spin-double {
+        font-size: 14px;
+        padding: 9px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Üst Başlık & Kontrol -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🛸</div>
+      <div>
+        <div class="brand-title">GÖKYÜZÜ MÜHENDİSLİĞİ</div>
+        <div class="brand-sub">Akıllı Tahta Pilot Seçim & Puan Ağacı</div>
+      </div>
+    </div>
+
+    <!-- Sınıf & Buton Grubu -->
+    <div class="controls-group">
+      <!-- Sınıf Seçimi -->
+      <select id="classSelect" class="class-select" onchange="switchClass(this.value)">
+        <!-- Dinamik doldurulacak -->
+      </select>
+
+      <!-- Puan Ağacı / Liderlik Tablosu Butonu -->
+      <button class="btn btn-leaderboard" onclick="openLeaderboardModal()" title="Günün Pilot Sıralaması">
+        🏆 Puan Ağacı
+      </button>
+
+      <!-- Sınıf Yönetimi Butonu -->
+      <button class="btn btn-secondary" onclick="openClassModal()" title="Öğrenci Ekle/Düzenle & TXT Dışa Aktar">
+        ⚙️ Sınıf Yönetimi
+      </button>
+
+      <!-- Sıfırla (Herkesi Yeşil Yap) -->
+      <button class="btn btn-secondary" onclick="resetClassStatuses()" title="Tüm öğrencileri yeniden hazır yapar">
+        🔄 Dersi Sıfırla
+      </button>
+
+      <!-- Tek Pilot Seç -->
+      <button class="btn btn-spin-single" id="spinSingleBtn" onclick="startSelection(1)">
+        🎲 1 Pilot Seç
+      </button>
+
+      <!-- 2 Tablet İçin 2 Pilot Seç -->
+      <button class="btn btn-spin-double" id="spinDoubleBtn" onclick="startSelection(2)">
+        🎮 2 Pilot Seç
+      </button>
+    </div>
+  </header>
+
+  <!-- İstatistik ve İpuçları Çubuğu -->
+  <div class="stats-bar">
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+      <div class="stats-item">
+        <span class="badge-dot green"></span>
+        <span>Hazır Bekleyen: <b id="countReady" style="color: #34d399;">0</b></span>
+      </div>
+      <div class="stats-item">
+        <span class="badge-dot blue"></span>
+        <span>Uçuşunu Yapan: <b id="countCompleted" style="color: #38bdf8;">0</b></span>
+      </div>
+      <div class="stats-item">
+        <span class="badge-dot red"></span>
+        <span>Gelmeyen: <b id="countAbsent" style="color: #f87171;">0</b></span>
+      </div>
+      <span id="txtSourceStatus" style="font-size: 12px; color: #38bdf8; font-weight: 600;"></span>
+    </div>
+
+    <div style="color: var(--text-muted); font-size: 13px;">
+      💡 <b>İpucu:</b> Bir öğrenciye puan vermek veya durumunu değiştirmek için kutusuna dokunun!
+    </div>
+  </div>
+
+  <!-- Ana Öğrenci Kartları Alanı -->
+  <main>
+    <div id="studentsGrid" class="students-grid">
+      <!-- Dinamik Kartlar -->
+    </div>
+  </main>
+
+  <!-- Popover Durum & Puan Menüsü -->
+  <div id="popoverMenu" class="popover-menu">
+    <button class="popover-item" onclick="openRatingForCurrentStudent()" style="color: #fbbf24; font-weight: 800;">
+      ⭐ Uçuş Puanı Ver (1-5)
+    </button>
+    <hr style="border-color: rgba(255,255,255,0.1); margin: 3px 0;">
+    <button class="popover-item" onclick="setStudentStatus('ready')">
+      🟢 Hazır (Bekliyor)
+    </button>
+    <button class="popover-item" onclick="setStudentStatus('completed')">
+      🔵 Uçtu (Tamamladı)
+    </button>
+    <button class="popover-item" onclick="setStudentStatus('absent')">
+      🔴 Gelmedi (Devamsız)
+    </button>
+    <hr style="border-color: rgba(255,255,255,0.1); margin: 3px 0;">
+    <button class="popover-item" onclick="editStudentNamePrompt()" style="color: #38bdf8;">
+      ✏️ İsmi Düzenle
+    </button>
+    <button class="popover-item" onclick="deleteCurrentStudent()" style="color: #f87171;">
+      🗑️ Öğrenciyi Sil
+    </button>
+  </div>
+
+  <!-- Yıldız Puanlama Modalı -->
+  <div id="ratingModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 500px; text-align: center;">
+      <div class="modal-header">
+        <div class="modal-title">⭐ Pilot Puanlama</div>
+        <button class="modal-close" onclick="closeModal('ratingModal')">&times;</button>
+      </div>
+
+      <div style="font-size: 40px; margin-bottom: 8px;">👨‍✈️</div>
+      <h3 id="ratingStudentName" style="font-size: 24px; color: #fff; margin-bottom: 4px;">Öğrenci Adı</h3>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+        Kalkış hassasiyeti, tavan çarpmadan askıda kalma (hover) ve iniş becerisine göre puanlayın:
+      </p>
+
+      <div class="star-rating-box">
+        <div style="font-size: 13px; color: #f59e0b; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+          Hızlı Puan Seçimi (1.0 - 5.0)
+        </div>
+        <div class="star-picker">
+          <button class="star-btn" onclick="saveRating(1.0)">⭐ 1.0</button>
+          <button class="star-btn" onclick="saveRating(1.5)">⭐ 1.5</button>
+          <button class="star-btn" onclick="saveRating(2.0)">⭐ 2.0</button>
+          <button class="star-btn" onclick="saveRating(2.5)">⭐ 2.5</button>
+          <button class="star-btn" onclick="saveRating(3.0)">⭐ 3.0</button>
+          <button class="star-btn" onclick="saveRating(3.5)">⭐ 3.5</button>
+          <button class="star-btn" onclick="saveRating(4.0)">⭐ 4.0</button>
+          <button class="star-btn" onclick="saveRating(4.5)">⭐ 4.5</button>
+          <button class="star-btn" onclick="saveRating(5.0)">⭐ 5.0</button>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 14px;">
+        <button class="btn btn-secondary" onclick="closeModal('ratingModal')">İptal</button>
+        <button class="btn btn-secondary" style="color: #f87171;" onclick="clearRating()">Puanı Temizle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Puan Ağacı (Liderlik / Sıralama Modalı) -->
+  <div id="leaderboardModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <div class="modal-title">🏆 GÜNÜN PİLOT PUAN AĞACI</div>
+        <button class="modal-close" onclick="closeModal('leaderboardModal')">&times;</button>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 16px;">
+        <p style="color: var(--text-muted); font-size: 14px;">
+          Bu sınıftaki öğrencilerin aldıkları yıldız puanlarına göre başarı sıralaması:
+        </p>
+      </div>
+
+      <div id="leaderboardContainer" class="leaderboard-list">
+        <!-- Dinamik Sıralama Listesi -->
+      </div>
+
+      <div style="text-align: center; margin-top: 24px;">
+        <button class="btn btn-primary" onclick="closeModal('leaderboardModal')">Tamamdır, Derse Dön 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kazanan Pilot Duyuru Ekranı -->
+  <div id="winnerModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 550px; text-align: center;">
+      <div class="winner-modal">
+        <div class="winner-badge">🚀 UÇUŞ GÖREV SIRASI GELDİ!</div>
+        
+        <!-- Tek Pilot Görünümü -->
+        <div id="winnerSingleView">
+          <div style="font-size: 56px; margin-bottom: 10px;">👨‍✈️</div>
+          <div class="winner-name" id="winnerNameDisplay">Öğrenci Adı</div>
+          <button class="btn btn-leaderboard" id="winnerRateBtn1" style="margin-top: 10px;" onclick="openRatingForSpecificStudent(lastSelectedPilots[0])">
+            ⭐ Bu Öğrenciyi Puanla
+          </button>
+        </div>
+
+        <!-- İkili Pilot Görünümü -->
+        <div id="winnerDuoView" style="display: none;">
+          <div style="font-size: 36px; margin-bottom: 10px;">🎮 İKİLİ TABLET GÖREVİ 🎮</div>
+          <div class="winner-duo-names">
+            <div class="winner-duo-box">
+              <div class="winner-duo-label">TABLET 1 PİLOTU</div>
+              <div class="winner-duo-pilot" id="duoPilot1">Pilot 1</div>
+              <button class="btn btn-secondary" style="margin-top: 8px; font-size: 12px; padding: 6px 10px;" onclick="openRatingForSpecificStudent(lastSelectedPilots[0])">
+                ⭐ Puanla
+              </button>
+            </div>
+            <div class="winner-duo-box">
+              <div class="winner-duo-label">TABLET 2 PİLOTU</div>
+              <div class="winner-duo-pilot" id="duoPilot2">Pilot 2</div>
+              <button class="btn btn-secondary" style="margin-top: 8px; font-size: 12px; padding: 6px 10px;" onclick="openRatingForSpecificStudent(lastSelectedPilots[1])">
+                ⭐ Puanla
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size: 14px; color: #cbd5e1; margin: 20px 0 16px 0;">
+          Kumandaları alın, emniyet kilidini (ARM) kontrol edin ve piste geçin!
+        </p>
+        
+        <button class="btn btn-primary" style="font-size: 15px; padding: 10px 24px;" onclick="closeWinnerModal()">
+          Uçuş Başlasın! 👍
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sınıf Yönetimi Modalı -->
+  <div id="classModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">⚙️ Sınıf & Öğrenci Yönetimi</div>
+        <button class="modal-close" onclick="closeModal('classModal')">&times;</button>
+      </div>
+
+      <!-- Yeni Öğrenci Ekle -->
+      <div class="form-group">
+        <label>Aktif Sınıfa Yeni Öğrenci Ekle:</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="newStudentNameInput" class="form-control" placeholder="Öğrenci Adı Soyadı">
+          <button class="btn btn-primary" onclick="addNewStudentToActiveClass()">Ekle</button>
+        </div>
+      </div>
+
+      <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+
+      <!-- Yeni Sınıf Ekle -->
+      <div class="form-group">
+        <label>Yeni Sınıf / Grup Oluştur:</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="newClassNameInput" class="form-control" placeholder="Örn: 2-E Sınıfı">
+          <button class="btn btn-secondary" onclick="createNewClass()">Sınıfı Aç</button>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 16px;">
+        <label>Mevcut Sınıflar:</label>
+        <div id="classListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+          <!-- Dinamik Liste -->
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <button class="btn btn-secondary" onclick="downloadCurrentTxt()">💾 Güncel ogrenciler.txt İndir</button>
+        <button class="btn btn-secondary" onclick="exportDataJSON()">📦 Tam Yedek (JSON)</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       SES EFEKTLERİ (Web Audio API - %100 Çevrimdışı, Bağımsız)
+       ===================================================================== */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTickSound() {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      } catch (e) { }
+    }
+
+    function playFanfareSound() {
+      try {
+        const ctx = getAudioContext();
+        const notes = [440, 554.37, 659.25, 880];
+        notes.forEach((freq, index) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + index * 0.1);
+          gain.gain.setValueAtTime(0, ctx.currentTime + index * 0.1);
+          gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + index * 0.1 + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + index * 0.1 + 0.8);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + index * 0.1);
+          osc.stop(ctx.currentTime + index * 0.1 + 0.8);
+        });
+      } catch (e) { }
+    }
+
+    /* =====================================================================
+       VARSAYILAN TÜM OKUL VE SINIF VERİLERİ (Doğrudan Kodun İçinde Hazır!)
+       ===================================================================== */
+    const DEFAULT_APP_DATA = {
+      activeClassId: 'sadiman_2ad',
+      classes: {
+        'sadiman_2ad': {
+          name: 'Şadıman Polat Çebi - 2AD (Pzt)',
+          students: [
+            { id: 1, name: 'Alp Arslan Kekeç', status: 'ready', score: null },
+            { id: 2, name: 'Bilge Sena Kaya', status: 'ready', score: null },
+            { id: 3, name: 'Gülce İçecek', status: 'ready', score: null },
+            { id: 4, name: 'Nazende Temiz', status: 'ready', score: null },
+            { id: 5, name: 'Muhammed Eymen Erdem', status: 'ready', score: null },
+            { id: 6, name: 'Ahmet Selim Tursun', status: 'ready', score: null },
+            { id: 7, name: 'Zeynep Fulya Kalyoncu', status: 'ready', score: null },
+            { id: 8, name: 'Miraç Gündüz', status: 'ready', score: null },
+            { id: 9, name: 'Hüseyin Kerem Kutman', status: 'ready', score: null },
+            { id: 10, name: 'Aybars Talha Güner', status: 'ready', score: null },
+            { id: 11, name: 'Abdurahman Karaalioğlu', status: 'ready', score: null },
+            { id: 12, name: 'Halil İbrahim Erdemli', status: 'ready', score: null },
+            { id: 13, name: 'Yahya Yumlu', status: 'ready', score: null },
+            { id: 14, name: 'Yavuz Selim Şenses', status: 'ready', score: null },
+            { id: 15, name: 'İsmail Al Ayoubi', status: 'ready', score: null },
+            { id: 16, name: 'Selim Nihat Ercan', status: 'ready', score: null }
+          ]
+        },
+        'uskudar_1abc': {
+          name: 'Üsküdar İlkokulu - 1ABC (Pzt)',
+          students: [
+            { id: 1, name: 'Mehmet Poyraz Yakın', status: 'ready', score: null },
+            { id: 2, name: 'M. Tuğrul Karaalioğlu', status: 'ready', score: null },
+            { id: 3, name: 'Melis Ece Demirörs', status: 'ready', score: null },
+            { id: 4, name: 'A. İbrahim Demirel', status: 'ready', score: null },
+            { id: 5, name: 'Hüma Kont', status: 'ready', score: null },
+            { id: 6, name: 'Ömer Faruk Aksoy', status: 'ready', score: null },
+            { id: 7, name: 'Ömer Şanlan', status: 'ready', score: null },
+            { id: 8, name: 'Emin Ali Ocaklı', status: 'ready', score: null },
+            { id: 9, name: 'Metehan Ekiz', status: 'ready', score: null },
+            { id: 10, name: 'Yusuf Ali Kurt', status: 'ready', score: null },
+            { id: 11, name: 'Rana Tuğrul', status: 'ready', score: null },
+            { id: 12, name: 'Kerem Asaf Şeker', status: 'ready', score: null },
+            { id: 13, name: 'Hacer Hüma Arslan', status: 'ready', score: null },
+            { id: 14, name: 'Hatice Sakil', status: 'ready', score: null },
+            { id: 15, name: 'Ela Emanet', status: 'ready', score: null },
+            { id: 16, name: 'Burak Emir Taylan', status: 'ready', score: null },
+            { id: 17, name: 'Hanne Bulut', status: 'ready', score: null },
+            { id: 18, name: 'Beliz Ada Çetinkaya', status: 'ready', score: null },
+            { id: 19, name: 'Ali Asaf Duymuş', status: 'ready', score: null },
+            { id: 20, name: 'Nil Bekler', status: 'ready', score: null },
+            { id: 21, name: 'Zehra İlhan', status: 'ready', score: null },
+            { id: 22, name: 'Furkan Emre Uzun', status: 'ready', score: null },
+            { id: 23, name: 'Muhammed Aybars Çolakoğlu', status: 'ready', score: null }
+          ]
+        },
+        'uskudar_2d_3abd': {
+          name: 'Üsküdar İlkokulu - 2D-3ABD (Salı)',
+          students: [
+            { id: 1, name: 'Ömer Taha Çinko', status: 'ready', score: null },
+            { id: 2, name: 'Karel Öksüz', status: 'ready', score: null },
+            { id: 3, name: 'Abdullah Yalçıner', status: 'ready', score: null },
+            { id: 4, name: 'Mustafa Gündoğan', status: 'ready', score: null },
+            { id: 5, name: 'Tuğrul Özer', status: 'ready', score: null },
+            { id: 6, name: 'Teoman Tunçbilek', status: 'ready', score: null },
+            { id: 7, name: 'Zeynep Ahsen Zan', status: 'ready', score: null },
+            { id: 8, name: 'Hale Kadıoğlu', status: 'ready', score: null },
+            { id: 9, name: 'Ahmed Efe Özdemir', status: 'ready', score: null },
+            { id: 10, name: 'Ömer Asaf Topçu', status: 'ready', score: null },
+            { id: 11, name: 'Yusuf Alp Kara', status: 'ready', score: null },
+            { id: 12, name: 'Zeynep Yalçın', status: 'ready', score: null },
+            { id: 13, name: 'İrfan Altay', status: 'ready', score: null },
+            { id: 14, name: 'Ali Asaf Ceylan', status: 'ready', score: null },
+            { id: 15, name: 'Ömer Hüseyin Öztürk', status: 'ready', score: null },
+            { id: 16, name: 'Ada Odabaş', status: 'ready', score: null },
+            { id: 17, name: 'Meryem Çepni', status: 'ready', score: null }
+          ]
+        },
+        'sadiman_2c_g1': {
+          name: 'Şadıman Polat Çebi - 2C Grup 1 (Salı)',
+          students: [
+            { id: 1, name: 'Yağızhan Akbulut', status: 'ready', score: null },
+            { id: 2, name: 'Ömer Kasap', status: 'ready', score: null },
+            { id: 3, name: 'Affan Erdem', status: 'ready', score: null },
+            { id: 4, name: 'Eflatun Mete Yıldız', status: 'ready', score: null },
+            { id: 5, name: 'Yağız Emre Çaycı', status: 'ready', score: null },
+            { id: 6, name: 'Kerem Yükselsen', status: 'ready', score: null },
+            { id: 7, name: 'Ali Asaf Arısoy', status: 'ready', score: null },
+            { id: 8, name: 'Ahsen Şensoy', status: 'ready', score: null },
+            { id: 9, name: 'Betül Erva Kıymetlitaş', status: 'ready', score: null },
+            { id: 10, name: 'Sare Morgül', status: 'ready', score: null },
+            { id: 11, name: 'Ahmet Mert Yiğit', status: 'ready', score: null }
+          ]
+        },
+        'sadiman_2c_g2': {
+          name: 'Şadıman Polat Çebi - 2C Grup 2 (Salı)',
+          students: [
+            { id: 1, name: 'Eymen Aras Pekmezci', status: 'ready', score: null },
+            { id: 2, name: 'Duru Açıkbaş', status: 'ready', score: null },
+            { id: 3, name: 'Begüm Uzun', status: 'ready', score: null },
+            { id: 4, name: 'Kaan Efe Bayraktar', status: 'ready', score: null },
+            { id: 5, name: 'Meryem Korkmaz', status: 'ready', score: null },
+            { id: 6, name: 'Alya Hifa Erbaş', status: 'ready', score: null },
+            { id: 7, name: 'Toprak Aren Özgel', status: 'ready', score: null },
+            { id: 8, name: 'Defne Yiğit', status: 'ready', score: null },
+            { id: 9, name: 'Zeynep Şanlıer', status: 'ready', score: null },
+            { id: 10, name: 'Yaman Karaçoban', status: 'ready', score: null },
+            { id: 11, name: 'Akif Emir Akbaş', status: 'ready', score: null }
+          ]
+        },
+        'uskudar_2c': {
+          name: 'Üsküdar İlkokulu - 2C (Çarşamba)',
+          students: [
+            { id: 1, name: 'Kaan Aras Yıldırım', status: 'ready', score: null },
+            { id: 2, name: 'Gökçe Ulusoy', status: 'ready', score: null },
+            { id: 3, name: 'Zeynep Hafsa Özdemir', status: 'ready', score: null },
+            { id: 4, name: 'Ömer Halis Karadağ', status: 'ready', score: null },
+            { id: 5, name: 'A. Emir Durmaz', status: 'ready', score: null },
+            { id: 6, name: 'Mikail Burak Amaç', status: 'ready', score: null },
+            { id: 7, name: 'Aras Ali Yakın', status: 'ready', score: null },
+            { id: 8, name: 'Yusuf Kemal Altay', status: 'ready', score: null },
+            { id: 9, name: 'Ayşe Serra Serdar', status: 'ready', score: null },
+            { id: 10, name: 'Beyza Balcı', status: 'ready', score: null },
+            { id: 11, name: 'M. Ali Sağlam', status: 'ready', score: null },
+            { id: 12, name: 'Ömer Faruk Hisar', status: 'ready', score: null },
+            { id: 13, name: 'Ayşe Reyyan Yiğit', status: 'ready', score: null },
+            { id: 14, name: 'Salih Emin Yaman', status: 'ready', score: null },
+            { id: 15, name: 'İbrahim Zeyd Şen', status: 'ready', score: null },
+            { id: 16, name: 'Kayra Selim Temur', status: 'ready', score: null },
+            { id: 17, name: 'Pusad Ballıkaya', status: 'ready', score: null },
+            { id: 18, name: 'Ada Bayhatun', status: 'ready', score: null },
+            { id: 19, name: 'Zeynep Ada Laçin', status: 'ready', score: null }
+          ]
+        },
+        'uskudar_2ab': {
+          name: 'Üsküdar İlkokulu - 2AB (Perşembe)',
+          students: [
+            { id: 1, name: 'A. Selim Yılmazörnek', status: 'ready', score: null },
+            { id: 2, name: 'Aslı H. Ceylan', status: 'ready', score: null },
+            { id: 3, name: 'M. Emin Arslan', status: 'ready', score: null },
+            { id: 4, name: 'Ali Kerem Sarı', status: 'ready', score: null },
+            { id: 5, name: 'Mehmed Coşkurlu', status: 'ready', score: null },
+            { id: 6, name: 'Pusad Ballıkaya', status: 'ready', score: null },
+            { id: 7, name: 'Göktuğ Karahan', status: 'ready', score: null },
+            { id: 8, name: 'Muhammed M. Arslan', status: 'ready', score: null },
+            { id: 9, name: 'Çağan Eray Yavaş', status: 'ready', score: null },
+            { id: 10, name: 'H. Cihat Kılınçarslan', status: 'ready', score: null },
+            { id: 11, name: 'Selim Koçali', status: 'ready', score: null },
+            { id: 12, name: 'Yusuf Arslan Yüksel', status: 'ready', score: null },
+            { id: 13, name: 'Kadir Akçadağ', status: 'ready', score: null },
+            { id: 14, name: 'Muhammed Ağaoğlu', status: 'ready', score: null },
+            { id: 15, name: 'Gülce Sare Uzuncan', status: 'ready', score: null },
+            { id: 16, name: 'Hüma Aydın', status: 'ready', score: null },
+            { id: 17, name: 'A. Saim Bozdoğan', status: 'ready', score: null },
+            { id: 18, name: 'Ahmet Levent Karakoyun', status: 'ready', score: null },
+            { id: 19, name: 'Muhammed Kayra Ünal', status: 'ready', score: null }
+          ]
+        },
+        'sadiman_1cd': {
+          name: 'Şadıman Polat Çebi - 1CD (Cuma)',
+          students: [
+            { id: 1, name: 'Defne Şahin', status: 'ready', score: null },
+            { id: 2, name: 'Enes Agah Ham', status: 'ready', score: null },
+            { id: 3, name: 'İnci Meva Aydın', status: 'ready', score: null },
+            { id: 4, name: 'Hatice Hira Kılıç', status: 'ready', score: null },
+            { id: 5, name: 'Eslem Çelebi', status: 'ready', score: null },
+            { id: 6, name: 'Fatma Rabia Karaalioğlu', status: 'ready', score: null },
+            { id: 7, name: 'Muhammed Hasan Tanış', status: 'ready', score: null },
+            { id: 8, name: 'Zeynep Feyza Yılmaz', status: 'ready', score: null },
+            { id: 9, name: 'Tahir Agah Türkyılmaz', status: 'ready', score: null },
+            { id: 10, name: 'Kıvanç Kaan Kara', status: 'ready', score: null },
+            { id: 11, name: 'Eren Kılıç', status: 'ready', score: null },
+            { id: 12, name: 'Kumsal Güney', status: 'ready', score: null },
+            { id: 13, name: 'Hazel Korkmaz', status: 'ready', score: null },
+            { id: 14, name: 'Halis Demir Şener', status: 'ready', score: null },
+            { id: 15, name: 'Metin Ali Kora', status: 'ready', score: null }
+          ]
+        },
+        'sadiman_3abc': {
+          name: 'Şadıman Polat Çebi - 3ABC (Cuma)',
+          students: [
+            { id: 1, name: 'Ahmet Selim Toprak', status: 'ready', score: null },
+            { id: 2, name: 'Zeynep Rana Gündüm', status: 'ready', score: null },
+            { id: 3, name: 'Necmettin Bilal Yeşil', status: 'ready', score: null },
+            { id: 4, name: 'Rüzgar Asaf Özen', status: 'ready', score: null },
+            { id: 5, name: 'Ayşe Hafsa Kılıç', status: 'ready', score: null },
+            { id: 6, name: 'Gülce Aybek', status: 'ready', score: null },
+            { id: 7, name: 'Zeynep Nisa Bulut', status: 'ready', score: null },
+            { id: 8, name: 'Aral Yiğit Tiftik', status: 'ready', score: null },
+            { id: 9, name: 'Yüsra Akdere', status: 'ready', score: null },
+            { id: 10, name: 'Yusuf Küskü', status: 'ready', score: null },
+            { id: 11, name: 'Ömer Halis Gedikoğlu', status: 'ready', score: null },
+            { id: 12, name: 'Çınar Alp Ertan', status: 'ready', score: null },
+            { id: 13, name: 'Asaf Aziz Tolgay', status: 'ready', score: null },
+            { id: 14, name: 'Aylin Güllü', status: 'ready', score: null },
+            { id: 15, name: 'Hilal Ebrar Küskü', status: 'ready', score: null },
+            { id: 16, name: 'Kuzey Çetinceviz', status: 'ready', score: null },
+            { id: 17, name: 'Yağız Ali Oflu', status: 'ready', score: null }
+          ]
+        },
+        'uskudar_3c_4bcd': {
+          name: 'Üsküdar İlkokulu - 3C-4BCD (Cuma)',
+          students: [
+            { id: 1, name: 'Ömer Sertdemir', status: 'ready', score: null },
+            { id: 2, name: 'Talha Selim İpek', status: 'ready', score: null },
+            { id: 3, name: 'Atlas Erhan', status: 'ready', score: null },
+            { id: 4, name: 'Aras Alp Akın', status: 'ready', score: null },
+            { id: 5, name: 'Kayra Saçık', status: 'ready', score: null },
+            { id: 6, name: 'Defne Bayar', status: 'ready', score: null },
+            { id: 7, name: 'Ahmed Batu Ocaklı', status: 'ready', score: null },
+            { id: 8, name: 'Gökçe Gündüz', status: 'ready', score: null },
+            { id: 9, name: 'Elif Tazeoğlu', status: 'ready', score: null },
+            { id: 10, name: 'Hacı Ömer Polat', status: 'ready', score: null },
+            { id: 11, name: 'Eray Candan', status: 'ready', score: null },
+            { id: 12, name: 'Ömer Asaf Yiğit', status: 'ready', score: null },
+            { id: 13, name: 'Ravza Tekin', status: 'ready', score: null },
+            { id: 14, name: 'Ömer Mahir Boyalık', status: 'ready', score: null },
+            { id: 15, name: 'Mustafa Asaf Ankara', status: 'ready', score: null },
+            { id: 16, name: 'Ali Rüştü Yılmaz', status: 'ready', score: null },
+            { id: 17, name: 'Eylül Günay', status: 'ready', score: null },
+            { id: 18, name: 'Selman Kaşıkçırık', status: 'ready', score: null },
+            { id: 19, name: 'Eymen Günay', status: 'ready', score: null },
+            { id: 20, name: 'Abdullah Asaf Akyol', status: 'ready', score: null }
+          ]
+        }
+      }
+    };
+
+    const STORAGE_KEY = 'gokyuzu_muhendisligi_classes_v2';
+    let appData = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.classes) {
+            appData = parsed;
+          }
+        } catch (e) {
+          console.error("Kayıtlı veri okunamadı:", e);
+        }
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      updateStats();
+    }
+
+    /* =====================================================================
+       RENDER & ARAYÜZ
+       ===================================================================== */
+    let selectedStudentForMenu = null;
+    let isSpinning = false;
+    let lastSelectedPilots = [];
+
+    function renderClassSelect() {
+      const select = document.getElementById('classSelect');
+      select.innerHTML = '';
+      for (const [id, c] of Object.entries(appData.classes)) {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = c.name;
+        if (id === appData.activeClassId) opt.selected = true;
+        select.appendChild(opt);
+      }
+    }
+
+    function renderStudents() {
+      const currentClass = appData.classes[appData.activeClassId];
+      const grid = document.getElementById('studentsGrid');
+      grid.innerHTML = '';
+
+      if (!currentClass || currentClass.students.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+            <h3>Bu Sınıfta Henüz Öğrenci Yok</h3>
+            <p style="color: var(--text-muted); margin-top: 8px;">Yukarıdaki "⚙️ Sınıf Yönetimi" butonundan öğrenci ekleyebilirsiniz.</p>
+          </div>
+        `;
+        updateStats();
+        return;
+      }
+
+      currentClass.students.forEach(student => {
+        const card = document.createElement('div');
+        card.className = `student-card status-${student.status}`;
+        card.id = `student-card-${student.id}`;
+
+        let statusText = '🟢 Bekliyor';
+        if (student.status === 'completed') statusText = '🔵 Uçtu';
+        if (student.status === 'absent') statusText = '🔴 Gelmedi';
+
+        // Yıldız Puan Gösterimi
+        let starsHtml = '';
+        if (student.score !== null && student.score !== undefined) {
+          starsHtml = `<div class="student-stars">⭐ ${student.score.toFixed(1)} / 5.0</div>`;
+        } else {
+          starsHtml = `<div class="student-stars no-score">⭐ Puanlanmadı</div>`;
+        }
+
+        card.innerHTML = `
+          <div class="student-avatar">🛩️</div>
+          <div class="student-name">${student.name}</div>
+          <div class="status-pill">${statusText}</div>
+          ${starsHtml}
+        `;
+
+        card.onclick = (e) => {
+          if (isSpinning) return;
+          openStudentMenu(e, student);
+        };
+
+        grid.appendChild(card);
+      });
+
+      updateStats();
+    }
+
+    function updateStats() {
+      const currentClass = appData.classes[appData.activeClassId];
+      if (!currentClass) return;
+
+      const ready = currentClass.students.filter(s => s.status === 'ready').length;
+      const completed = currentClass.students.filter(s => s.status === 'completed').length;
+      const absent = currentClass.students.filter(s => s.status === 'absent').length;
+
+      document.getElementById('countReady').textContent = ready;
+      document.getElementById('countCompleted').textContent = completed;
+      document.getElementById('countAbsent').textContent = absent;
+    }
+
+    function switchClass(classId) {
+      appData.activeClassId = classId;
+      saveData();
+      renderStudents();
+    }
+
+    /* =====================================================================
+       DURUM & POPOVER MENÜSÜ
+       ===================================================================== */
+    function openStudentMenu(event, student) {
+      selectedStudentForMenu = student;
+      const popover = document.getElementById('popoverMenu');
+      popover.classList.add('active');
+
+      const rect = event.currentTarget.getBoundingClientRect();
+      const menuWidth = 200;
+      let left = rect.left + (rect.width / 2) - (menuWidth / 2);
+      let top = rect.bottom + 8;
+
+      if (left < 10) left = 10;
+      if (left + menuWidth > window.innerWidth - 10) left = window.innerWidth - menuWidth - 10;
+      if (top + 260 > window.innerHeight) top = rect.top - 260;
+
+      popover.style.left = `${left}px`;
+      popover.style.top = `${top}px`;
+    }
+
+    function closeStudentMenu() {
+      document.getElementById('popoverMenu').classList.remove('active');
+    }
+
+    document.addEventListener('click', (e) => {
+      const popover = document.getElementById('popoverMenu');
+      if (!popover.contains(e.target) && !e.target.closest('.student-card')) {
+        closeStudentMenu();
+      }
+    });
+
+    function setStudentStatus(newStatus) {
+      if (!selectedStudentForMenu) return;
+      selectedStudentForMenu.status = newStatus;
+      saveData();
+      renderStudents();
+      closeStudentMenu();
+    }
+
+    function editStudentNamePrompt() {
+      if (!selectedStudentForMenu) return;
+      const newName = prompt("Öğrenci Adını Düzenleyin:", selectedStudentForMenu.name);
+      if (newName && newName.trim()) {
+        selectedStudentForMenu.name = newName.trim();
+        saveData();
+        renderStudents();
+      }
+      closeStudentMenu();
+    }
+
+    function deleteCurrentStudent() {
+      if (!selectedStudentForMenu) return;
+      if (confirm(`"${selectedStudentForMenu.name}" listeden silinsin mi?`)) {
+        const currentClass = appData.classes[appData.activeClassId];
+        currentClass.students = currentClass.students.filter(s => s.id !== selectedStudentForMenu.id);
+        saveData();
+        renderStudents();
+      }
+      closeStudentMenu();
+    }
+
+    function resetClassStatuses() {
+      const currentClass = appData.classes[appData.activeClassId];
+      if (!currentClass || currentClass.students.length === 0) return;
+      if (confirm("Bu sınıftaki tüm öğrenciler tekrar 'Hazır' (Yeşil) yapılsın mı?\n(Not: Verilen puanlar silinmez, sıfırlanmaz)")) {
+        currentClass.students.forEach(s => {
+          if (s.status !== 'absent') s.status = 'ready';
+        });
+        saveData();
+        renderStudents();
+      }
+    }
+
+    /* =====================================================================
+       YILDIZ PUANLAMA MODALI VE LİDERLİK TABLOSU (PUAN AĞACI)
+       ===================================================================== */
+    let studentBeingRated = null;
+
+    function openRatingForCurrentStudent() {
+      if (!selectedStudentForMenu) return;
+      openRatingForSpecificStudent(selectedStudentForMenu);
+      closeStudentMenu();
+    }
+
+    function openRatingForSpecificStudent(student) {
+      if (!student) return;
+      studentBeingRated = student;
+      document.getElementById('ratingStudentName').textContent = student.name;
+
+      // Butonları güncelle
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (student.score !== null && btn.textContent.includes(student.score.toFixed(1))) {
+          btn.classList.add('active');
+        }
+      });
+
+      document.getElementById('ratingModal').classList.add('active');
+    }
+
+    function saveRating(score) {
+      if (!studentBeingRated) return;
+      studentBeingRated.score = score;
+      studentBeingRated.status = 'completed'; // Puan verilince otomatik tamamlandı olur
+      saveData();
+      renderStudents();
+      closeModal('ratingModal');
+    }
+
+    function clearRating() {
+      if (!studentBeingRated) return;
+      studentBeingRated.score = null;
+      saveData();
+      renderStudents();
+      closeModal('ratingModal');
+    }
+
+    function openLeaderboardModal() {
+      const currentClass = appData.classes[appData.activeClassId];
+      if (!currentClass) return;
+
+      const container = document.getElementById('leaderboardContainer');
+      container.innerHTML = '';
+
+      // Sadece puanı olanları sırala
+      const scoredStudents = [...currentClass.students]
+        .filter(s => s.score !== null && s.score !== undefined)
+        .sort((a, b) => b.score - a.score);
+
+      if (scoredStudents.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 10px; color: var(--text-muted);">
+            <div style="font-size: 40px; margin-bottom: 10px;">⭐</div>
+            Henüz hiçbir öğrenciye uçuş puanı verilmedi.<br>
+            Öğrenciler uçtuktan sonra kutularına dokunarak 1-5 arası yıldız puanı verebilirsiniz.
+          </div>
+        `;
+      } else {
+        scoredStudents.forEach((s, index) => {
+          const rank = index + 1;
+          let rankClass = '';
+          let rankMedal = rank;
+          if (rank === 1) { rankClass = 'rank-1'; rankMedal = '🥇'; }
+          else if (rank === 2) { rankClass = 'rank-2'; rankMedal = '🥈'; }
+          else if (rank === 3) { rankClass = 'rank-3'; rankMedal = '🥉'; }
+
+          const item = document.createElement('div');
+          item.className = `leaderboard-item ${rankClass}`;
+          item.innerHTML = `
+            <div style="display: flex; align-items: center;">
+              <div class="rank-badge">${rankMedal}</div>
+              <div>
+                <b style="font-size: 16px; color: #fff;">${s.name}</b>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px; font-weight: 900; color: #fbbf24;">⭐ ${s.score.toFixed(1)}</span>
+            </div>
+          `;
+          container.appendChild(item);
+        });
+      }
+
+      document.getElementById('leaderboardModal').classList.add('active');
+    }
+
+    /* =====================================================================
+       RASTGELE PİLOT SEÇİMİ (RUİLET & SESLER)
+       ===================================================================== */
+    function startSelection(count = 1) {
+      if (isSpinning) return;
+      closeStudentMenu();
+
+      const currentClass = appData.classes[appData.activeClassId];
+      if (!currentClass) return;
+
+      const eligibleStudents = currentClass.students.filter(s => s.status === 'ready');
+
+      if (eligibleStudents.length === 0) {
+        alert("⚠️ Bu sınıfta hazır bekleyen öğrenci kalmadı! Bütün öğrenciler uçtu veya gelmedi işaretlendi. Dersi sıfırlayabilirsiniz.");
+        return;
+      }
+
+      if (count === 2 && eligibleStudents.length < 2) {
+        alert("⚠️ Hazır durumda sadece 1 öğrenci kalmış! Tek pilot seçimi yapılıyor.");
+        count = 1;
+      }
+
+      isSpinning = true;
+      document.getElementById('spinSingleBtn').disabled = true;
+      document.getElementById('spinDoubleBtn').disabled = true;
+
+      let iterations = 0;
+      const totalTicks = 24 + Math.floor(Math.random() * 8);
+      let currentSpeed = 70;
+
+      function step() {
+        document.querySelectorAll('.student-card').forEach(c => c.classList.remove('anim-highlight'));
+        const randomIndex = Math.floor(Math.random() * eligibleStudents.length);
+        const randomStudent = eligibleStudents[randomIndex];
+        const cardElem = document.getElementById(`student-card-${randomStudent.id}`);
+        if (cardElem) cardElem.classList.add('anim-highlight');
+
+        playTickSound();
+        iterations++;
+
+        if (iterations < totalTicks) {
+          if (iterations > totalTicks - 10) {
+            currentSpeed += 25;
+          }
+          setTimeout(step, currentSpeed);
+        } else {
+          finalizeSelection(eligibleStudents, count);
+        }
+      }
+
+      step();
+    }
+
+    function finalizeSelection(eligibleStudents, count) {
+      document.querySelectorAll('.student-card').forEach(c => c.classList.remove('anim-highlight'));
+
+      const shuffled = [...eligibleStudents].sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, count);
+      lastSelectedPilots = selected;
+
+      selected.forEach(s => {
+        s.status = 'completed';
+      });
+      saveData();
+      renderStudents();
+
+      const winnerModal = document.getElementById('winnerModal');
+      const singleView = document.getElementById('winnerSingleView');
+      const duoView = document.getElementById('winnerDuoView');
+
+      if (count === 1) {
+        singleView.style.display = 'block';
+        duoView.style.display = 'none';
+        document.getElementById('winnerNameDisplay').textContent = selected[0].name;
+      } else {
+        singleView.style.display = 'none';
+        duoView.style.display = 'block';
+        document.getElementById('duoPilot1').textContent = selected[0].name;
+        document.getElementById('duoPilot2').textContent = selected[1].name;
+      }
+
+      winnerModal.classList.add('active');
+      playFanfareSound();
+
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.6 }
+        });
+      }
+
+      isSpinning = false;
+      document.getElementById('spinSingleBtn').disabled = false;
+      document.getElementById('spinDoubleBtn').disabled = false;
+    }
+
+    function closeWinnerModal() {
+      document.getElementById('winnerModal').classList.remove('active');
+    }
+
+    /* =====================================================================
+       SINIF YÖNETİMİ & TXT DIŞA AKTARMA
+       ===================================================================== */
+    function openClassModal() {
+      renderClassListInModal();
+      document.getElementById('classModal').classList.add('active');
+    }
+
+    function renderClassListInModal() {
+      const container = document.getElementById('classListContainer');
+      container.innerHTML = '';
+
+      for (const [id, c] of Object.entries(appData.classes)) {
+        const item = document.createElement('div');
+        item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 10px 14px; border-radius: 8px;';
+        item.innerHTML = `
+          <div>
+            <b style="font-size: 14px;">${c.name}</b>
+            <span style="color: var(--text-muted); font-size: 12px; margin-left: 8px;">(${c.students.length} Öğrenci)</span>
+          </div>
+          <button class="btn btn-secondary" style="padding: 5px 10px; color: #f87171; font-size: 12px;" onclick="deleteClass('${id}')">Sil</button>
+        `;
+        container.appendChild(item);
+      }
+    }
+
+    function addNewStudentToActiveClass() {
+      const input = document.getElementById('newStudentNameInput');
+      const name = input.value.trim();
+      if (!name) return;
+
+      const currentClass = appData.classes[appData.activeClassId];
+      const maxId = currentClass.students.reduce((max, s) => Math.max(max, s.id), 0);
+
+      currentClass.students.push({
+        id: maxId + 1,
+        name: name,
+        status: 'ready',
+        score: null
+      });
+
+      input.value = '';
+      saveData();
+      renderStudents();
+      renderClassListInModal();
+      alert(`✅ "${name}" aktif sınıfa eklendi!`);
+    }
+
+    function createNewClass() {
+      const input = document.getElementById('newClassNameInput');
+      const name = input.value.trim();
+      if (!name) return;
+
+      const id = 'class_' + Date.now();
+      appData.classes[id] = {
+        name: name,
+        students: []
+      };
+      appData.activeClassId = id;
+
+      input.value = '';
+      saveData();
+      renderClassSelect();
+      renderStudents();
+      renderClassListInModal();
+    }
+
+    function deleteClass(id) {
+      const keys = Object.keys(appData.classes);
+      if (keys.length <= 1) {
+        alert("En az bir sınıf kalmalıdır!");
+        return;
+      }
+      if (confirm(`"${appData.classes[id].name}" sınıfı ve tüm öğrencileri silinsin mi?`)) {
+        delete appData.classes[id];
+        if (appData.activeClassId === id) {
+          appData.activeClassId = Object.keys(appData.classes)[0];
+        }
+        saveData();
+        renderClassSelect();
+        renderStudents();
+        renderClassListInModal();
+      }
+    }
+
+    function downloadCurrentTxt() {
+      let output = "# ==============================================================================\n";
+      output += "# GÖKYÜZÜ MÜHENDİSLİĞİ - TÜM SINIF VE ÖĞRENCİ LİSTELERİ\n";
+      output += "# ==============================================================================\n\n";
+
+      for (const [id, c] of Object.entries(appData.classes)) {
+        output += `[${c.name}]\n`;
+        c.students.forEach(s => {
+          output += `${s.name}\n`;
+        });
+        output += "\n";
+      }
+
+      const blob = new Blob([output.trim() + "\n"], { type: 'text/plain;charset=utf-8' });
+      const anchor = document.createElement('a');
+      anchor.href = URL.createObjectURL(blob);
+      anchor.download = 'ogrenciler.txt';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    }
+
+    function exportDataJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `Gokyuzu_Muhendisligi_Yedek_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    /* =====================================================================
+       BAŞLANGIÇ
+       ===================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      renderClassSelect();
+      renderStudents();
+    });
+  </script>
+</body>
+</html>

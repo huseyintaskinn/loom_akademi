@@ -1,0 +1,191 @@
+# ==============================================================================
+# GÖKYÜZÜ MÜHENDİSLİĞİ - TÜM SINIF VE ÖĞRENCİ LİSTELERİ
+# ==============================================================================
+
+[Şadıman Polat Çebi - 2AD (Pzt)]
+Alp Arslan Kekeç
+Bilge Sena Kaya
+Gülce İçecek
+Nazende Temiz
+Muhammed Eymen Erdem
+Ahmet Selim Tursun
+Zeynep Fulya Kalyoncu
+Miraç Gündüz
+Hüseyin Kerem Kutman
+Aybars Talha Güner
+Abdurahman Karaalioğlu
+Halil İbrahim Erdemli
+Yahya Yumlu
+Yavuz Selim Şenses
+İsmail Al Ayoubi
+Selim Nihat Ercan
+
+[Üsküdar İlkokulu - 1ABC (Pzt)]
+Mehmet Poyraz Yakın
+M. Tuğrul Karaalioğlu
+Melis Ece Demirörs
+A. İbrahim Demirel
+Hüma Kont
+Ömer Faruk Aksoy
+Ömer Şanlan
+Emin Ali Ocaklı
+Metehan Ekiz
+Yusuf Ali Kurt
+Rana Tuğrul
+Kerem Asaf Şeker
+Hacer Hüma Arslan
+Hatice Sakil
+Ela Emanet
+Burak Emir Taylan
+Hanne Bulut
+Beliz Ada Çetinkaya
+Ali Asaf Duymuş
+Nil Bekler
+Zehra İlhan
+Furkan Emre Uzun
+Muhammed Aybars Çolakoğlu
+
+[Üsküdar İlkokulu - 2D-3ABD (Salı)]
+Ömer Taha Çinko
+Karel Öksüz
+Abdullah Yalçıner
+Mustafa Gündoğan
+Tuğrul Özer
+Teoman Tunçbilek
+Zeynep Ahsen Zan
+Hale Kadıoğlu
+Ahmed Efe Özdemir
+Ömer Asaf Topçu
+Yusuf Alp Kara
+Zeynep Yalçın
+İrfan Altay
+Ali Asaf Ceylan
+Ömer Hüseyin Öztürk
+Ada Odabaş
+Meryem Çepni
+
+[Şadıman Polat Çebi - 2C Grup 1 (Salı)]
+Yağızhan Akbulut
+Ömer Kasap
+Affan Erdem
+Eflatun Mete Yıldız
+Yağız Emre Çaycı
+Kerem Yükselsen
+Ali Asaf Arısoy
+Ahsen Şensoy
+Betül Erva Kıymetlitaş
+Sare Morgül
+Ahmet Mert Yiğit
+
+[Şadıman Polat Çebi - 2C Grup 2 (Salı)]
+Eymen Aras Pekmezci
+Duru Açıkbaş
+Begüm Uzun
+Kaan Efe Bayraktar
+Meryem Korkmaz
+Alya Hifa Erbaş
+Toprak Aren Özgel
+Defne Yiğit
+Zeynep Şanlıer
+Yaman Karaçoban
+Akif Emir Akbaş
+
+[Üsküdar İlkokulu - 2C (Çarşamba)]
+Kaan Aras Yıldırım
+Gökçe Ulusoy
+Zeynep Hafsa Özdemir
+Ömer Halis Karadağ
+A. Emir Durmaz
+Mikail Burak Amaç
+Aras Ali Yakın
+Yusuf Kemal Altay
+Ayşe Serra Serdar
+Beyza Balcı
+M. Ali Sağlam
+Ömer Faruk Hisar
+Ayşe Reyyan Yiğit
+Salih Emin Yaman
+İbrahim Zeyd Şen
+Kayra Selim Temur
+Pusad Ballıkaya
+Ada Bayhatun
+Zeynep Ada Laçin
+
+[Üsküdar İlkokulu - 2AB (Perşembe)]
+A. Selim Yılmazörnek
+Aslı H. Ceylan
+M. Emin Arslan
+Ali Kerem Sarı
+Mehmed Coşkurlu
+Pusad Ballıkaya
+Göktuğ Karahan
+Muhammed M. Arslan
+Çağan Eray Yavaş
+H. Cihat Kılınçarslan
+Selim Koçali
+Yusuf Arslan Yüksel
+Kadir Akçadağ
+Muhammed Ağaoğlu
+Gülce Sare Uzuncan
+Hüma Aydın
+A. Saim Bozdoğan
+Ahmet Levent Karakoyun
+Muhammed Kayra Ünal
+
+[Şadıman Polat Çebi - 1CD (Cuma)]
+Defne Şahin
+Enes Agah Ham
+İnci Meva Aydın
+Hatice Hira Kılıç
+Eslem Çelebi
+Fatma Rabia Karaalioğlu
+Muhammed Hasan Tanış
+Zeynep Feyza Yılmaz
+Tahir Agah Türkyılmaz
+Kıvanç Kaan Kara
+Eren Kılıç
+Kumsal Güney
+Hazel Korkmaz
+Halis Demir Şener
+Metin Ali Kora
+
+[Şadıman Polat Çebi - 3ABC (Cuma)]
+Ahmet Selim Toprak
+Zeynep Rana Gündüm
+Necmettin Bilal Yeşil
+Rüzgar Asaf Özen
+Ayşe Hafsa Kılıç
+Gülce Aybek
+Zeynep Nisa Bulut
+Aral Yiğit Tiftik
+Yüsra Akdere
+Yusuf Küskü
+Ömer Halis Gedikoğlu
+Çınar Alp Ertan
+Asaf Aziz Tolgay
+Aylin Güllü
+Hilal Ebrar Küskü
+Kuzey Çetinceviz
+Yağız Ali Oflu
+
+[Üsküdar İlkokulu - 3C-4BCD (Cuma)]
+Ömer Sertdemir
+Talha Selim İpek
+Atlas Erhan
+Aras Alp Akın
+Kayra Saçık
+Defne Bayar
+Ahmed Batu Ocaklı
+Gökçe Gündüz
+Elif Tazeoğlu
+Hacı Ömer Polat
+Eray Candan
+Ömer Asaf Yiğit
+Ravza Tekin
+Ömer Mahir Boyalık
+Mustafa Asaf Ankara
+Ali Rüştü Yılmaz
+Eylül Günay
+Selman Kaşıkçırık
+Eymen Günay
+Abdullah Asaf Akyol

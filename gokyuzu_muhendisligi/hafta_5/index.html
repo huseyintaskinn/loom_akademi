@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loom Akademi • Gökyüzü Mühendisliği - 5. Hafta: FPV Simülasyonu, Pilot Seçimi & Puan Ağacı</title>
+  <style>
+    :root {
+      --primary: #38bdf8;
+      --primary-light: #7dd3fc;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --bg-dark: #090e1a;
+      --bg-card: rgba(22, 31, 54, 0.94);
+      --border-card: rgba(255, 255, 255, 0.18);
+      --sunny-yellow: #fbbf24;
+      --emerald-green: #34d399;
+      --candy-red: #fb7185;
+      --cute-purple: #c084fc;
+      --text-white: #ffffff;
+      --text-muted: #cbd5e1;
+      --font-main: 'Segoe UI', 'Trebuchet MS', Arial, -apple-system, sans-serif;
+      --slide-w: 1280px;
+      --slide-h: 720px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body {
+      background: radial-gradient(circle at top right, #1a2542 0%, #0c1322 60%, #060911 100%);
+      color: var(--text-white);
+      font-family: var(--font-main);
+      overflow: hidden;
+      width: 100vw; height: 100vh;
+      display: flex; flex-direction: column;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    ::selection {
+      background: rgba(56, 189, 248, 0.45);
+      color: #ffffff;
+    }
+    .portal-nav-btn, .grade-badge, .tool-btn, .nav-btn, .slide-counter, .lock-btn {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Top Progress Bar */
+    #progress-track {
+      position: fixed; top: 0; left: 0; width: 100%; height: 6px;
+      background: rgba(255, 255, 255, 0.08); z-index: 1000;
+    }
+    #progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #f43f5e, #fbbf24, #34d399, var(--primary), #c084fc);
+      box-shadow: 0 0 12px var(--primary-light);
+      transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Header (Hafta 1, 2, 3, 4 ile Birebir Aynı) */
+    header {
+      position: fixed; top: 6px; left: 0; width: 100%; height: 62px;
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(12, 19, 34, 0.96); backdrop-filter: blur(14px);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.14); z-index: 900;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .portal-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.09);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      color: #f1f5f9;
+      text-decoration: none;
+      font-family: var(--font-main);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .portal-nav-btn:hover {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(2, 132, 199, 0.35));
+      border-color: var(--primary);
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
+    }
+    .portal-nav-btn .portal-icon { font-size: 16px; }
+
+    .grade-badge {
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #042f2e; font-size: 15px; font-weight: 800;
+      padding: 6px 14px; border-radius: 12px; letter-spacing: 0.5px;
+    }
+    .brand-title {
+      font-size: 19px; font-weight: 800; letter-spacing: 0.5px;
+      color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .brand-title span { color: var(--sunny-yellow); font-weight: 700; font-size: 16px; }
+
+    .header-tools { display: flex; align-items: center; gap: 10px; }
+    .tool-btn {
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1; width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; font-size: 16px; text-decoration: none;
+    }
+    .tool-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; transform: scale(1.05); }
+    .tool-btn.active { background: var(--primary); color: #042f2e; border-color: var(--primary); }
+    .tool-btn.locked {
+      background: #d97706 !important;
+      border-color: #f59e0b !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.6);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1; margin-top: 68px; margin-bottom: 68px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px 20px; overflow: hidden; position: relative;
+    }
+    #slide-viewport {
+      width: 100%; max-width: var(--slide-w); height: 100%; max-height: var(--slide-h);
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Slide Box */
+    .slide {
+      position: absolute; inset: 0;
+      opacity: 0; pointer-events: none; visibility: hidden;
+      display: flex; flex-direction: column;
+      padding: 24px 38px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transform: translateY(16px) scale(0.985);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    }
+    .slide.active {
+      opacity: 1; pointer-events: auto; visibility: visible;
+      transform: translateY(0) scale(1); z-index: 10;
+    }
+
+    /* Titles */
+    .slide-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--primary); margin-bottom: 4px;
+    }
+    .slide-title {
+      font-size: 30px; font-weight: 800; line-height: 1.2;
+      color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      margin-bottom: 2px;
+    }
+    .slide-subtitle {
+      font-size: 15.5px; color: var(--text-muted); line-height: 1.4;
+      margin-bottom: 14px;
+    }
+
+    /* Layouts */
+    .slide-content { flex: 1; display: flex; gap: 22px; min-height: 0; overflow: hidden; }
+    .col-half { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .col-full { width: 100%; height: 100%; display: flex; flex-direction: column; }
+
+    /* Fun Box */
+    .fun-box {
+      background: rgba(30, 41, 65, 0.75);
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      display: flex; flex-direction: column;
+    }
+
+    /* Hero Centered Card */
+    .hero-centered-card {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 30%, rgba(30, 58, 138, 0.45) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 2px solid rgba(56, 189, 248, 0.4);
+      border-radius: 20px;
+      padding: 26px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      box-shadow: 0 16px 45px rgba(0,0,0,0.6);
+    }
+
+    .feature-steps-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 980px;
+      margin: 10px 0;
+    }
+    .step-badge-box {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .step-badge-box:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .step-badge-icon { font-size: 28px; }
+    .step-badge-title { font-size: 14px; font-weight: 800; color: #fff; }
+    .step-badge-desc { font-size: 12px; color: #94a3b8; line-height: 1.35; }
+
+    /* Devasa Başlatma Butonları */
+    .btn-giant-launcher {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border: 2.5px solid rgba(56, 189, 248, 0.7);
+      color: #ffffff;
+      padding: 16px 42px;
+      border-radius: 20px;
+      font-size: 20px;
+      font-weight: 900;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 10px 30px rgba(2, 132, 199, 0.5), 0 0 25px var(--primary-glow);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+    }
+    .btn-giant-launcher:hover {
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 16px 45px var(--primary-glow);
+      color: #fff;
+    }
+    .btn-giant-launcher.gold {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-color: #fef08a;
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.5);
+    }
+    .btn-giant-launcher.gold:hover {
+      background: linear-gradient(135deg, #fbbf24, #ea580c);
+    }
+
+    /* 3 Kriter Kartları Grid */
+    .criteria-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      height: 100%;
+    }
+    .criteria-card {
+      background: rgba(30, 41, 65, 0.85);
+      border: 2px solid rgba(255, 255, 255, 0.16);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s;
+    }
+    .criteria-card:hover {
+      border-color: var(--sunny-yellow);
+      transform: translateY(-3px);
+    }
+    .crit-icon { font-size: 36px; margin-bottom: 8px; }
+    .crit-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .crit-desc { font-size: 13.5px; color: #cbd5e1; line-height: 1.45; }
+    .crit-stars {
+      background: rgba(245, 158, 11, 0.15); border: 1.5px solid rgba(245, 158, 11, 0.4);
+      padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 800;
+      color: #fbbf24; text-align: center; margin-top: 10px;
+    }
+
+    /* Footer (Hafta 1, 2, 3, 4 ile Birebir Aynı) */
+    footer {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 62px;
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(12, 19, 34, 0.96); backdrop-filter: blur(14px);
+      border-top: 2px solid rgba(255, 255, 255, 0.14); z-index: 900;
+    }
+    .footer-left { display: flex; align-items: center; gap: 16px; }
+    .slide-counter {
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.18);
+      padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 800;
+      color: #cbd5e1; cursor: pointer;
+    }
+    .slide-counter .current { color: var(--primary); font-size: 15px; }
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1; font-size: 14px; font-weight: 700; padding: 8px 18px; border-radius: 12px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .nav-btn:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+    .nav-btn.primary {
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #042f2e; border-color: var(--primary); font-weight: 800;
+    }
+    .nav-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px var(--primary-glow); }
+    .nav-btn.nav-locked { opacity: 0.35; filter: grayscale(0.5); cursor: not-allowed; }
+    .lock-btn { display: inline-flex; align-items: center; gap: 6px; }
+    .lock-btn.locked { background: linear-gradient(135deg, #d97706, #b45309); border-color: #f59e0b; color: #fff; }
+
+    /* Modals & Drawers */
+    #notes-drawer {
+      position: fixed; right: 0; top: 62px; bottom: 62px; width: 420px;
+      background: rgba(12, 19, 34, 0.98); border-left: 2px solid var(--primary);
+      z-index: 1200; padding: 24px; display: flex; flex-direction: column; gap: 14px;
+      transform: translateX(100%); transition: transform 0.3s ease; pointer-events: none;
+    }
+    #notes-drawer.open { transform: translateX(0); pointer-events: auto; }
+    .notes-body { font-size: 14.5px; line-height: 1.6; color: #cbd5e1; overflow-y: auto; flex: 1; }
+    .notes-body h4 { color: var(--sunny-yellow); margin: 12px 0 4px; font-size: 15.5px; }
+
+    #overview-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(10, 15, 28, 0.96); backdrop-filter: blur(20px);
+      z-index: 2000; display: flex; flex-direction: column; padding: 36px;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease; pointer-events: none;
+    }
+    #overview-modal.open { opacity: 1; visibility: visible; pointer-events: auto; }
+    .overview-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px; overflow-y: auto; margin-top: 20px; width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto;
+    }
+    .overview-card {
+      background: rgba(30, 41, 65, 0.85); border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-md); padding: 16px; cursor: pointer; transition: all 0.2s;
+      font-size: 15px; font-weight: 700;
+    }
+    .overview-card:hover { border-color: var(--sunny-yellow); transform: translateY(-3px); }
+    .overview-card.active { border-color: var(--primary); background: rgba(56, 189, 248, 0.22); }
+
+    #smartboard-toast {
+      position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border: 2px solid #f59e0b;
+      color: #fef08a; font-size: 16px; font-weight: 700; padding: 12px 26px; border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 9999; opacity: 0; pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #smartboard-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Görsel Büyütme (Lightbox) Stilleri */
+    #image-lightbox-modal {
+      position: fixed; inset: 0;
+      background: rgba(4, 8, 18, 0.88);
+      backdrop-filter: blur(12px);
+      z-index: 10000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s;
+      padding: 24px;
+    }
+    #image-lightbox-modal.active {
+      opacity: 1; pointer-events: auto; visibility: visible;
+    }
+    #lightbox-img-container {
+      position: relative;
+      max-width: 94vw; max-height: 90vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #lightbox-img {
+      max-width: 92vw; max-height: 84vh;
+      width: auto; height: auto;
+      object-fit: contain;
+      border-radius: 16px;
+      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.9);
+      border: 2.5px solid rgba(255, 255, 255, 0.25);
+      transform: scale(0.96);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #image-lightbox-modal.active #lightbox-img {
+      transform: scale(1);
+    }
+    #lightbox-close-btn {
+      position: absolute; top: 18px; right: 24px;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      color: #ffffff; font-size: 22px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+      z-index: 10001;
+    }
+    #lightbox-close-btn:hover {
+      background: #ef4444; border-color: #f87171; transform: scale(1.1);
+    }
+    #lightbox-caption {
+      margin-top: 12px; font-size: 14.5px; font-weight: 700;
+      color: #e2e8f0; text-align: center; max-width: 80vw;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .slide img, .hero-centered-card img, .fun-box img {
+      cursor: zoom-in;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .slide img:hover, .hero-centered-card img:hover, .fun-box img:hover {
+      filter: brightness(1.06);
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <!-- Üst İlerleme Çubuğu -->
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <!-- Header (Hafta 1-4 ile Birebir Aynı) -->
+  <header>
+    <div class="brand">
+      <a href="../../index.html" class="portal-nav-btn" onclick="handlePortalClick(event)" title="Loom Akademi Portalı'na Dön">
+        <span class="portal-icon">🏠</span>
+        <span>Loom Portalı</span>
+      </a>
+      <div class="grade-badge">✈️ 5. HAFTA</div>
+      <div class="brand-title">LOOM AKADEMİ • GÖKYÜZÜ MÜHENDİSLERİ <span>• 5. HAFTA: SİMÜLASYON, PİLOT SEÇİMİ VE PUAN AĞACI</span></div>
+    </div>
+    <div class="header-tools">
+      <a href="ogrenci_secici.html" target="_blank" class="tool-btn" style="text-decoration:none;" title="Pilot Seçici & Puan Ağacı (Yeni Sekme)">🎯</a>
+      <button class="tool-btn" id="btn-nav-lock" onclick="toggleSlideLock()" title="Sayfayı Kilitle / Kilidi Aç (L)">🔓</button>
+      <button class="tool-btn" id="btn-sound" onclick="toggleSound()" title="Sesi Aç/Kapat">🔊</button>
+      <button class="tool-btn" id="btn-notes" onclick="toggleNotes()" title="Öğretmen Notları (N)">📋</button>
+      <button class="tool-btn" id="btn-overview" onclick="toggleOverview()" title="Tüm Slaytlar (O)">📑</button>
+      <button class="tool-btn" onclick="toggleFullscreen()" title="Tam Ekran (F)">⛶</button>
+    </div>
+  </header>
+
+  <!-- Slide Viewport -->
+  <main>
+    <div id="slide-viewport">
+
+      <!-- ==================== SLAYT 1: GEÇEN HAFTA VE BU HAFTA ==================== -->
+      <section class="slide active" data-slide="1">
+        <div class="slide-badge">🚁 5. HAFTA • HANGAR AÇILIŞI</div>
+        <h1 class="slide-title">Büyük Simülasyon Günü: Pilotaj Meydanı & Puan Ağacı 🎮⭐</h1>
+        <p class="slide-subtitle">Kumanda hassasiyetini pekiştiriyoruz: Sırayla kalkış yapacak, arkadaşlarımızı puanlayıp günün şampiyonunu seçeceğiz!</p>
+
+        <div class="slide-content">
+          <!-- SOL TARAF: GEÇEN HAFTANIN HATIRLATMASI (4. HAFTA) -->
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; border-color: var(--primary); justify-content: space-between;">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(56,189,248,0.3); padding-bottom: 8px; margin-bottom: 12px;">
+                  <h3 style="font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                    <span>🧠</span> Geçen Hafta Ne Öğrendik? (4. Hafta)
+                  </h3>
+                  <span style="font-size: 11px; background: rgba(56,189,248,0.2); color: #7dd3fc; padding: 2px 8px; border-radius: 8px; font-weight: 800;">HATIRLATMA</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--emerald-green);">
+                    <strong style="color: var(--emerald-green); font-size: 13.5px;">🤏 Kıstırma (Pinch) Tutuşu:</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 3px; line-height: 1.35;">
+                      Kurşun kalem gibi iki parmakla tutarak cerrah hassasiyeti kazandık. Tavan çarpmalarını %80 önledik!
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--primary);">
+                    <strong style="color: #fff; font-size: 13.5px;">🪶 Kuş Tüyü Gaz Kolu (Throttle):</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 2px; line-height: 1.35;">
+                      Gazı aniden açmak yok! Milim milim kaldırarak tavana çarpmadan 1.0–1.5m irtifada sabit durduk (Hovering).
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--sunny-yellow);">
+                    <strong style="color: var(--sunny-yellow); font-size: 13.5px;">🕹️ Angle Modu & SC Reset:</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 2px; line-height: 1.35;">
+                      Daima dengeli Angle modunda uçtuk; kaza anlarında kumandadaki SC anahtarıyla oyunu anında baştan başlattık.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background: rgba(56,189,248,0.12); padding: 8px 12px; border-radius: 8px; font-size: 12px; color: #bae6fd;">
+                ✔️ <strong>4. Hafta Temeli:</strong> Kumanda tutuşunu ve gaz hassasiyetini başarıyla kavradık.
+              </div>
+            </div>
+          </div>
+
+          <!-- SAĞ TARAF: BU HAFTA NE YAPACAĞIZ? (5. HAFTA PLANI) -->
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; border-color: var(--sunny-yellow); justify-content: space-between; background: radial-gradient(circle at top right, rgba(245,158,11,0.15) 0%, rgba(22,31,54,0.95) 100%);">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(245,158,11,0.3); padding-bottom: 8px; margin-bottom: 12px;">
+                  <h3 style="font-size: 18px; color: var(--sunny-yellow); display: flex; align-items: center; gap: 8px;">
+                    <span>🎯</span> Bugün Ne Yapacağız? (5. Hafta)
+                  </h3>
+                  <span style="font-size: 11px; background: rgba(245,158,11,0.25); color: #fde68a; padding: 2px 8px; border-radius: 8px; font-weight: 800;">DERS AKIŞI</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--primary);">
+                    <div style="font-size: 11px; color: var(--primary); font-weight: 800;">1. ADIM: AKILLI TAHTA ÇEKİLİŞİ</div>
+                    <strong style="color: #fff; font-size: 13.5px;">🎲 Rastgele Pilot Seçimi</strong>
+                    <p style="font-size: 12px; color: #cbd5e1; margin-top: 2px; line-height: 1.35;">
+                      Akıllı tahtada hazırladığımız sistemle sıradaki pilotları kura çekerek sahneye çağırıyoruz!
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--emerald-green);">
+                    <div style="font-size: 11px; color: var(--emerald-green); font-weight: 800;">2. ADIM: BİLGİSAYAR & SİMÜLASYON</div>
+                    <strong style="color: #fff; font-size: 13.5px;">💻 FPV SkyDive Parkur Uçuşu</strong>
+                    <p style="font-size: 12px; color: #cbd5e1; margin-top: 2px; line-height: 1.35;">
+                      Bilgisayarı bağlayıp FPV SkyDive'da kontrollü kalkış, 5 saniye hover ve iniş görevini yapıyoruz.
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--sunny-yellow);">
+                    <div style="font-size: 11px; color: var(--sunny-yellow); font-weight: 800;">3. ADIM: JÜRİ & PUAN AĞACI</div>
+                    <strong style="color: #fff; font-size: 13.5px;">⭐ Akran Puanlaması & Şampiyon</strong>
+                    <p style="font-size: 12px; color: #cbd5e1; margin-top: 2px; line-height: 1.35;">
+                      Tüm sınıf arkadaşının uçuşuna 1-5 arası puan verir, ortalamayı Puan Ağacı'na işleyip günün birincisini seçeriz!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background: rgba(245,158,11,0.15); padding: 8px 12px; border-radius: 8px; font-size: 12px; color: #fde68a;">
+                🏆 <strong>Günün Amacı:</strong> Kimse sıkılmadan, tüm sınıf jüri olarak en iyi pilotajı puanlayacak!
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLAYT 2: HATIRLATMA — KUMANDA TUTUŞ SANATI ==================== -->
+      <section class="slide" data-slide="2" style="padding: 14px 26px;">
+        <div class="slide-badge">🖐️ PİLOTAJ TEKNİĞİ HATIRLATMASI</div>
+        <h1 class="slide-title" style="font-size: 25px; margin-bottom: 2px;">Kumanda Tutuş Sanatı: Kıstırma (Pinch) vs Başparmak (Thumb) 🎮</h1>
+        <p class="slide-subtitle" style="font-size: 13.5px; margin-bottom: 6px;">Uçuşa başlamadan önce hatırlayalım: Bir cerrah gibi mi tutuyoruz, oyun konsolu gibi mi?</p>
+
+        <div class="slide-content" style="gap: 16px;">
+          <!-- SOL SÜTUN: KISTIRMA TUTUŞU -->
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; border-color: var(--emerald-green); justify-content: space-between; padding: 10px 14px; background: rgba(22, 31, 54, 0.96);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <h3 style="font-size: 16px; color: var(--emerald-green); display: flex; align-items: center; gap: 6px;">
+                  <span>🤏</span> Kıstırma Tutuşu (Pinch Grip)
+                </h3>
+                <span style="font-size: 11px; background: rgba(16,185,129,0.25); color: #86efac; padding: 2px 8px; border-radius: 6px; font-weight: 800;">ALTIN KURAL ⭐</span>
+              </div>
+              
+              <!-- DEVA BÜYÜK GÖRSEL -->
+              <div style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; padding: 2px 0;">
+                <img src="images/kistirma_tutusu.png" alt="Kıstırma Tutuşu (Pinch Grip)" style="height: 435px; max-height: 440px; width: auto; max-width: 100%; object-fit: contain; border-radius: 14px; border: 2.5px solid rgba(52, 211, 153, 0.55); box-shadow: 0 10px 30px rgba(0,0,0,0.65);">
+              </div>
+
+              <!-- GÖRSEL ALTI AÇIKLAMA -->
+              <div style="background: rgba(16,185,129,0.16); border: 1.5px solid rgba(52, 211, 153, 0.4); padding: 7px 12px; border-radius: 10px; font-size: 13px; color: #a7f3d0; text-align: center; margin-top: 4px; font-weight: 700;">
+                💡 <strong>Cerrah Hassasiyeti:</strong> Kurşun kalem tutar gibi araya sıkıştırın • Tavan çarpmalarını %80 önler!
+              </div>
+            </div>
+          </div>
+
+          <!-- SAĞ SÜTUN: BAŞPARMAK TUTUŞU -->
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; border-color: var(--sunny-yellow); justify-content: space-between; padding: 10px 14px; background: rgba(22, 31, 54, 0.96);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <h3 style="font-size: 16px; color: var(--sunny-yellow); display: flex; align-items: center; gap: 6px;">
+                  <span>👍</span> Başparmak Tutuşu (Thumb Grip)
+                </h3>
+                <span style="font-size: 11px; background: rgba(251,191,36,0.2); color: #fde68a; padding: 2px 8px; border-radius: 6px; font-weight: 800;">OYUN KONSOLLARI 🎮</span>
+              </div>
+
+              <!-- DEVA BÜYÜK GÖRSEL -->
+              <div style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; padding: 2px 0;">
+                <img src="images/basparmak_tutusu.png" alt="Başparmak Tutuşu (Thumb Grip)" style="height: 435px; max-height: 440px; width: auto; max-width: 100%; object-fit: contain; border-radius: 14px; border: 2.5px solid rgba(251, 191, 36, 0.55); box-shadow: 0 10px 30px rgba(0,0,0,0.65);">
+              </div>
+
+              <!-- GÖRSEL ALTI AÇIKLAMA -->
+              <div style="background: rgba(245,158,11,0.16); border: 1.5px solid rgba(251, 191, 36, 0.4); padding: 7px 12px; border-radius: 10px; font-size: 13px; color: #fde68a; text-align: center; margin-top: 4px; font-weight: 700;">
+                ⚠️ <strong>Fırlama Riski:</strong> PlayStation kolu gibidir • Hızlı refleks sağlar fakat milimetrik kontrol zordur!
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLAYT 3: PİLOT SEÇİMİ VE PUAN AĞACI MERKEZİ ==================== -->
+      <section class="slide" data-slide="3">
+        <div class="slide-badge">🎲 1. İSTASYON • AKILLI TAHTA SİSTEMİ</div>
+        <h1 class="slide-title">Pilot Seçici & Puan Ağacı Ekranı 🛸⭐</h1>
+        <p class="slide-subtitle">Sıradaki pilotu kura ile belirliyoruz, uçuş bitince sınıfın verdiği ortalama puanı anında sisteme kaydediyoruz!</p>
+
+        <div class="slide-content">
+          <div class="col-full">
+            <div class="hero-centered-card">
+              <!-- Üst 3 Adım Rozeti -->
+              <div class="feature-steps-row">
+                <div class="step-badge-box">
+                  <span class="step-badge-icon">🎲</span>
+                  <div class="step-badge-title">1. Pilotu Seç</div>
+                  <div class="step-badge-desc">"1 Pilot Seç" butonuna bas; sesler ve konfetilerle sıradaki pilot sahneye gelsin.</div>
+                </div>
+                <div class="step-badge-box" style="border-color: var(--primary);">
+                  <span class="step-badge-icon">🎮</span>
+                  <div class="step-badge-title" style="color: var(--primary);">2. Kumandayı Al & Uç</div>
+                  <div class="step-badge-desc">FPV SkyDive simülasyonunda tavan çarpmadan sakin kalkış ve iniş yap.</div>
+                </div>
+                <div class="step-badge-box" style="border-color: var(--sunny-yellow);">
+                  <span class="step-badge-icon">⭐</span>
+                  <div class="step-badge-title" style="color: var(--sunny-yellow);">3. Puan Ağacı'na İşle</div>
+                  <div class="step-badge-desc">Sınıfın verdiği 1–5 yıldız puanının ortalamasını öğrencinin kartına tıkla ve kaydet!</div>
+                </div>
+              </div>
+
+              <!-- Orta Devasa Başlatma Butonu -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 10px 0;">
+                <a href="ogrenci_secici.html" target="_blank" class="btn-giant-launcher gold">
+                  <span>🚀</span> Pilot Seçici & Puan Ağacı Ekranını Aç <span>➔</span>
+                </a>
+                <div style="font-size: 13.5px; color: #fde68a; font-weight: 700; letter-spacing: 0.5px;">
+                  ⭐ Tüm sınıflarınız kayıtlıdır • Sayfa kapansa da verilen puanlar asla kaybolmaz!
+                </div>
+              </div>
+
+              <!-- Alt Bilgilendirme Şeridi -->
+              <div style="display: flex; gap: 20px; font-size: 12.5px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 10px; width: 100%; justify-content: center;">
+                <span>🟢 Yeşil: Hazır Bekleyen</span>
+                <span>•</span>
+                <span>🔵 Mavi: Uçuşunu Yapan & Puanlanan</span>
+                <span>•</span>
+                <span>🔴 Kırmızı: Gelmeyen (Devamsız)</span>
+                <span>•</span>
+                <span>🏆 Puan Ağacı: Günün En İyileri</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLAYT 4: BİLGİSAYAR & FPV SKYDIVE GÖREVİ ==================== -->
+      <section class="slide" data-slide="4">
+        <div class="slide-badge">💻 2. İSTASYON • FPV SKYDIVE PARKUR GÖREVİ</div>
+        <h1 class="slide-title">Bilgisayar Simülasyonu: 90 Saniyelik Uçuş Görevi ⏱️🚁</h1>
+        <p class="slide-subtitle">Her öğrenci bilgisayara bağlı kumandayı alır ve tahtadaki canlı yayında 3 kritik aşamayı tamamlar:</p>
+
+        <div class="slide-content">
+          <div class="col-full">
+            <div class="hero-centered-card" style="background: radial-gradient(circle at 50% 30%, rgba(5, 150, 105, 0.3) 0%, rgba(15, 23, 42, 0.96) 100%); border-color: rgba(16, 185, 129, 0.45);">
+              <div class="feature-steps-row">
+                <div class="step-badge-box" style="border-color: var(--primary);">
+                  <span class="step-badge-icon">🔒</span>
+                  <div class="step-badge-title" style="color: var(--primary);">1. Güvenli ARM (Kilit Açma)</div>
+                  <div class="step-badge-desc">Gaz kolu en alttayken ARM anahtarını aç. Pervanelerin rölantide dönmesini sağla.</div>
+                </div>
+                <div class="step-badge-box" style="border-color: var(--emerald-green);">
+                  <span class="step-badge-icon">🪶</span>
+                  <div class="step-badge-title" style="color: var(--emerald-green);">2. Milimetrik Gaz & 5sn Hover</div>
+                  <div class="step-badge-desc">Kuş tüyü dokunuşuyla 1-2 metre yüksel. Dairenin içinde 5 saniye havada sabit kal!</div>
+                </div>
+                <div class="step-badge-box" style="border-color: var(--sunny-yellow);">
+                  <span class="step-badge-icon">🎯</span>
+                  <div class="step-badge-title" style="color: var(--sunny-yellow);">3. Piste Yumuşak İniş</div>
+                  <div class="step-badge-desc">Gazı nazikçe kısarak drone'u kırmadan piste oturt ve motorları kapat (Disarm).</div>
+                </div>
+              </div>
+
+              <!-- Orta Görev Notu -->
+              <div style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(16, 185, 129, 0.35); border-radius: 18px; padding: 18px 30px; max-width: 900px; width: 100%; margin: 8px 0; text-align: center;">
+                <div style="font-size: 20px; font-weight: 800; color: #34d399; margin-bottom: 6px;">
+                  ⚠️ Hata Yaptığında Panik Yok: SC Tuşuyla Hızlı Reset!
+                </div>
+                <p style="font-size: 14px; color: #cbd5e1; line-height: 1.45;">
+                  Kumandadaki sıfırlama tuşunu kullanarak kaza anında anında yeniden başlayabilirsiniz. Hızlı uçmak puan kazandırmaz; <strong>sakin, yumuşak ve kontrollü uçan pilot tam puan alır!</strong>
+                </p>
+              </div>
+
+              <!-- Alt Bilgilendirme -->
+              <div style="display: flex; gap: 20px; font-size: 12.5px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 10px; width: 100%; justify-content: center;">
+                <span>🎮 Gerçek Kumanda Deneyimi</span>
+                <span>•</span>
+                <span>🖥️ Akıllı Tahtada Canlı İzleme</span>
+                <span>•</span>
+                <span>⏱️ Pilot Başı 90 Saniye Süre</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLAYT 5: AKRAN DEĞERLENDİRMESİ & JÜRİ SİSTEMİ ==================== -->
+      <section class="slide" data-slide="5">
+        <div class="slide-badge">👥 3. İSTASYON • SINIF JÜRİSİ</div>
+        <h1 class="slide-title">Arkadaşımıza Nasıl Puan Veriyoruz? (1-5 Yıldız Kuralı) ⭐📊</h1>
+        <p class="slide-subtitle">Pilot uçuşunu bitirdiğinde tüm sınıf jüri olur! Parmaklar havaya kalkar ve Hüseyin Hoca ortalamayı sisteme işler:</p>
+
+        <div class="slide-content">
+          <div class="col-full">
+            <div class="criteria-grid">
+              <!-- Kriter 1 -->
+              <div class="criteria-card">
+                <div>
+                  <div class="crit-icon">🛫</div>
+                  <div class="crit-title">1. Kalkış Hassasiyeti</div>
+                  <div class="crit-desc">
+                    Pilot gaz kolunu sakin açtı mı? Drone aniden fırlayıp tavana çarpmadan kuş tüyü gibi havalandı mı?
+                  </div>
+                </div>
+                <div>
+                  <div class="crit-stars">⭐ 1 ile 5 Puan Arası</div>
+                </div>
+              </div>
+
+              <!-- Kriter 2 -->
+              <div class="criteria-card">
+                <div>
+                  <div class="crit-icon">🛸</div>
+                  <div class="crit-title">2. Havada Denge (Hover)</div>
+                  <div class="crit-desc">
+                    Havada 1-2 metre irtifada sağa sola savrulmadan durabildi mi? Kıstırma (pinch) tutuşunu korudu mu?
+                  </div>
+                </div>
+                <div>
+                  <div class="crit-stars">⭐ 1 ile 5 Puan Arası</div>
+                </div>
+              </div>
+
+              <!-- Kriter 3 -->
+              <div class="criteria-card">
+                <div>
+                  <div class="crit-icon">🛬</div>
+                  <div class="crit-title">3. Yumuşak İniş</div>
+                  <div class="crit-desc">
+                    Yere sert çarpmadan, motorları kırmadan hedefin üzerine yavaşça teker koyarak konabildi mi?
+                  </div>
+                </div>
+                <div>
+                  <div class="crit-stars">⭐ 1 ile 5 Puan Arası</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alt Kural Bandı -->
+            <div style="background: rgba(15,23,42,0.85); border: 1.5px solid var(--primary); border-radius: 12px; padding: 10px 18px; margin-top: 14px; display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 13.5px; color: #fff;">
+                ✋ <strong>Jüri Kuralı:</strong> Uçuş biter bitmez: <em>"Arkadaşlar, puanları görelim!"</em> dendiğinde herkes parmağını kaldırır.
+              </span>
+              <span style="font-size: 13.5px; color: var(--sunny-yellow); font-weight: 800;">
+                Hüseyin Hoca ortalamayı (Örn: 4.5 ⭐) Pilot Seçici'ye tıklar!
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLAYT 6: GÜNÜN ÖZETİ & ŞAMPİYONLAR ==================== -->
+      <section class="slide" data-slide="6">
+        <div class="slide-badge">🏆 GÜNÜN DEĞERLENDİRMESİ & GELECEK HAFTA</div>
+        <h1 class="slide-title">Puan Ağacı Şampiyonları & Gelecek Hafta! 🚀✨</h1>
+        <p class="slide-subtitle">Tebrikler pilotlar! Bugün herkes hem kumandada uçuş yaptı hem de jüri koltuğunda arkadaşlarını değerlendirdi!</p>
+
+        <div class="slide-content">
+          <!-- SOL SÜTUN: BUGÜNÜN KAZANIMLARI -->
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; border-color: var(--primary); justify-content: space-between;">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(56,189,248,0.3); padding-bottom: 8px; margin-bottom: 12px;">
+                  <h3 style="font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                    <span>⭐</span> Bugünkü Uçuş Başarılarımız
+                  </h3>
+                  <span style="font-size: 11px; background: rgba(56,189,248,0.2); color: #7dd3fc; padding: 2px 8px; border-radius: 8px; font-weight: 800;">5. HAFTA ÖZETİ</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--primary);">
+                    <strong style="color: #fff; font-size: 13.5px;">🪶 Kusursuz Gaz Hakimiyeti:</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 3px; line-height: 1.35;">
+                      Tavana ve zemin engellerine çarpmadan irtifayı göz kararı milimetrik sabitlemeyi öğrendik.
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--emerald-green);">
+                    <strong style="color: var(--emerald-green); font-size: 13.5px;">👥 Akran Değerlendirme & Jüri:</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 3px; line-height: 1.35;">
+                      Hataları ve başarıları izleyerek havacılıkta adil puanlama ve eleştiri kültürünü deneyimledik.
+                    </p>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 10px 14px; border-radius: 10px; border-left: 3px solid var(--sunny-yellow);">
+                    <strong style="color: var(--sunny-yellow); font-size: 13.5px;">🏆 Puan Ağacı Sıralaması:</strong>
+                    <p style="font-size: 12.5px; color: #cbd5e1; margin-top: 3px; line-height: 1.35;">
+                      Sınıfın en sakin ve hassas pilotlarını altın 🥇, gümüş 🥈 ve bronz 🥉 rozetlerle alkışladık!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background: rgba(56,189,248,0.12); padding: 10px 14px; border-radius: 10px; font-size: 12.5px; color: #bae6fd; text-align: center;">
+                💡 <strong>Usta Pilot Sözü:</strong> Havada usta olmak sadece uçmak değil, uçuşun fiziğini ve hatalarını görebilmektir!
+              </div>
+            </div>
+          </div>
+
+          <!-- SAĞ SÜTUN: GELECEK HAFTA MÜJDESİ -->
+          <div class="col-half">
+            <div class="fun-box" style="flex: 1; border-color: var(--cute-purple); justify-content: space-between; background: radial-gradient(circle at top right, rgba(192,132,252,0.15) 0%, rgba(22,31,54,0.95) 100%);">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid rgba(192,132,252,0.3); padding-bottom: 8px; margin-bottom: 12px;">
+                  <h3 style="font-size: 18px; color: var(--cute-purple); display: flex; align-items: center; gap: 8px;">
+                    <span>🚀</span> Gelecek Hafta Ne Var?
+                  </h3>
+                  <span style="font-size: 11px; background: rgba(192,132,252,0.25); color: #e9d5ff; padding: 2px 8px; border-radius: 8px; font-weight: 800;">MÜJDE</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                  <div style="background: rgba(15,23,42,0.85); padding: 14px 16px; border-radius: 10px; border-left: 3px solid var(--cute-purple);">
+                    <strong style="color: #fff; font-size: 14.5px;">🚁 Gerçek Drone ile Sınıf İçi Uçuşlar!</strong>
+                    <div style="font-size: 13px; color: #cbd5e1; margin-top: 5px; line-height: 1.45;">
+                      Simülasyon antrenmanlarımız başarıyla tamamlandı. Artık gerçek minik whoop dronelarımızla sınıf içinde güvenli kalkış ve iniş etabına geçiyoruz!
+                    </div>
+                  </div>
+
+                  <div style="background: rgba(15,23,42,0.85); padding: 14px 16px; border-radius: 10px; border-left: 3px solid var(--emerald-green);">
+                    <strong style="color: var(--emerald-green); font-size: 14.5px;">🧭 İleri Uçuş Manevraları:</strong>
+                    <p style="font-size: 13px; color: #cbd5e1; margin-top: 5px; line-height: 1.45;">
+                      Sağa-sola dönüşler (Yaw), ileri-geri süzülmeler (Pitch/Roll) ve engellerin arasından güvenli geçiş teknikleri!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background: rgba(192,132,252,0.15); padding: 10px 14px; border-radius: 10px; font-size: 12.5px; color: #e9d5ff; text-align: center;">
+                🦅 Gelecek haftaya kadar kıstırma tutuşu ve sakin parmak reflekslerinizi koruyun!
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer Navigation (Hafta 1-4 ile Birebir Aynı) -->
+  <footer>
+    <div class="footer-left">
+      <div class="slide-counter" onclick="toggleOverview()" title="Tüm Slaytları Gör">
+        SLAYT <span class="current" id="current-slide-num">1</span> / 6
+      </div>
+      <div style="font-size: 14px; color: var(--text-muted);">
+        İpucu: <strong>Boşluk / Sağ Ok</strong> ile ilerle, <strong>L</strong> ile sayfayı kilitle
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button class="nav-btn lock-btn" id="btn-slide-lock" onclick="toggleSlideLock()" title="Akıllı Tahta Kilidi: Dokunurken sayfanın kaymasını engeller">
+        <span id="lock-icon">🔓</span> <span id="lock-text">Kilit: Açık</span>
+      </button>
+      <button class="nav-btn" id="btn-prev-slide" onclick="prevSlide()">◀ Önceki</button>
+      <button class="nav-btn primary" id="btn-next-slide" onclick="nextSlide()">Sonraki ▶</button>
+    </div>
+  </footer>
+
+  <!-- Teacher Notes Drawer -->
+  <aside id="notes-drawer">
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 10px;">
+      <h3 style="font-size: 17px; color: var(--sunny-yellow); display: flex; align-items: center; gap: 6px; font-weight: 800;">📋 Öğretmen Ders Notu (5. Hafta)</h3>
+      <button class="tool-btn" style="width: 32px; height: 32px; font-size: 14px;" onclick="toggleNotes()">✕</button>
+    </div>
+    <div class="notes-body" id="slide-notes-content"></div>
+  </aside>
+
+  <!-- Overview Modal -->
+  <div id="overview-modal" onclick="if(event.target===this) toggleOverview()">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1200px; margin: 0 auto;">
+      <h2 style="font-size: 26px; color: var(--sunny-yellow); font-weight: 800;">📑 Slayt Gezgini (5. Hafta)</h2>
+      <button class="tool-btn" style="width: 40px; height: 40px;" onclick="toggleOverview()">✕</button>
+    </div>
+    <div class="overview-grid" style="max-width: 1200px; width: 100%; margin: 20px auto 0;">
+      <div class="overview-card" onclick="goToSlide(1)"><strong>1.</strong> Hangar Açılışı: Geçen Hafta & Bu Hafta</div>
+      <div class="overview-card" onclick="goToSlide(2)"><strong>2.</strong> Hatırlatma: Kumanda Tutuş Sanatı</div>
+      <div class="overview-card" onclick="goToSlide(3)"><strong>3.</strong> Pilot Seçici & Puan Ağacı Ekranı</div>
+      <div class="overview-card" onclick="goToSlide(4)"><strong>4.</strong> FPV SkyDive Parkur & Uçuş Görevi</div>
+      <div class="overview-card" onclick="goToSlide(5)"><strong>5.</strong> Sınıf Jürisi & 1-5 Yıldız Puanlama Kuralı</div>
+      <div class="overview-card" onclick="goToSlide(6)"><strong>6.</strong> Günün Özeti & Şampiyonlar</div>
+    </div>
+  </div>
+
+  <div id="smartboard-toast"></div>
+
+  <!-- Görsel Büyütme (Lightbox) Modalı -->
+  <div id="image-lightbox-modal" onclick="closeLightbox(event)">
+    <button id="lightbox-close-btn" onclick="closeLightbox(event)" title="Kapat (ESC veya Dışarı Tıkla)">✕</button>
+    <div id="lightbox-img-container" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="">
+      <div id="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <!-- Slayt Yürütücü Scripti -->
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 6;
+    let isSlideLocked = false;
+    let soundEnabled = true;
+
+    function openLightbox(src, alt) {
+      const modal = document.getElementById('image-lightbox-modal');
+      const img = document.getElementById('lightbox-img');
+      const caption = document.getElementById('lightbox-caption');
+      if (!modal || !img) return;
+      img.src = src;
+      img.alt = alt || '';
+      if (caption) caption.textContent = alt || '';
+      modal.classList.add('active');
+    }
+
+    function closeLightbox(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const modal = document.getElementById('image-lightbox-modal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function initImageZoom() {
+      document.querySelectorAll('.slide img, main img, .hero-centered-card img, .fun-box img').forEach(img => {
+        if (img.classList.contains('no-zoom') || img.dataset.zoomBound) return;
+        img.dataset.zoomBound = 'true';
+        img.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openLightbox(img.src, img.alt || img.getAttribute('title') || '');
+        });
+      });
+    }
+
+    window.addEventListener('contextmenu', e => e.preventDefault());
+
+    let audioCtx = null;
+    let toastTimer = null;
+
+    const slideNotes = {
+      "1": "<h4>1. Hangar Açılışı (5 Dk)</h4><p>Geçen haftayı kısaca hatırlatın ve bugünkü ders akışından bahsedin.</p>",
+      "2": "<h4>2. Kumanda Tutuş Sanatı Hatırlatması (5 Dk)</h4><p>Görseller üzerinden kıstırma (pinch) ve başparmak (thumb) tutuşlarını hatırlatın. Öğrencilere bir cerrah gibi iki parmakla kıstırarak kumandayı kavramalarını gösterin.</p>",
+      "3": "<h4>3. Pilot Seçici & Puan Ağacı (5 Dk)</h4><p>Ekrandaki 'Pilot Seçiciyi Aç' butonuna basarak ogrenci_secici.html sayfasını yeni sekmede açın. Sınıfınızı seçin ve kura çekimiyle öğrencileri çağıracağınızı gösterin.</p>",
+      "4": "<h4>4. FPV SkyDive Uçuş Görevi (30 Dk)</h4><p>Bilgisayarınızdan FPV SkyDive simülasyonunu tahtaya yansıtın. Kura ile gelen öğrenci kumandayı alır; kalkış, 5 saniye hover ve piste iniş görevini yapar. Kaza anında SC tuşuyla hızlıca sıfırlamasını sağlayın.</p>",
+      "5": "<h4>5. Akran Değerlendirme & Jüri Sistemi (25 Dk)</h4><p>Öğrenci uçuşu bitirdiğinde sınıfa seslenin: 'Kalkış, havada kalma ve iniş için kaç yıldız? Parmakları görelim!'. Sınıfın ortalama puanını Pilot Seçici sekmesinde öğrencinin adına tıklayarak kaydedin.</p>",
+      "6": "<h4>6. Günün Şampiyonları & Gelecek Hafta (5 Dk)</h4><p>Pilot Seçici sayfasında '🏆 Puan Ağacı' butonuna basarak günün en yüksek puanlı 3 öğrencisini (🥇, 🥈, 🥉) sınıfa alkışlatın. Gelecek hafta gerçek drone ile ilk uçuşlara geçeceğimizi müjdeleyin.</p>"
+    };
+
+    function initAudio() {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC && !audioCtx) audioCtx = new AC();
+      } catch(e) {}
+    }
+    function playClickSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.frequency.setValueAtTime(650, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.09);
+      } catch(e) {}
+    }
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('btn-sound');
+      if (btn) {
+        btn.textContent = soundEnabled ? '🔊' : '🔇';
+        btn.classList.toggle('active', !soundEnabled);
+      }
+    }
+
+    function handlePortalClick(e) {
+      if (document.referrer && (document.referrer.includes('portal') || document.referrer.includes('index.html'))) {
+        e.preventDefault();
+        window.location.href = document.referrer;
+      }
+    }
+
+    function updateSlide() {
+      document.querySelectorAll('.slide').forEach((s, idx) => s.classList.toggle('active', idx + 1 === currentSlide));
+      document.getElementById('current-slide-num').textContent = currentSlide;
+      document.getElementById('progress-fill').style.width = ((currentSlide - 1) / (totalSlides - 1) * 100) + '%';
+      document.querySelectorAll('.overview-card').forEach((card, idx) => card.classList.toggle('active', idx + 1 === currentSlide));
+
+      const notesEl = document.getElementById('slide-notes-content');
+      if (notesEl) notesEl.innerHTML = slideNotes[currentSlide] || '<p>Bu slayt için özel not bulunmuyor.</p>';
+
+      const prevBtn = document.getElementById('btn-prev-slide');
+      const nextBtn = document.getElementById('btn-next-slide');
+      if (prevBtn) prevBtn.style.visibility = (currentSlide === 1) ? 'hidden' : 'visible';
+      if (nextBtn) nextBtn.style.visibility = (currentSlide === totalSlides) ? 'hidden' : 'visible';
+    }
+
+    function nextSlide() {
+      if (isSlideLocked) { showToast('🔒 Sayfa Kilitli! İlerlemek için lütfen kilit butonuna dokunun.'); return; }
+      if (currentSlide < totalSlides) { currentSlide++; playClickSound(); updateSlide(); }
+    }
+    function prevSlide() {
+      if (isSlideLocked) { showToast('🔒 Sayfa Kilitli! Geri gitmek için lütfen kilit butonuna dokunun.'); return; }
+      if (currentSlide > 1) { currentSlide--; playClickSound(); updateSlide(); }
+    }
+    function goToSlide(n) {
+      if (isSlideLocked) { showToast('🔒 Sayfa Kilitli! Slayt değiştirmek için lütfen kilidi açın.'); return; }
+      currentSlide = n; playClickSound(); updateSlide(); toggleOverview(false);
+    }
+
+    function toggleSlideLock() {
+      isSlideLocked = !isSlideLocked;
+      playClickSound();
+      const b1 = document.getElementById('btn-slide-lock');
+      const b2 = document.getElementById('btn-nav-lock');
+      const icon = document.getElementById('lock-icon');
+      const text = document.getElementById('lock-text');
+      const prevBtn = document.getElementById('btn-prev-slide');
+      const nextBtn = document.getElementById('btn-next-slide');
+
+      if (b1) {
+        b1.classList.toggle('locked', isSlideLocked);
+        if (icon) icon.textContent = isSlideLocked ? '🔒' : '🔓';
+        if (text) text.textContent = isSlideLocked ? 'Kilitli' : 'Kilit: Açık';
+      }
+      if (b2) {
+        b2.classList.toggle('locked', isSlideLocked);
+        b2.textContent = isSlideLocked ? '🔒' : '🔓';
+      }
+      if (prevBtn) prevBtn.classList.toggle('nav-locked', isSlideLocked);
+      if (nextBtn) nextBtn.classList.toggle('nav-locked', isSlideLocked);
+
+      showToast(isSlideLocked ? '🔒 Sayfa Kilitlendi (Dokunurken kaymaz)' : '🔓 Sayfa Kilidi Açıldı');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('smartboard-toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    function toggleNotes() {
+      playClickSound();
+      const d = document.getElementById('notes-drawer');
+      const b = document.getElementById('btn-notes');
+      d.classList.toggle('open');
+      b.classList.toggle('active', d.classList.contains('open'));
+    }
+
+    function toggleOverview(force) {
+      playClickSound();
+      const m = document.getElementById('overview-modal');
+      const b = document.getElementById('btn-overview');
+      if (force !== undefined) m.classList.toggle('open', force);
+      else m.classList.toggle('open');
+      b.classList.toggle('active', m.classList.contains('open'));
+    }
+
+    function toggleFullscreen() {
+      playClickSound();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    window.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') nextSlide();
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevSlide();
+      if (e.key === 'l' || e.key === 'L') toggleSlideLock();
+      if (e.key === 'o' || e.key === 'O' || e.key === 'g' || e.key === 'G') toggleOverview();
+      if (e.key === 'n' || e.key === 'N') toggleNotes();
+      if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSlide();
+      initImageZoom();
+    });
+  </script>
+</body>
+</html>
